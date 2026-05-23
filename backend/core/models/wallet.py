@@ -3,7 +3,6 @@ from django.conf import settings
 
 
 class Wallet(models.Model):
-    # Setting imported to avoid circular import issues
 
     STATUS_CHOICES = [
         ("active", "Active"),
