@@ -4,13 +4,13 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, ArrowDownLeft, Plus, Minus } from "lucide-react";
-import type { Wallet, Transaction, Notification } from "@/lib/api";
+import type { Wallet, Transaction, Notification } from "@/utils/api";
 import {
   fetchWalletAction,
   fetchTransactionsAction,
   fetchNotificationsAction,
 } from "@/app/actions";
-import { getTxMeta, formatAmount, formatRelativeTime } from "@/lib/utils";
+import { getTxMeta, formatAmount, formatRelativeTime } from "@/utils/helpers";
 import { Badge } from "@/components/ui/Badge";
 import { ToastStack, type Toast } from "@/components/ui/Toast";
 import { PageTransition } from "@/components/ui/PageTransition";

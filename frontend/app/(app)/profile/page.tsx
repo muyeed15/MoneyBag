@@ -1,9 +1,9 @@
-import { getMe, getWallet } from "@/lib/api";
+import { getMe, getWallet } from "@/utils/api";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { logoutAction } from "@/app/actions";
-import { formatAmount, formatDate, getInitials } from "@/lib/utils";
+import { formatAmount, formatDate, getInitials } from "@/utils/helpers";
 
 export default async function ProfilePage() {
   const [user, wallet] = await Promise.all([getMe(), getWallet()]);

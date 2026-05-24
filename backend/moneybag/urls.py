@@ -1,5 +1,5 @@
 from django.urls import path
-from core.moneybag import views
+from moneybag import views
 
 urlpatterns = [
     path("transfer/", views.TransferView.as_view(), name="transfer"),

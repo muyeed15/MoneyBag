@@ -2,7 +2,7 @@
 
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { getWallet, getTransactions, getNotifications } from '@/lib/api'
+import { getWallet, getTransactions, getNotifications } from '@/utils/api'
 
 export type LoginState = {
   error: string | null

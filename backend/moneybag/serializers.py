@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from core.moneybag.models import User, Wallet, Transaction, Notification
+from moneybag.models import User, Wallet, Transaction, Notification
 
 
 class TransferSerializer(serializers.Serializer):

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { formatAmount } from "@/lib/utils";
+import { formatAmount } from "@/utils/helpers";
 
 interface SuccessModalProps {
   amount: string;

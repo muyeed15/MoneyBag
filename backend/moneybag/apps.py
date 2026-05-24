@@ -3,7 +3,7 @@ from django.apps import AppConfig
 
 class CoreConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "core.moneybag"
+    name = "moneybag"
 
     def ready(self):
-        import core.moneybag.signals
+        import moneybag.signals

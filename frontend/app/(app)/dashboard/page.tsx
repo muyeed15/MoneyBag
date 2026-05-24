@@ -1,4 +1,4 @@
-import { getWallet, getTransactions, getNotifications } from "@/lib/api";
+import { getWallet, getTransactions, getNotifications } from "@/utils/api";
 import DashboardClient from "./DashboardClient";
 
 export default async function DashboardPage() {

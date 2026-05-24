@@ -1,6 +1,6 @@
-import { getNotifications } from "@/lib/api";
+import { getNotifications } from "@/utils/api";
 import { PageTransition } from "@/components/ui/PageTransition";
-import { formatDate } from "@/lib/utils";
+import { formatDate } from "@/utils/helpers";
 
 export default async function NotificationsPage() {
   const notifications = await getNotifications();

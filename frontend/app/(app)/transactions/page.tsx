@@ -1,7 +1,7 @@
-import { getWallet, getTransactions } from "@/lib/api";
+import { getWallet, getTransactions } from "@/utils/api";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { Badge } from "@/components/ui/Badge";
-import { formatAmount, formatDate, getTxMeta } from "@/lib/utils";
+import { formatAmount, formatDate, getTxMeta } from "@/utils/helpers";
 
 const STATUS_VARIANT: Record<
   string,

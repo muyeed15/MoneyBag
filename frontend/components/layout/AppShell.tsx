@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 import { ReactNode, useState, useEffect } from "react";
 import { Home, Receipt, ArrowUpRight, Bell, User, LogOut } from "lucide-react";
 import { logoutAction, fetchNotificationsAction } from "@/app/actions";
-import { getInitials } from "@/lib/utils";
-import type { User as UserType } from "@/lib/api";
+import { getInitials } from "@/utils/helpers";
+import type { User as UserType } from "@/utils/api";
 
 const POLL_MS = 5000;
 

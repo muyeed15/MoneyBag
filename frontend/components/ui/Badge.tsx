@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/helpers";
 import { ReactNode } from "react";
 
 type Variant = "success" | "warning" | "danger" | "neutral";

@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from core.moneybag.models import User, Wallet, Transaction, Notification
+from moneybag.models import User, Wallet, Transaction, Notification
 from faker import Faker
 from decimal import Decimal
 import random

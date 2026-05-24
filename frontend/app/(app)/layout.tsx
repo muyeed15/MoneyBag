@@ -1,4 +1,4 @@
-import { getMe, getNotifications } from "@/lib/api";
+import { getMe, getNotifications } from "@/utils/api";
 import { AppShell } from "@/components/layout/AppShell";
 
 export default async function AppLayout({
