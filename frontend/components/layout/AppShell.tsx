@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode } from "react";
 import { Home, Receipt, ArrowUpRight, Bell, User, LogOut } from "lucide-react";
-import { logoutAction, fetchNotificationsAction } from "@/app/actions";
+import useSWR from "swr";
+import { logoutAction } from "@/app/actions";
 import { getInitials } from "@/utils/helpers";
-import type { User as UserType } from "@/utils/api";
+import type { User as UserType, Notification } from "@/utils/api";
 
-const POLL_MS = 5000;
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 const NAV = [
   { href: "/dashboard", icon: Home, label: "Home" },
@@ -28,28 +29,33 @@ export function AppShell({
   children: ReactNode;
 }) {
   const path = usePathname();
-  const [unreadCount, setUnreadCount] = useState(initialUnread);
 
-  useEffect(() => {
-    const id = setInterval(async () => {
-      const notifs = await fetchNotificationsAction();
-      setUnreadCount(notifs.filter((n) => !n.is_read).length);
-    }, POLL_MS);
-    return () => clearInterval(id);
-  }, []);
+  const { data: notifications } = useSWR<Notification[]>(
+    "/api/notifications",
+    fetcher,
+    {
+      fallbackData: [],
+      refreshInterval: 30_000,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+    },
+  );
+
+  const unreadCount =
+    notifications && notifications.length > 0
+      ? notifications.filter((n) => !n.is_read).length
+      : initialUnread;
 
   return (
     <div className="flex min-h-screen">
-      {/* ── Desktop sidebar (navy) ───────────────────────────── */}
+      {/* ── Desktop sidebar ───────────────────────────────────── */}
       <aside className="hidden lg:flex flex-col w-52 shrink-0 bg-navy fixed top-0 left-0 h-screen z-20">
-        {/* Brand */}
         <div className="px-5 py-5 border-b border-white/10">
           <span className="text-white font-bold text-base tracking-tight">
             MoneyBag
           </span>
         </div>
 
-        {/* Nav links */}
         <nav className="flex-1 py-3">
           {NAV.map((item) => {
             const { href, label } = item;
@@ -82,7 +88,6 @@ export function AppShell({
           })}
         </nav>
 
-        {/* User info + logout */}
         <div className="border-t border-white/10 px-5 py-4 space-y-3">
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 bg-teal flex items-center justify-center shrink-0">
@@ -108,12 +113,12 @@ export function AppShell({
         </div>
       </aside>
 
-      {/* ── Content area ─────────────────────────────────────── */}
+      {/* ── Content area ──────────────────────────────────────── */}
       <div className="flex-1 lg:ml-52 flex flex-col min-h-screen">
         <main className="flex-1 pb-16 lg:pb-0">{children}</main>
       </div>
 
-      {/* ── Mobile bottom nav ────────────────────────────────── */}
+      {/* ── Mobile bottom nav ─────────────────────────────────── */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-white border-t-2 border-sage-mid">
         <div className="flex">
           {NAV.map((item) => {

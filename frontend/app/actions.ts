@@ -2,7 +2,6 @@
 
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { getWallet, getTransactions, getNotifications } from '@/utils/api'
 
 export type LoginState = {
   error: string | null
@@ -108,8 +107,3 @@ export async function transferAction(
   }
 }
 
-// ── Polling helpers (called by client components on an interval) ──────────────
-
-export async function fetchWalletAction()        { return getWallet() }
-export async function fetchTransactionsAction()  { return getTransactions() }
-export async function fetchNotificationsAction() { return getNotifications() }

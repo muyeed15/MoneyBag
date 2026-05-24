@@ -2,14 +2,10 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import useSWR from "swr";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, ArrowDownLeft, Plus, Minus } from "lucide-react";
 import type { Wallet, Transaction, Notification } from "@/utils/api";
-import {
-  fetchWalletAction,
-  fetchTransactionsAction,
-  fetchNotificationsAction,
-} from "@/app/actions";
 import { getTxMeta, formatAmount, formatRelativeTime } from "@/utils/helpers";
 import { Badge } from "@/components/ui/Badge";
 import { ToastStack, type Toast } from "@/components/ui/Toast";
@@ -56,7 +52,7 @@ const ACTIONS = [
   },
 ];
 
-const POLL_MS = 5000;
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 type Props = {
   initialWallet: Wallet;
@@ -76,15 +72,46 @@ export default function DashboardClient({
   initialTransactions,
   initialNotifications,
 }: Props) {
-  const [wallet, setWallet] = useState(initialWallet);
-  const [transactions, setTransactions] = useState(
-    sortDesc(initialTransactions),
-  );
   const [toasts, setToasts] = useState<Toast[]>([]);
   const seenIds = useRef(new Set(initialNotifications.map((n) => n.id)));
 
+  const { data: wallet = initialWallet } = useSWR<Wallet>(
+    "/api/wallet",
+    fetcher,
+    {
+      fallbackData: initialWallet,
+      refreshInterval: 30_000,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+    },
+  );
+
+  const { data: rawTransactions = initialTransactions } = useSWR<Transaction[]>(
+    "/api/transactions",
+    fetcher,
+    {
+      fallbackData: initialTransactions,
+      refreshInterval: 30_000,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+    },
+  );
+
+  const { data: notifications = initialNotifications } = useSWR<Notification[]>(
+    "/api/notifications",
+    fetcher,
+    {
+      fallbackData: initialNotifications,
+      refreshInterval: 30_000,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+    },
+  );
+
+  const transactions = sortDesc(rawTransactions);
   const myPhone = wallet.user_phone;
   const active = wallet.status === "active";
+  const recentTx = transactions.slice(0, 6);
 
   const dismissToast = useCallback((id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -99,28 +126,14 @@ export default function DashboardClient({
     [dismissToast],
   );
 
-  const refresh = useCallback(async () => {
-    const [newWallet, newTxs, newNotifs] = await Promise.all([
-      fetchWalletAction(),
-      fetchTransactionsAction(),
-      fetchNotificationsAction(),
-    ]);
-    setWallet(newWallet);
-    setTransactions(sortDesc(newTxs));
-    newNotifs
+  useEffect(() => {
+    notifications
       .filter((n) => !seenIds.current.has(n.id))
       .forEach((n) => {
         seenIds.current.add(n.id);
         pushToast(n.message);
       });
-  }, [pushToast]);
-
-  useEffect(() => {
-    const id = setInterval(refresh, POLL_MS);
-    return () => clearInterval(id);
-  }, [refresh]);
-
-  const recentTx = transactions.slice(0, 6);
+  }, [notifications, pushToast]);
 
   return (
     <>
@@ -141,7 +154,6 @@ export default function DashboardClient({
         <div className="px-4 lg:px-8 py-5 space-y-5 max-w-5xl mx-auto">
           {/* ── MOBILE ── */}
           <div className="lg:hidden space-y-5">
-            {/* Balance — animate number when it changes */}
             <div className="bg-teal text-white p-6">
               <p className="text-white/60 text-[10px] font-semibold uppercase tracking-widest mb-2">
                 Available Balance
