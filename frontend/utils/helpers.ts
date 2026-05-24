@@ -54,11 +54,11 @@ export function getTxMeta(tx: Transaction, myPhone: string): TxMeta {
   switch (tx.type) {
     case 'send':
       return {
-        label: 'Send Money',
-        color: 'text-orange',
-        minus: true,
-        direction: 'to',
-        counterparty: tx.receiver_phone ?? '—',
+        label: isSender ? 'Send Money' : 'Received',
+        color: isSender ? 'text-orange' : 'text-teal',
+        minus: isSender,
+        direction: isSender ? 'to' : 'from',
+        counterparty: isSender ? (tx.receiver_phone ?? '—') : (tx.sender_phone ?? '—'),
       }
     case 'receive':
       return {
