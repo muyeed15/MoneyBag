@@ -71,12 +71,12 @@ App runs at `http://localhost:3000`.
 
 ## Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start the development server with hot reload |
-| `npm run build` | Build for production |
-| `npm run start` | Start the production server |
-| `npm run lint` | Run ESLint |
+| Command         | Description                                  |
+| --------------- | -------------------------------------------- |
+| `npm run dev`   | Start the development server with hot reload |
+| `npm run build` | Build for production                         |
+| `npm run start` | Start the production server                  |
+| `npm run lint`  | Run ESLint                                   |
 
 ---
 
@@ -114,6 +114,7 @@ A client component form for peer-to-peer transfers. Fields: recipient phone, amo
 ### `/transactions` — Transaction History (`app/(app)/transactions/page.tsx`)
 
 Server component. Fetches all transactions and renders:
+
 - **Desktop (`sm:` and up)** — a full table with columns: Type, Counterparty, Status, Date, Amount. Fee shown as a sub-line when non-zero.
 - **Mobile** — a stacked card list with type, counterparty, date, and amount.
 
@@ -130,6 +131,7 @@ Server component. Fetches all notifications sorted by recency. Unread items have
 ### `/profile` — Profile (`app/(app)/profile/page.tsx`)
 
 Server component. Fetches user and wallet data in parallel. Displays:
+
 - Identity block (avatar initials, full name, phone, verified/active badges)
 - Personal information table (name, phone, NID, member since)
 - Wallet table (balance, daily limit, status)
@@ -160,14 +162,16 @@ Nav items: Home → `/dashboard`, Transactions → `/transactions`, Send Money �
 ### `Button` (`components/ui/Button.tsx`)
 
 ```tsx
-<Button variant="cta" size="lg" loading={pending}>Submit</Button>
+<Button variant="cta" size="lg" loading={pending}>
+  Submit
+</Button>
 ```
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `variant` | `primary \| cta \| secondary \| ghost \| destructive` | `primary` | Visual style |
-| `size` | `sm \| md \| lg` | `md` | Height + padding |
-| `loading` | `boolean` | `false` | Shows a spinning `Loader2` icon; also disables the button |
+| Prop      | Type                                                  | Default   | Description                                               |
+| --------- | ----------------------------------------------------- | --------- | --------------------------------------------------------- |
+| `variant` | `primary \| cta \| secondary \| ghost \| destructive` | `primary` | Visual style                                              |
+| `size`    | `sm \| md \| lg`                                      | `md`      | Height + padding                                          |
+| `loading` | `boolean`                                             | `false`   | Shows a spinning `Loader2` icon; also disables the button |
 
 Extends all native `<button>` HTML attributes.
 
@@ -176,14 +180,20 @@ Extends all native `<button>` HTML attributes.
 ### `Input` (`components/ui/Input.tsx`)
 
 ```tsx
-<Input label="Phone Number" name="phone" type="tel" error={err} hint="BD format" />
+<Input
+  label="Phone Number"
+  name="phone"
+  type="tel"
+  error={err}
+  hint="BD format"
+/>
 ```
 
-| Prop | Type | Description |
-|------|------|-------------|
+| Prop    | Type     | Description                                                   |
+| ------- | -------- | ------------------------------------------------------------- |
 | `label` | `string` | Renders a `<label>` above the field; auto-generates `htmlFor` |
-| `error` | `string` | Red border + error text below |
-| `hint` | `string` | Muted helper text below (hidden when `error` is set) |
+| `error` | `string` | Red border + error text below                                 |
+| `hint`  | `string` | Muted helper text below (hidden when `error` is set)          |
 
 Forwarded ref component — compatible with `useActionState` and `react-hook-form`.
 
@@ -195,11 +205,11 @@ Forwarded ref component — compatible with `useActionState` and `react-hook-for
 <Badge variant="success">Completed</Badge>
 ```
 
-| Variant | Color |
-|---------|-------|
-| `success` | Emerald |
-| `warning` | Amber |
-| `danger` | Red |
+| Variant   | Color                |
+| --------- | -------------------- |
+| `success` | Emerald              |
+| `warning` | Amber                |
+| `danger`  | Red                  |
 | `neutral` | Sage/muted (default) |
 
 Used to display transaction statuses across the dashboard and transactions page.
@@ -219,16 +229,20 @@ Wraps page content in a Framer Motion `opacity: 0 → 1` fade over 180 ms. Appli
 ### `SuccessModal` (`components/ui/SuccessModal.tsx`)
 
 ```tsx
-<SuccessModal amount="500.00" receiverPhone="01XXXXXXXXX" onClose={handleClose} />
+<SuccessModal
+  amount="500.00"
+  receiverPhone="01XXXXXXXXX"
+  onClose={handleClose}
+/>
 ```
 
 Full-screen overlay shown after a successful transfer. Displays the sent amount (formatted BDT) and recipient phone. The "Done" button calls `onClose` and pushes to `/dashboard`.
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `amount` | `string` | Raw amount string — formatted internally via `formatAmount` |
-| `receiverPhone` | `string` | Recipient phone number |
-| `onClose` | `() => void` | Called when the user dismisses the modal |
+| Prop            | Type         | Description                                                 |
+| --------------- | ------------ | ----------------------------------------------------------- |
+| `amount`        | `string`     | Raw amount string — formatted internally via `formatAmount` |
+| `receiverPhone` | `string`     | Recipient phone number                                      |
+| `onClose`       | `() => void` | Called when the user dismisses the modal                    |
 
 ---
 
@@ -240,10 +254,10 @@ Full-screen overlay shown after a successful transfer. Displays the sent amount 
 
 Fixed top-right stack of slide-in toast notifications. Each toast auto-dismisses after 6 seconds (timer managed by the parent). Rendered via `AnimatePresence` for smooth enter/exit animations.
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `toasts` | `Toast[]` | Array of `{ id: number, message: string }` |
-| `onDismiss` | `(id: number) => void` | Called when the × button is clicked |
+| Prop        | Type                   | Description                                |
+| ----------- | ---------------------- | ------------------------------------------ |
+| `toasts`    | `Toast[]`              | Array of `{ id: number, message: string }` |
+| `onDismiss` | `(id: number) => void` | Called when the × button is clicked        |
 
 ---
 
@@ -251,14 +265,14 @@ Fixed top-right stack of slide-in toast notifications. Each toast auto-dismisses
 
 All server-side mutations and polling helpers. They run exclusively on the server — never exposed to the client bundle.
 
-| Action | Description |
-|--------|-------------|
-| `loginAction` | Validates phone + password, calls `POST /api/token/`, sets JWT cookies, redirects to `/dashboard` |
-| `logoutAction` | Deletes `access_token` and `refresh_token` cookies, redirects to `/login` |
-| `transferAction` | Calls `POST /api/transfer/` with the access token; returns `{ success, amount, receiver_phone }` or `{ error }` |
-| `fetchWalletAction` | Re-exports `getWallet()` for client-side polling |
-| `fetchTransactionsAction` | Re-exports `getTransactions()` for client-side polling |
-| `fetchNotificationsAction` | Re-exports `getNotifications()` for client-side polling |
+| Action                     | Description                                                                                                     |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `loginAction`              | Validates phone + password, calls `POST /api/token/`, sets JWT cookies, redirects to `/dashboard`               |
+| `logoutAction`             | Deletes `access_token` and `refresh_token` cookies, redirects to `/login`                                       |
+| `transferAction`           | Calls `POST /api/transfer/` with the access token; returns `{ success, amount, receiver_phone }` or `{ error }` |
+| `fetchWalletAction`        | Re-exports `getWallet()` for client-side polling                                                                |
+| `fetchTransactionsAction`  | Re-exports `getTransactions()` for client-side polling                                                          |
+| `fetchNotificationsAction` | Re-exports `getNotifications()` for client-side polling                                                         |
 
 ---
 
@@ -268,11 +282,11 @@ Thin typed wrapper around `fetch`. Every call reads the `access_token` cookie se
 
 **Base URL**: `http://localhost:8000/api`
 
-| Function | Endpoint | Returns |
-|----------|----------|---------|
-| `getMe()` | `GET /me/` | `User` |
-| `getWallet()` | `GET /wallet/` | `Wallet` |
-| `getTransactions()` | `GET /transactions/` | `Transaction[]` |
+| Function             | Endpoint              | Returns          |
+| -------------------- | --------------------- | ---------------- |
+| `getMe()`            | `GET /me/`            | `User`           |
+| `getWallet()`        | `GET /wallet/`        | `Wallet`         |
+| `getTransactions()`  | `GET /transactions/`  | `Transaction[]`  |
 | `getNotifications()` | `GET /notifications/` | `Notification[]` |
 
 **Type definitions** (`User`, `Wallet`, `Transaction`, `Notification`) are exported from this file and re-used across pages and components.
@@ -281,14 +295,14 @@ Thin typed wrapper around `fetch`. Every call reads the `access_token` cookie se
 
 ## Utility Helpers (`lib/utils.ts`)
 
-| Function | Description |
-|----------|-------------|
-| `cn(...classes)` | Merges Tailwind classes with `clsx` + `tailwind-merge` |
-| `formatAmount(amount)` | Formats a decimal string as `৳ 1,234.50` (BD locale) |
-| `formatDate(iso)` | Formats an ISO timestamp as `24 May 2026, 10:30 AM` |
-| `formatRelativeTime(iso)` | Returns `Just now`, `5m ago`, `2h ago`, `3d ago`, or falls back to `formatDate` |
-| `getInitials(name)` | Returns up to 2 uppercase initials from a full name |
-| `getTxMeta(tx, myPhone)` | Derives `{ label, color, minus, counterparty, direction }` from the logged-in user's perspective — a `send` tx appears as "Sent" to the sender and "Received" to the receiver |
+| Function                  | Description                                                                                                                                                                   |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cn(...classes)`          | Merges Tailwind classes with `clsx` + `tailwind-merge`                                                                                                                        |
+| `formatAmount(amount)`    | Formats a decimal string as `৳ 1,234.50` (BD locale)                                                                                                                          |
+| `formatDate(iso)`         | Formats an ISO timestamp as `24 May 2026, 10:30 AM`                                                                                                                           |
+| `formatRelativeTime(iso)` | Returns `Just now`, `5m ago`, `2h ago`, `3d ago`, or falls back to `formatDate`                                                                                               |
+| `getInitials(name)`       | Returns up to 2 uppercase initials from a full name                                                                                                                           |
+| `getTxMeta(tx, myPhone)`  | Derives `{ label, color, minus, counterparty, direction }` from the logged-in user's perspective — a `send` tx appears as "Sent" to the sender and "Received" to the receiver |
 
 ---
 
