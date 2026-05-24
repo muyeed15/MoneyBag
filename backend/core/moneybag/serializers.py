@@ -2,6 +2,24 @@ from rest_framework import serializers
 from core.moneybag.models import User, Wallet, Transaction, Notification
 
 
+class TransferSerializer(serializers.Serializer):
+    receiver_phone = serializers.CharField()
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2)
+    note = serializers.CharField(required=False, allow_blank=True, default="")
+
+    def validate_amount(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Amount must be greater than zero.")
+        return value
+
+    def validate_receiver_phone(self, value):
+        if not User.objects.filter(phone=value).exists():
+            raise serializers.ValidationError(
+                "No account found with this phone number."
+            )
+        return value
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
