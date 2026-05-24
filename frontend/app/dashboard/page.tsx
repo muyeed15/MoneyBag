@@ -1,36 +1,5 @@
 import { getMe, getWallet, getTransactions, getNotifications } from '@/lib/api'
-import { logoutAction } from '@/app/actions'
-import type { Transaction } from '@/lib/api'
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function formatAmount(amount: string) {
-  return '৳ ' + parseFloat(amount).toLocaleString('en-BD', { minimumFractionDigits: 2 })
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleString('en-BD', {
-    day: '2-digit', month: 'short', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
-  })
-}
-
-const TX_TYPE_LABEL: Record<Transaction['type'], string> = {
-  send:     'Send',
-  receive:  'Receive',
-  cash_in:  'Cash In',
-  cash_out: 'Cash Out',
-  payment:  'Payment',
-}
-
-const TX_STATUS_COLOR: Record<Transaction['status'], string> = {
-  pending:  'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
-  completed:'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
-  failed:   'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
-  reversed: 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400',
-}
-
-// ── Page ──────────────────────────────────────────────────────────────────────
+import LiveDashboard from './LiveDashboard'
 
 export default async function DashboardPage() {
   const [user, wallet, transactions, notifications] = await Promise.all([
@@ -40,135 +9,14 @@ export default async function DashboardPage() {
     getNotifications(),
   ])
 
-  const unread = notifications.filter((n) => !n.is_read).length
-
   return (
     <div className="min-h-full bg-zinc-50 dark:bg-zinc-950">
-
-      {/* Header */}
-      <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-6 py-4 flex items-center justify-between">
-        <span className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-          MoneyBag
-        </span>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-zinc-500 dark:text-zinc-400">{user.phone}</span>
-          <form action={logoutAction}>
-            <button
-              type="submit"
-              className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-5xl px-6 py-8 space-y-8">
-
-        {/* Profile + Wallet */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-          {/* Profile card */}
-          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 space-y-3">
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-400">Profile</p>
-            <p className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">{user.full_name}</p>
-            <div className="space-y-1 text-sm text-zinc-500 dark:text-zinc-400">
-              <p>Phone: <span className="text-zinc-700 dark:text-zinc-300">{user.phone}</span></p>
-              <p>NID: <span className="text-zinc-700 dark:text-zinc-300">{user.nid}</span></p>
-              <p>Member since: <span className="text-zinc-700 dark:text-zinc-300">{formatDate(user.created_at)}</span></p>
-            </div>
-            <div className="flex gap-2 pt-1">
-              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${user.is_verified ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400'}`}>
-                {user.is_verified ? 'Verified' : 'Unverified'}
-              </span>
-              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${user.is_active ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'}`}>
-                {user.is_active ? 'Active' : 'Inactive'}
-              </span>
-            </div>
-          </div>
-
-          {/* Wallet card */}
-          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 space-y-3">
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-400">Wallet</p>
-            <p className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">{formatAmount(wallet.balance)}</p>
-            <div className="space-y-1 text-sm text-zinc-500 dark:text-zinc-400">
-              <p>Daily limit: <span className="text-zinc-700 dark:text-zinc-300">{formatAmount(wallet.daily_limit)}</span></p>
-            </div>
-            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${wallet.status === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'}`}>
-              {wallet.status.charAt(0).toUpperCase() + wallet.status.slice(1)}
-            </span>
-          </div>
-        </div>
-
-        {/* Transactions + Notifications */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
-          {/* Transactions */}
-          <div className="lg:col-span-2 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
-            <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800">
-              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                Transactions
-                <span className="ml-2 text-xs font-normal text-zinc-400">({transactions.length})</span>
-              </p>
-            </div>
-            {transactions.length === 0 ? (
-              <p className="px-6 py-8 text-sm text-center text-zinc-400">No transactions yet.</p>
-            ) : (
-              <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                {transactions.map((tx) => (
-                  <div key={tx.id} className="px-6 py-4 flex items-center justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                          {TX_TYPE_LABEL[tx.type]}
-                        </span>
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${TX_STATUS_COLOR[tx.status]}`}>
-                          {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
-                        </span>
-                      </div>
-                      <p className="mt-0.5 text-xs text-zinc-400 truncate">
-                        {tx.sender_phone} → {tx.receiver_phone}
-                      </p>
-                      <p className="text-xs text-zinc-400">{formatDate(tx.created_at)}</p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">{formatAmount(tx.amount)}</p>
-                      {parseFloat(tx.fee) > 0 && (
-                        <p className="text-xs text-zinc-400">Fee: {formatAmount(tx.fee)}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Notifications */}
-          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
-            <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
-              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Notifications</p>
-              {unread > 0 && (
-                <span className="inline-flex items-center rounded-full bg-zinc-900 dark:bg-zinc-50 px-2 py-0.5 text-xs font-medium text-white dark:text-zinc-900">
-                  {unread} new
-                </span>
-              )}
-            </div>
-            {notifications.length === 0 ? (
-              <p className="px-6 py-8 text-sm text-center text-zinc-400">No notifications.</p>
-            ) : (
-              <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                {notifications.map((n) => (
-                  <div key={n.id} className={`px-6 py-4 ${!n.is_read ? 'bg-zinc-50 dark:bg-zinc-800/50' : ''}`}>
-                    <p className="text-sm text-zinc-700 dark:text-zinc-300">{n.message}</p>
-                    <p className="mt-1 text-xs text-zinc-400">{formatDate(n.created_at)}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-        </div>
-      </main>
+      <LiveDashboard
+        initialUser={user}
+        initialWallet={wallet}
+        initialTransactions={transactions}
+        initialNotifications={notifications}
+      />
     </div>
   )
 }
