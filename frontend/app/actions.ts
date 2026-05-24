@@ -41,19 +41,22 @@ export async function loginAction(
   }
 
   const cookieStore = await cookies()
+  const accessMinutes  = parseInt(process.env.ACCESS_TOKEN_MINUTES  ?? '30')
+  const refreshMinutes = parseInt(process.env.REFRESH_TOKEN_MINUTES ?? '30')
+
   cookieStore.set('access_token', data.access, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 5, // 5 minutes (matches simplejwt default)
+    maxAge: accessMinutes * 60,
   })
   cookieStore.set('refresh_token', data.refresh, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 60 * 24, // 1 day
+    maxAge: refreshMinutes * 60,
   })
 
   redirect('/dashboard')

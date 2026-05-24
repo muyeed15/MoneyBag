@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -146,10 +149,15 @@ REST_FRAMEWORK = {
     ),
 }
 
+import os
 from datetime import timedelta
 
-# JWT token lifetimes — set before production
+# ── Token lifetimes ───────────────────────────────────────────────────────────
+# Override via environment variables: ACCESS_TOKEN_MINUTES, REFRESH_TOKEN_MINUTES
+ACCESS_TOKEN_MINUTES  = int(os.environ.get("ACCESS_TOKEN_MINUTES",  30))
+REFRESH_TOKEN_MINUTES = int(os.environ.get("REFRESH_TOKEN_MINUTES", 30))
+
 SIMPLE_JWT = {
-    # "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
-    # "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME":  timedelta(minutes=ACCESS_TOKEN_MINUTES),
+    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=REFRESH_TOKEN_MINUTES),
 }
