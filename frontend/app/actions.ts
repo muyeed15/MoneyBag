@@ -71,6 +71,8 @@ export async function logoutAction() {
 export type TransferState = {
   error: string | null
   success: boolean
+  amount?: string
+  receiver_phone?: string
 }
 
 export async function transferAction(
@@ -97,7 +99,7 @@ export async function transferAction(
 
     const data = await res.json()
     if (!res.ok) return { error: data.detail ?? 'Transfer failed.', success: false }
-    return { error: null, success: true }
+    return { error: null, success: true, amount, receiver_phone }
   } catch {
     return { error: 'Could not reach the server.', success: false }
   }
