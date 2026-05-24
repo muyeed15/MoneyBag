@@ -113,6 +113,7 @@ Server runs at `http://127.0.0.1:8000`.
 | POST | `/api/token/refresh/` | Refresh an access token |
 | GET | `/api/me/` | Authenticated user's profile |
 | GET | `/api/wallet/` | Authenticated user's wallet |
+| POST | `/api/transfer/` | Transfer funds to another account |
 | GET | `/api/transactions/` | List the user's transactions |
 | GET | `/api/transactions/<id>/` | Single transaction detail |
 | GET | `/api/notifications/` | List the user's notifications |
