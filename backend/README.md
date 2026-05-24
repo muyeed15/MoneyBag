@@ -1,39 +1,45 @@
 # MoneyBag Backend
 
-MoneyBag is a Mobile Financial Service (MFS) application built with Django and PostgreSQL. This backend handles user accounts, wallets, transactions, and notifications.
+Django REST API for the MoneyBag Mobile Financial Service. Handles user accounts, wallets, transactions, and notifications with JWT authentication.
 
 ## Requirements
 
 - Python 3.12+
 - PostgreSQL
-- pip
+- Conda (recommended) or pip
 
 ## Project Structure
 
 ```
 backend/
 ├── manage.py
-├── moneybag/          # Project configuration (settings, URLs)
-└── core/              # Main app (users, wallets, transactions)
+├── core/               # Project configuration (settings, URLs, WSGI/ASGI)
+│   ├── settings.py
+│   ├── urls.py
+│   ├── wsgi.py
+│   ├── asgi.py
+│   └── moneybag/       # Main app (users, wallets, transactions, notifications)
+│       ├── models/
+│       ├── views.py
+│       ├── serializers.py
+│       ├── urls.py
+│       ├── signals.py
+│       ├── admin.py
+│       ├── migrations/
+│       └── management/
+│           └── commands/
+│               └── seed.py
 ```
 
 ## Setup
 
-### 1. Create and activate a virtual environment
+### 1. Activate the environment
 
 ```bash
-python -m venv venv
-source venv/bin/activate        # Linux/macOS
-venv\Scripts\activate           # Windows
+conda activate django
 ```
 
-### 2. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Configure the database
+### 2. Configure the database
 
 Make sure PostgreSQL is running and create the database:
 
@@ -41,43 +47,45 @@ Make sure PostgreSQL is running and create the database:
 CREATE DATABASE moneybag_db;
 ```
 
-The default database credentials in `moneybag/settings.py` are:
+The default credentials in `core/settings.py` are:
 
-| Key      | Value        |
-|----------|--------------|
-| NAME     | moneybag_db  |
-| USER     | postgres     |
-| PASSWORD | 12345678     |
-| HOST     | localhost    |
-| PORT     | 5432         |
+| Key      | Value       |
+|----------|-------------|
+| NAME     | moneybag_db |
+| USER     | postgres    |
+| PASSWORD | 12345678    |
+| HOST     | localhost   |
+| PORT     | 5432        |
 
-Update these values in `settings.py` if your setup is different.
+Update these in `core/settings.py` if your setup differs.
 
-### 4. Run migrations
+### 3. Run migrations
 
 ```bash
 python manage.py migrate
 ```
 
-### 5. Seed the database (optional)
+### 4. Seed the database (optional)
 
 ```bash
 python manage.py seed
 ```
 
-### 6. Create a superuser
+Populates the database with Bangladeshi fake users, wallets, transactions, and notifications.
+
+### 5. Create a superuser
 
 ```bash
 python manage.py createsuperuser
 ```
 
-### 7. Start the development server
+### 6. Start the development server
 
 ```bash
 python manage.py runserver
 ```
 
-The server will be available at `http://127.0.0.1:8000`.
+Server runs at `http://127.0.0.1:8000`.
 
 ## Common Commands
 
@@ -90,9 +98,22 @@ The server will be available at `http://127.0.0.1:8000`.
 | `python manage.py seed` | Populate the database with sample data |
 | `python manage.py shell` | Open the Django interactive shell |
 
-## Admin Panel
+## API Endpoints
 
-Once the server is running, the Django admin panel is accessible at:
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/token/` | Obtain JWT access and refresh tokens |
+| POST | `/api/token/refresh/` | Refresh an access token |
+| GET | `/api/me/` | Authenticated user's profile |
+| GET | `/api/wallet/` | Authenticated user's wallet |
+| GET | `/api/transactions/` | List the user's transactions |
+| GET | `/api/transactions/<id>/` | Single transaction detail |
+| GET | `/api/notifications/` | List the user's notifications |
+| GET | `/api/notifications/<id>/` | Single notification detail |
+
+All `/api/` routes (except token endpoints) require a `Bearer` JWT in the `Authorization` header.
+
+## Admin Panel
 
 ```
 http://127.0.0.1:8000/admin
