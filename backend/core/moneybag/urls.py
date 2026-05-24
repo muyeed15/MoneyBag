@@ -2,6 +2,7 @@ from django.urls import path
 from core.moneybag import views
 
 urlpatterns = [
+    path("transfer/", views.TransferView.as_view(), name="transfer"),
     path("me/", views.MeView.as_view(), name="me"),
     path("wallet/", views.WalletDetailView.as_view(), name="wallet-detail"),
     path("transactions/", views.TransactionListView.as_view(), name="transaction-list"),
