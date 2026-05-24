@@ -4,9 +4,9 @@ Django REST API for the MoneyBag Mobile Financial Service. Handles user accounts
 
 ## Requirements
 
-- Python 3.12+
+- Python 3.12.13
 - PostgreSQL
-- Conda (recommended) or pip
+- Conda 26.5.0+
 
 ## Project Structure
 
@@ -33,13 +33,20 @@ backend/
 
 ## Setup
 
-### 1. Activate the environment
+### 1. Create and activate the conda environment
 
 ```bash
+conda create -n django python=3.12.13
 conda activate django
 ```
 
-### 2. Configure the database
+### 2. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Configure the database
 
 Make sure PostgreSQL is running and create the database:
 
@@ -59,13 +66,13 @@ The default credentials in `core/settings.py` are:
 
 Update these in `core/settings.py` if your setup differs.
 
-### 3. Run migrations
+### 4. Run migrations
 
 ```bash
 python manage.py migrate
 ```
 
-### 4. Seed the database (optional)
+### 5. Seed the database (optional)
 
 ```bash
 python manage.py seed
@@ -73,13 +80,13 @@ python manage.py seed
 
 Populates the database with Bangladeshi fake users, wallets, transactions, and notifications.
 
-### 5. Create a superuser
+### 6. Create a superuser
 
 ```bash
 python manage.py createsuperuser
 ```
 
-### 6. Start the development server
+### 7. Start the development server
 
 ```bash
 python manage.py runserver

@@ -25,7 +25,9 @@ MoneyBag/
 
 ```bash
 cd backend
+conda create -n django python=3.12.13   # first time only
 conda activate django
+pip install -r requirements.txt          # first time only
 python manage.py migrate
 python manage.py runserver
 ```
