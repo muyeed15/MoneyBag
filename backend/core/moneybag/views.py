@@ -1,8 +1,8 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
-from core.models import Transaction, Notification
-from core.serializers import (
+from core.moneybag.models import Transaction, Notification
+from core.moneybag.serializers import (
     UserSerializer,
     WalletSerializer,
     TransactionSerializer,

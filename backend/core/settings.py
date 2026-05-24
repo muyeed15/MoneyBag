@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
-    "core",
+    "core.moneybag",
 ]
 
 MIDDLEWARE = [
@@ -54,7 +54,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "moneybag.urls"
+ROOT_URLCONF = "core.urls"
 
 TEMPLATES = [
     {
@@ -71,7 +71,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "moneybag.wsgi.application"
+WSGI_APPLICATION = "core.wsgi.application"
 
 
 # Database
@@ -131,7 +131,7 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Use custom user model
-AUTH_USER_MODEL = "core.User"
+AUTH_USER_MODEL = "moneybag.User"
 
 # CORS — allow Next.js dev server
 CORS_ALLOWED_ORIGINS = [
