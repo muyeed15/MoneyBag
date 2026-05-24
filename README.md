@@ -15,7 +15,10 @@ A full-stack Mobile Financial Service (MFS) web application for payments, transf
 
 ```
 MoneyBag/
-├── backend/        # Django REST API
+├── backend/
+│   ├── core/       # Project configuration (settings, URLs, WSGI/ASGI)
+│   ├── moneybag/   # Main app (models, views, serializers, migrations)
+│   └── manage.py
 └── frontend/       # Next.js web app
 ```
 

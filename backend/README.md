@@ -17,18 +17,19 @@ backend/
 │   ├── settings.py
 │   ├── urls.py
 │   ├── wsgi.py
-│   ├── asgi.py
-│   └── moneybag/       # Main app (users, wallets, transactions, notifications)
-│       ├── models/
-│       ├── views.py
-│       ├── serializers.py
-│       ├── urls.py
-│       ├── signals.py
-│       ├── admin.py
-│       ├── migrations/
-│       └── management/
-│           └── commands/
-│               └── seed.py
+│   └── asgi.py
+└── moneybag/           # Main app (users, wallets, transactions, notifications)
+    ├── models/
+    ├── views.py
+    ├── serializers.py
+    ├── urls.py
+    ├── signals.py
+    ├── admin.py
+    ├── apps.py
+    ├── migrations/
+    └── management/
+        └── commands/
+            └── seed.py
 ```
 
 ## Setup
