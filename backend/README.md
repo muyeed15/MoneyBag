@@ -39,6 +39,21 @@ REFRESH_TOKEN_MINUTES=30
 TRANSFER_FEE_PERCENT=1.5
 ```
 
+## Project Structure
+
+```
+moneybag/
+├── admin/          # per-model admin registrations
+├── models/         # one file per model
+├── serializers/    # one file per model; action serializers co-located with their model
+├── signals/        # one file per signal group
+├── tests/
+│   ├── helpers.py          # shared make_user / make_wallet factories
+│   ├── test_models.py
+│   └── test_transfer.py
+└── views/          # one file per feature area
+```
+
 ## Models
 
 | Model          | Description                                                                                   |
