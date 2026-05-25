@@ -94,6 +94,7 @@ List endpoints accept `?page=<n>&page_size=<n>` query parameters and return:
 | GET        | `/api/transactions/`           | Transaction history             |
 | GET        | `/api/transactions/<id>/`      | Transaction detail              |
 | GET        | `/api/notifications/`          | Notification list               |
+| GET        | `/api/notifications/stream/`   | SSE stream of new notifications |
 | POST       | `/api/notifications/read-all/` | Mark all notifications read     |
 | GET, PATCH | `/api/notifications/<id>/`     | Notification detail / mark read |
 

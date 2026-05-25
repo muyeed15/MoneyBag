@@ -18,7 +18,6 @@ Runs at `http://localhost:3000`. Requires the Django backend at `http://127.0.0.
 DJANGO_API_URL=http://localhost:8000
 ACCESS_TOKEN_MINUTES=30
 REFRESH_TOKEN_MINUTES=30
-NEXT_PUBLIC_SWR_REFRESH_INTERVAL=30000
 NEXT_PUBLIC_TOAST_DURATION_MS=6000
 PAGE_SIZE=10
 PAGE_SIZE_MAX=50
@@ -30,7 +29,7 @@ PAGE_SIZE_MAX=50
 
 ## Stack
 
-- Next.js 15 · React 19 · TypeScript
+- Next.js 16 · React 19 · TypeScript
 - Tailwind CSS v4
 - SWR for data fetching and optimistic updates
 
@@ -38,7 +37,7 @@ PAGE_SIZE_MAX=50
 
 | Route            | Description                                                             |
 | ---------------- | ----------------------------------------------------------------------- |
-| `/dashboard`     | Balance, quick actions, recent transactions, live notifications via SWR |
+| `/dashboard`     | Balance, quick actions, recent transactions, live notifications via SSE |
 | `/send`          | Send money to another user by phone number                              |
 | `/pay`           | Browse verified merchants and pay by selecting one                      |
 | `/cards`         | View, add, block, and unblock debit/prepaid cards                       |
@@ -49,6 +48,6 @@ PAGE_SIZE_MAX=50
 ## Architecture Notes
 
 - JWT tokens are stored in httpOnly cookies; Next.js Route Handlers act as a proxy to the Django API so tokens are never exposed to the browser.
-- Server Components fetch initial data at request time; Client Components revalidate with SWR on a configurable interval.
+- Server Components fetch initial data at request time; the dashboard revalidates via a persistent SSE connection proxied through a Next.js Route Handler. Other pages revalidate on focus/reconnect via SWR.
 - Server Actions handle mutations (transfer, pay, add card, block card, unblock card, mark notifications read).
 - All list endpoints are server-side paginated. The frontend sends `page` and `page_size` on every request; the backend enforces a hard maximum of `PAGE_SIZE_MAX` rows per page.
