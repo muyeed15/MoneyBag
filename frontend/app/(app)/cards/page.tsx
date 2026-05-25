@@ -1,10 +1,12 @@
 "use client";
 
-import { useActionState, useTransition, useState } from "react";
+import { useActionState, useTransition, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import useSWR from "swr";
-import { CreditCard, Plus, X } from "lucide-react";
-import { addCardAction, blockCardAction } from "@/app/actions";
-import type { Card } from "@/types";
+import { ArrowLeft, CreditCard, Plus, X } from "lucide-react";
+import { addCardAction, blockCardAction, unblockCardAction } from "@/app/actions";
+import type { Card, PaginatedResponse } from "@/types";
+import { Pagination } from "@/components/ui/Pagination";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -19,13 +21,18 @@ const CARD_STATUS_VARIANT: Record<string, "success" | "danger" | "neutral"> = {
 const initialState = { error: null, success: false };
 
 export default function CardsPage() {
-  const { data: cards = [], mutate } = useSWR<Card[]>("/api/cards");
+  const router = useRouter();
+  const [page, setPage] = useState(1);
+  const { data, mutate } = useSWR<PaginatedResponse<Card>>(`/api/cards?page=${page}`);
+  const cards = data?.results ?? [];
+  const totalPages = data?.total_pages ?? 1;
   const [showForm, setShowForm] = useState(false);
   const [state, formAction, pending] = useActionState(
     addCardAction,
     initialState,
   );
   const [blocking, startBlock] = useTransition();
+  const [unblocking, startUnblock] = useTransition();
 
   const handleBlock = (cardId: number) => {
     startBlock(async () => {
@@ -34,19 +41,32 @@ export default function CardsPage() {
     });
   };
 
-  const handleAddSuccess = () => {
-    setShowForm(false);
-    mutate();
+  const handleUnblock = (cardId: number) => {
+    startUnblock(async () => {
+      await unblockCardAction(cardId);
+      mutate();
+    });
   };
 
-  if (state.success && showForm) {
-    handleAddSuccess();
-  }
+  useEffect(() => {
+    if (state.success) {
+      setShowForm(false);
+      mutate();
+    }
+  }, [state.success]);
 
   return (
     <PageTransition>
-      <div className="bg-white border-b border-sage-mid px-6 h-16 flex items-center justify-between">
-        <div>
+      <div className="bg-white border-b border-sage-mid px-4 h-16 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          aria-label="Go back"
+          className="text-navy-muted active:opacity-60 transition-opacity"
+        >
+          <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+        </button>
+        <div className="flex-1">
           <p className="text-[10px] text-navy-muted font-semibold uppercase tracking-widest leading-none">
             Payment Methods
           </p>
@@ -190,11 +210,22 @@ export default function CardsPage() {
                       Block
                     </button>
                   )}
+                  {card.status === "blocked" && (
+                    <button
+                      type="button"
+                      disabled={unblocking}
+                      onClick={() => handleUnblock(card.id)}
+                      className="text-xs font-semibold text-green-300 hover:text-green-200 active:opacity-60 transition-opacity disabled:opacity-40"
+                    >
+                      Unblock
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         )}
+        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       </div>
     </PageTransition>
   );

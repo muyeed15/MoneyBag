@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from moneybag.models import Notification, Transaction, Wallet
+from moneybag.pagination import get_page, get_page_size, paginate
 from moneybag.serializers import TransactionSerializer, TransferSerializer
 
 
@@ -47,8 +48,17 @@ class TransactionListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        transactions = _transaction_qs(request.user)[:100]
-        return Response(TransactionSerializer(transactions, many=True).data)
+        p = paginate(
+            _transaction_qs(request.user), get_page(request), get_page_size(request)
+        )
+        return Response(
+            {
+                "count": p["count"],
+                "total_pages": p["total_pages"],
+                "page": p["page"],
+                "results": TransactionSerializer(p["queryset"], many=True).data,
+            }
+        )
 
 
 class TransactionDetailView(APIView):
@@ -79,7 +89,13 @@ class TransferView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        fee_rate = Decimal(str(settings.TRANSFER_FEE_PERCENT / 100))
+        if not Wallet.objects.filter(user__phone=receiver_phone).exists():
+            return Response(
+                {"detail": "Recipient account not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        fee_rate = Decimal(str(settings.TRANSFER_FEE_PERCENT)) / Decimal("100")
         fee = (amount * fee_rate).quantize(Decimal("0.01"))
         total_debit = amount + fee
 
@@ -88,18 +104,11 @@ class TransferView(APIView):
                 sender_wallet = Wallet.objects.select_for_update().get(
                     user=request.user
                 )
-
-                try:
-                    receiver_wallet = (
-                        Wallet.objects.select_for_update()
-                        .select_related("user")
-                        .get(user__phone=receiver_phone)
-                    )
-                except Wallet.DoesNotExist:
-                    return Response(
-                        {"detail": "Recipient account not found."},
-                        status=status.HTTP_404_NOT_FOUND,
-                    )
+                receiver_wallet = (
+                    Wallet.objects.select_for_update()
+                    .select_related("user")
+                    .get(user__phone=receiver_phone)
+                )
 
                 if sender_wallet.status != "active":
                     raise ValueError("Your wallet is frozen.")

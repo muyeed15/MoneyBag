@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from moneybag.models import Notification
+from moneybag.pagination import get_page, get_page_size, paginate
 from moneybag.serializers import NotificationSerializer
 
 
@@ -11,12 +12,20 @@ class NotificationListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        notifications = (
+        qs = (
             Notification.objects.filter(user=request.user)
             .only("id", "message", "is_read", "created_at")
-            .order_by("-created_at")[:50]
+            .order_by("-created_at")
         )
-        return Response(NotificationSerializer(notifications, many=True).data)
+        p = paginate(qs, get_page(request), get_page_size(request))
+        return Response(
+            {
+                "count": p["count"],
+                "total_pages": p["total_pages"],
+                "page": p["page"],
+                "results": NotificationSerializer(p["queryset"], many=True).data,
+            }
+        )
 
 
 class NotificationDetailView(APIView):

@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { ArrowLeft, Info, Store } from "lucide-react";
 import { merchantPayAction } from "@/app/actions";
-import type { Merchant } from "@/types";
+import type { Merchant, PaginatedResponse } from "@/types";
+import { Pagination } from "@/components/ui/Pagination";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { PageTransition } from "@/components/ui/PageTransition";
@@ -31,8 +32,11 @@ export default function PayPage() {
     merchantPayAction,
     initialState,
   );
+  const [page, setPage] = useState(1);
 
-  const { data: merchants = [] } = useSWR<Merchant[]>("/api/merchants");
+  const { data } = useSWR<PaginatedResponse<Merchant>>(`/api/merchants?page=${page}`);
+  const merchants = data?.results ?? [];
+  const totalPages = data?.total_pages ?? 1;
 
   const showSuccess = state.success && !!state.amount && !!state.merchant_name;
 
@@ -81,31 +85,34 @@ export default function PayPage() {
                   </p>
                 </div>
               ) : (
-                <div className="bg-white border border-sage-mid divide-y divide-sage-mid">
-                  {merchants.map((m) => (
-                    <button
-                      key={m.id}
-                      type="button"
-                      onClick={() => setSelected(m)}
-                      className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-sage/30 active:opacity-70 transition-colors"
-                    >
-                      <div className="h-10 w-10 bg-teal flex items-center justify-center shrink-0">
-                        <Store
-                          className="h-5 w-5 text-white"
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-navy">
-                          {m.business_name}
-                        </p>
-                        <p className="text-xs text-navy-muted">
-                          {CATEGORY_LABEL[m.category] ?? m.category}
-                        </p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                <>
+                  <div className="bg-white border border-sage-mid divide-y divide-sage-mid">
+                    {merchants.map((m) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setSelected(m)}
+                        className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-sage/30 active:opacity-70 transition-colors"
+                      >
+                        <div className="h-10 w-10 bg-teal flex items-center justify-center shrink-0">
+                          <Store
+                            className="h-5 w-5 text-white"
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-navy">
+                            {m.business_name}
+                          </p>
+                          <p className="text-xs text-navy-muted">
+                            {CATEGORY_LABEL[m.category] ?? m.category}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+                </>
               )}
             </>
           ) : (

@@ -1,3 +1,10 @@
+export type PaginatedResponse<T> = {
+  count: number
+  total_pages: number
+  page: number
+  results: T[]
+}
+
 export type User = {
   id: number
   phone: string

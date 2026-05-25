@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { ArrowUpRight, Store, CreditCard, Receipt } from "lucide-react";
-import type { Wallet, Transaction, Notification } from "@/types";
+import type { Wallet, Transaction, Notification, PaginatedResponse } from "@/types";
 import { formatAmount } from "@/utils/helpers";
 import { TOAST_DURATION_MS } from "@/utils/swr";
 import { ToastStack, type Toast } from "@/components/ui/Toast";
@@ -66,14 +66,11 @@ export default function DashboardClient({
   const { data: wallet = initialWallet } = useSWR<Wallet>("/api/wallet", {
     fallbackData: initialWallet,
   });
-  const { data: rawTransactions = initialTransactions } = useSWR<Transaction[]>(
-    "/api/transactions",
-    { fallbackData: initialTransactions },
-  );
-  const { data: notifications = initialNotifications } = useSWR<Notification[]>(
-    "/api/notifications",
-    { fallbackData: initialNotifications },
-  );
+  const { data: txPage } = useSWR<PaginatedResponse<Transaction>>("/api/transactions?page=1");
+  const rawTransactions = txPage?.results ?? initialTransactions;
+
+  const { data: notifPage } = useSWR<PaginatedResponse<Notification>>("/api/notifications?page=1");
+  const notifications = notifPage?.results ?? initialNotifications;
 
   const transactions = useMemo(
     () => sortDesc(rawTransactions),

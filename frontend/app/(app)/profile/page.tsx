@@ -3,26 +3,30 @@ import { CreditCard, Store } from "lucide-react";
 import { getMe, getWallet, getCards } from "@/utils/api";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { Button } from "@/components/ui/Button";
+import { BackButton } from "@/components/ui/BackButton";
 import { logoutAction } from "@/app/actions";
 import { formatAmount, formatDate, getInitials } from "@/utils/helpers";
 
 export default async function ProfilePage() {
-  const [user, wallet, cards] = await Promise.all([
+  const [user, wallet, cardsData] = await Promise.all([
     getMe(),
     getWallet(),
-    getCards(),
+    getCards(1),
   ]);
-  const activeCards = cards.filter((c) => c.status === "active").length;
+  const activeCards = cardsData.results.filter((c) => c.status === "active").length;
 
   return (
     <PageTransition>
-      <div className="bg-white border-b border-sage-mid px-6 h-16 flex flex-col justify-center">
-        <p className="text-[10px] text-navy-muted font-semibold uppercase tracking-widest leading-none">
-          Account
-        </p>
-        <h1 className="text-navy font-bold text-lg leading-tight mt-0.5">
-          Profile
-        </h1>
+      <div className="bg-white border-b border-sage-mid px-4 h-16 flex items-center gap-3">
+        <BackButton />
+        <div>
+          <p className="text-[10px] text-navy-muted font-semibold uppercase tracking-widest leading-none">
+            Account
+          </p>
+          <h1 className="text-navy font-bold text-lg leading-tight mt-0.5">
+            Profile
+          </h1>
+        </div>
       </div>
 
       <div className="px-4 lg:px-8 py-6 max-w-2xl mx-auto space-y-5">

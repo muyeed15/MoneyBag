@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from moneybag.models import Merchant, Notification, Transaction, Wallet
+from moneybag.pagination import get_page, get_page_size, paginate
 from moneybag.serializers import (
     MerchantPaySerializer,
     MerchantSerializer,
@@ -21,12 +22,20 @@ class MerchantListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        merchants = (
+        qs = (
             Merchant.verified.select_related("user")
             .only("id", "business_name", "category", "is_verified", "user__phone")
             .order_by("business_name")
         )
-        return Response(MerchantSerializer(merchants, many=True).data)
+        p = paginate(qs, get_page(request), get_page_size(request))
+        return Response(
+            {
+                "count": p["count"],
+                "total_pages": p["total_pages"],
+                "page": p["page"],
+                "results": MerchantSerializer(p["queryset"], many=True).data,
+            }
+        )
 
 
 class MerchantPayView(APIView):
@@ -56,7 +65,7 @@ class MerchantPayView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        fee_rate = Decimal(str(settings.TRANSFER_FEE_PERCENT / 100))
+        fee_rate = Decimal(str(settings.TRANSFER_FEE_PERCENT)) / Decimal("100")
         fee = (amount * fee_rate).quantize(Decimal("0.01"))
         total_debit = amount + fee
 

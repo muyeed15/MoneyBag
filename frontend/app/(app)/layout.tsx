@@ -9,11 +9,11 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [user, notifications] = await Promise.all([
+  const [user, notifData] = await Promise.all([
     getMe(),
-    getNotifications(),
+    getNotifications(1),
   ]);
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
+  const unreadCount = notifData.results.filter((n) => !n.is_read).length;
   return (
     <AppShell user={user} unreadCount={unreadCount}>
       {children}

@@ -8,23 +8,36 @@ import {
 import { PageTransition } from "@/components/ui/PageTransition";
 import { Badge } from "@/components/ui/Badge";
 import { TransactionCard } from "@/components/ui/TransactionCard";
+import { BackButton } from "@/components/ui/BackButton";
+import { PaginationUrl } from "@/components/ui/PaginationUrl";
 
-export default async function TransactionsPage(): Promise<React.ReactElement> {
-  const [wallet, transactions] = await Promise.all([
+export default async function TransactionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}): Promise<React.ReactElement> {
+  const { page: rawPage } = await searchParams;
+  const currentPage = Math.max(1, parseInt(rawPage ?? "1") || 1);
+
+  const [wallet, txData] = await Promise.all([
     getWallet(),
-    getTransactions(),
+    getTransactions(currentPage),
   ]);
   const myPhone = wallet.user_phone;
+  const { results: transactions, total_pages: totalPages, count } = txData;
 
   return (
     <PageTransition>
-      <div className="bg-white border-b border-sage-mid px-6 h-16 flex flex-col justify-center">
-        <p className="text-[10px] text-navy-muted font-semibold uppercase tracking-widest leading-none">
-          History
-        </p>
-        <h1 className="text-navy font-bold text-lg leading-tight mt-0.5">
-          Transactions
-        </h1>
+      <div className="bg-white border-b border-sage-mid px-4 h-16 flex items-center gap-3">
+        <BackButton />
+        <div>
+          <p className="text-[10px] text-navy-muted font-semibold uppercase tracking-widest leading-none">
+            History
+          </p>
+          <h1 className="text-navy font-bold text-lg leading-tight mt-0.5">
+            Transactions
+          </h1>
+        </div>
       </div>
 
       <div className="px-4 lg:px-8 py-6 max-w-5xl mx-auto">
@@ -118,9 +131,10 @@ export default async function TransactionsPage(): Promise<React.ReactElement> {
             </div>
 
             <p className="text-xs text-navy-muted mt-3 text-right">
-              {transactions.length} transaction
-              {transactions.length !== 1 ? "s" : ""} total
+              {count} transaction
+              {count !== 1 ? "s" : ""} total
             </p>
+            <PaginationUrl page={currentPage} totalPages={totalPages} />
           </>
         )}
       </div>
