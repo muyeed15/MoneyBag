@@ -1,7 +1,6 @@
 import type { SWRConfiguration } from 'swr'
 
 export const SWR_CONFIG: SWRConfiguration = {
-  refreshInterval: parseInt(process.env.NEXT_PUBLIC_SWR_REFRESH_INTERVAL ?? '30000'),
   revalidateOnFocus: true,
   revalidateOnReconnect: true,
 }

@@ -10,6 +10,7 @@ import { TOAST_DURATION_MS } from "@/utils/swr";
 import { ToastStack, type Toast } from "@/components/ui/Toast";
 import { TransactionCard } from "@/components/ui/TransactionCard";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { useSSE } from "@/hooks/useSSE";
 
 const ACTIONS = [
   {
@@ -65,11 +66,16 @@ export default function DashboardClient({
 
   const { data: wallet = initialWallet } = useSWR<Wallet>("/api/wallet", {
     fallbackData: initialWallet,
+    refreshInterval: 0,
   });
-  const { data: txPage } = useSWR<PaginatedResponse<Transaction>>("/api/transactions?page=1");
+  const { data: txPage } = useSWR<PaginatedResponse<Transaction>>("/api/transactions?page=1", {
+    refreshInterval: 0,
+  });
   const rawTransactions = txPage?.results ?? initialTransactions;
 
-  const { data: notifPage } = useSWR<PaginatedResponse<Notification>>("/api/notifications?page=1");
+  const { data: notifPage } = useSWR<PaginatedResponse<Notification>>("/api/notifications?page=1", {
+    refreshInterval: 0,
+  });
   const notifications = notifPage?.results ?? initialNotifications;
 
   const transactions = useMemo(
@@ -92,6 +98,14 @@ export default function DashboardClient({
     },
     [dismissToast],
   );
+
+  const initialLastId = initialNotifications[0]?.id ?? 0;
+  useSSE(initialLastId, (n) => {
+    if (!seenIds.current.has(n.id)) {
+      seenIds.current.add(n.id);
+      pushToast(n.message);
+    }
+  });
 
   useEffect(() => {
     notifications

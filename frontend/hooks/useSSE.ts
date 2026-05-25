@@ -1,0 +1,54 @@
+'use client'
+
+import { useEffect, useRef } from 'react'
+import { mutate } from 'swr'
+import type { Notification } from '@/types'
+
+type SSENotification = Pick<Notification, 'id' | 'message' | 'is_read' | 'created_at'>
+
+export function useSSE(
+  initialLastId: number,
+  onNotification: (n: SSENotification) => void,
+) {
+  const lastIdRef = useRef(initialLastId)
+  const onNotificationRef = useRef(onNotification)
+
+  useEffect(() => {
+    onNotificationRef.current = onNotification
+  })
+
+  useEffect(() => {
+    let es: EventSource | null = null
+    let active = true
+    let retryTimeout: ReturnType<typeof setTimeout> | null = null
+
+    function connect() {
+      if (!active) return
+
+      es = new EventSource(`/api/notifications/stream?last_id=${lastIdRef.current}`)
+
+      es.addEventListener('notification', (e: MessageEvent) => {
+        const data: SSENotification = JSON.parse(e.data)
+        lastIdRef.current = Math.max(lastIdRef.current, data.id)
+        onNotificationRef.current(data)
+        void mutate('/api/notifications?page=1')
+        void mutate('/api/wallet')
+        void mutate('/api/transactions?page=1')
+      })
+
+      es.onerror = () => {
+        es?.close()
+        es = null
+        if (active) retryTimeout = setTimeout(connect, 3000)
+      }
+    }
+
+    connect()
+
+    return () => {
+      active = false
+      if (retryTimeout) clearTimeout(retryTimeout)
+      es?.close()
+    }
+  }, [])
+}
