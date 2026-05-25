@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework import serializers
 
 from moneybag.models import Card
@@ -28,6 +29,6 @@ class CardSerializer(serializers.ModelSerializer):
         return value
 
     def validate_expiry_year(self, value):
-        if value < 2024:
+        if value < timezone.now().year:
             raise serializers.ValidationError("Card is already expired.")
         return value
