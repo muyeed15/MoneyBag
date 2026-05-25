@@ -7,7 +7,11 @@ import { Home, Receipt, ArrowUpRight, Bell, User, LogOut } from "lucide-react";
 import useSWR from "swr";
 import { logoutAction } from "@/app/actions";
 import { getInitials } from "@/utils/helpers";
-import type { User as UserType, Notification } from "@/types";
+import type {
+  User as UserType,
+  Notification,
+  PaginatedResponse,
+} from "@/types";
 
 const NAV = [
   { href: "/dashboard", icon: Home, label: "Home" },
@@ -28,14 +32,13 @@ export function AppShell({
 }): React.ReactElement {
   const path = usePathname();
 
-  const { data: notifications } = useSWR<Notification[]>("/api/notifications", {
-    fallbackData: [],
-  });
+  const { data: notifPage } = useSWR<PaginatedResponse<Notification>>(
+    "/api/notifications?page=1",
+  );
 
-  const unreadCount =
-    notifications && notifications.length > 0
-      ? notifications.filter((n) => !n.is_read).length
-      : initialUnread;
+  const unreadCount = notifPage
+    ? notifPage.results.filter((n) => !n.is_read).length
+    : initialUnread;
 
   return (
     <div className="flex min-h-screen">
@@ -70,7 +73,7 @@ export function AppShell({
                   <Icon className="h-4 w-4" aria-hidden="true" />
                   {href === "/notifications" && unreadCount > 0 && (
                     <span
-                      className="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 rounded-full bg-orange text-white text-[8px] font-bold flex items-center justify-center"
+                      className="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 bg-orange text-white text-[8px] font-bold flex items-center justify-center"
                       aria-label={`${unreadCount} unread notifications`}
                     >
                       {unreadCount > 9 ? "9+" : unreadCount}
@@ -145,7 +148,7 @@ export function AppShell({
                   />
                   {href === "/notifications" && unreadCount > 0 && (
                     <span
-                      className="absolute -top-1 -right-1.5 h-3 w-3 rounded-full bg-orange text-white text-[7px] font-bold flex items-center justify-center"
+                      className="absolute -top-1 -right-1.5 h-3 w-3 bg-orange text-white text-[7px] font-bold flex items-center justify-center"
                       aria-label={`${unreadCount} unread`}
                     >
                       {unreadCount}
