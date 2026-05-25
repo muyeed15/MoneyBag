@@ -1,10 +1,15 @@
 from django.urls import path
+
 from moneybag import views
 
 urlpatterns = [
-    path("transfer/", views.TransferView.as_view(), name="transfer"),
     path("me/", views.MeView.as_view(), name="me"),
     path("wallet/", views.WalletDetailView.as_view(), name="wallet-detail"),
+    path("transfer/", views.TransferView.as_view(), name="transfer"),
+    path("merchants/", views.MerchantListView.as_view(), name="merchant-list"),
+    path("pay/merchant/", views.MerchantPayView.as_view(), name="merchant-pay"),
+    path("cards/", views.CardListCreateView.as_view(), name="card-list-create"),
+    path("cards/<int:pk>/block/", views.CardBlockView.as_view(), name="card-block"),
     path("transactions/", views.TransactionListView.as_view(), name="transaction-list"),
     path(
         "transactions/<int:pk>/",
@@ -13,6 +18,11 @@ urlpatterns = [
     ),
     path(
         "notifications/", views.NotificationListView.as_view(), name="notification-list"
+    ),
+    path(
+        "notifications/read-all/",
+        views.NotificationMarkAllReadView.as_view(),
+        name="notification-read-all",
     ),
     path(
         "notifications/<int:pk>/",
