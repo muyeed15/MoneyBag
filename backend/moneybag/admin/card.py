@@ -1,10 +1,11 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin
 
 from moneybag.models import Card
 
 
 @admin.register(Card)
-class CardAdmin(admin.ModelAdmin):
+class CardAdmin(ModelAdmin):
     list_display = (
         "user",
         "last_four",

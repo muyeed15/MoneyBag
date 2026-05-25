@@ -1,0 +1,137 @@
+{% extends "unfold/layouts/base_simple.html" %} {% load i18n %} {% block content
+%}
+<div class="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-5">
+  <div
+    class="col-span-1 rounded-md border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900"
+  >
+    <p
+      class="text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400"
+    >
+      {% trans "Total Users" %}
+    </p>
+    <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
+      {{ kpi.total_users }}
+    </p>
+  </div>
+  <div
+    class="col-span-1 rounded-md border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900"
+  >
+    <p
+      class="text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400"
+    >
+      {% trans "Active Wallets" %}
+    </p>
+    <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
+      {{ kpi.active_wallets }}
+    </p>
+  </div>
+  <div
+    class="col-span-1 rounded-md border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900"
+  >
+    <p
+      class="text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400"
+    >
+      {% trans "Transactions" %}
+    </p>
+    <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
+      {{ kpi.total_transactions }}
+    </p>
+  </div>
+  <div
+    class="col-span-1 rounded-md border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900"
+  >
+    <p
+      class="text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400"
+    >
+      {% trans "Total Volume (৳)" %}
+    </p>
+    <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
+      {{ kpi.total_volume }}
+    </p>
+  </div>
+  <div
+    class="col-span-1 rounded-md border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900"
+  >
+    <p
+      class="text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400"
+    >
+      {% trans "Fee Revenue (৳)" %}
+    </p>
+    <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
+      {{ kpi.total_fees }}
+    </p>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+  <div
+    class="rounded-md border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900"
+  >
+    <h2
+      class="mb-4 text-sm font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400"
+    >
+      {% trans "30-Day Transaction Volume (৳)" %}
+    </h2>
+    <canvas id="volumeChart" height="120"></canvas>
+  </div>
+  <div
+    class="rounded-md border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900"
+  >
+    <h2
+      class="mb-4 text-sm font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400"
+    >
+      {% trans "30-Day Transaction Count" %}
+    </h2>
+    <canvas id="countChart" height="120"></canvas>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script>
+  (function () {
+    const labels = {{ chart_labels|safe }};
+    const volume = {{ chart_volume|safe }};
+    const count  = {{ chart_count|safe }};
+    const isDark = document.documentElement.classList.contains("dark");
+    const gridColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)";
+    const textColor = isDark ? "#9ca3af" : "#6b7280";
+
+    function baseOpts(label, color, data) {
+      return {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            label,
+            data,
+            borderColor: color,
+            backgroundColor: color + "22",
+            borderWidth: 2,
+            pointRadius: 0,
+            fill: true,
+            tension: 0.3,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              ticks: { color: textColor, maxTicksLimit: 8, maxRotation: 0 },
+              grid: { color: gridColor },
+            },
+            y: {
+              ticks: { color: textColor },
+              grid: { color: gridColor },
+              beginAtZero: true,
+            },
+          },
+        },
+      };
+    }
+
+    new Chart(document.getElementById("volumeChart"), baseOpts("Volume (৳)", "#3b82f6", volume));
+    new Chart(document.getElementById("countChart"),  baseOpts("Count", "#10b981", count));
+  })();
+</script>
+{% endblock %}

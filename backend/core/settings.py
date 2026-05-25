@@ -2,6 +2,8 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+from django.urls import reverse_lazy
+
 from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
@@ -13,6 +15,8 @@ DEBUG = os.environ.get("DEBUG", "True") == "True"
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 INSTALLED_APPS = [
+    "unfold",
+    "unfold.contrib.filters",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -43,7 +47,7 @@ ROOT_URLCONF = "core.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -117,3 +121,92 @@ SIMPLE_JWT = {
 }
 
 TRANSFER_FEE_PERCENT = float(os.environ.get("TRANSFER_FEE_PERCENT", 1.5))
+PAGE_SIZE = int(os.environ.get("PAGE_SIZE", 10))
+PAGE_SIZE_MAX = int(os.environ.get("PAGE_SIZE_MAX", 50))
+
+UNFOLD = {
+    "SITE_TITLE": "MoneyBag",
+    "SITE_HEADER": "MoneyBag Admin",
+    "SITE_URL": "/",
+    "DASHBOARD_CALLBACK": "moneybag.admin.dashboard.dashboard_callback",
+    "COLORS": {
+        "primary": {
+            "50": "240 248 255",
+            "100": "219 235 245",
+            "200": "183 212 232",
+            "300": "136 180 210",
+            "400": "86 140 180",
+            "500": "48 71 94",
+            "600": "38 57 76",
+            "700": "29 44 59",
+            "800": "20 31 43",
+            "900": "13 21 29",
+            "950": "7 12 17",
+        },
+    },
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": False,
+        "navigation": [
+            {
+                "title": "Overview",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Dashboard",
+                        "icon": "dashboard",
+                        "link": reverse_lazy("admin:index"),
+                    },
+                ],
+            },
+            {
+                "title": "Users & Wallets",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Users",
+                        "icon": "person",
+                        "link": reverse_lazy("admin:moneybag_user_changelist"),
+                    },
+                    {
+                        "title": "Wallets",
+                        "icon": "account_balance_wallet",
+                        "link": reverse_lazy("admin:moneybag_wallet_changelist"),
+                    },
+                    {
+                        "title": "Cards",
+                        "icon": "credit_card",
+                        "link": reverse_lazy("admin:moneybag_card_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Finance",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Transactions",
+                        "icon": "receipt_long",
+                        "link": reverse_lazy("admin:moneybag_transaction_changelist"),
+                    },
+                    {
+                        "title": "Merchants",
+                        "icon": "store",
+                        "link": reverse_lazy("admin:moneybag_merchant_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Communication",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Notifications",
+                        "icon": "notifications",
+                        "link": reverse_lazy("admin:moneybag_notification_changelist"),
+                    },
+                ],
+            },
+        ],
+    },
+}
