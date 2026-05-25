@@ -1,0 +1,35 @@
+"use client";
+
+import { useEffect } from "react";
+
+export default function GlobalError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}): React.ReactElement {
+  useEffect(() => {
+    console.error(error);
+  }, [error]);
+
+  return (
+    <html>
+      <body className="flex flex-col items-center justify-center min-h-screen px-6 text-center bg-sage">
+        <h2 className="text-navy font-bold text-xl mb-2">
+          Something went wrong
+        </h2>
+        <p className="text-navy-muted text-sm mb-6">
+          {error.message ?? "An unexpected error occurred."}
+        </p>
+        <button
+          type="button"
+          onClick={reset}
+          className="bg-teal text-white text-sm font-semibold px-5 py-2.5"
+        >
+          Try again
+        </button>
+      </body>
+    </html>
+  );
+}
