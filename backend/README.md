@@ -108,7 +108,7 @@ python manage.py test              # run tests
 
 ## Admin Panel
 
-`http://127.0.0.1:8000/admin/` — powered by [django-unfold](https://github.com/unfoldadmin/django-unfold) with a custom dashboard.
+`http://127.0.0.1:8000/admin/`, powered by [django-unfold](https://github.com/unfoldadmin/django-unfold) with a custom dashboard.
 
 **Dashboard** (`/admin/`) shows five KPI cards and two 30-day line charts:
 
@@ -122,4 +122,4 @@ python manage.py test              # run tests
 
 The two charts plot daily transaction **volume** and **count** over the last 30 days via Chart.js.
 
-Sidebar navigation is grouped into four sections — Overview, Users & Wallets, Finance, and Communication — with Material Symbols icons.
+Sidebar navigation is grouped into four sections: Overview, Users & Wallets, Finance, and Communication. Icons use Material Symbols.

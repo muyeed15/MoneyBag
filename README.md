@@ -29,4 +29,4 @@ npm run dev
 
 Backend runs at `http://127.0.0.1:8000`, frontend at `http://localhost:3000`.
 
-Admin panel: `http://127.0.0.1:8000/admin/` — Unfold theme with KPI dashboard and 30-day charts.
+Admin panel: `http://127.0.0.1:8000/admin/`

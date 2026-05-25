@@ -123,7 +123,7 @@ export default async function TransactionsPage({
               </table>
             </div>
 
-            {/* Mobile list — reuses shared TransactionCard */}
+            {/* Mobile list */}
             <div className="sm:hidden bg-white border border-sage-mid divide-y divide-sage-mid">
               {transactions.map((tx) => (
                 <TransactionCard key={tx.id} tx={tx} myPhone={myPhone} />

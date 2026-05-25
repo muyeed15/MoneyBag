@@ -1,6 +1,6 @@
 # MoneyBag Frontend
 
-Next.js web app for the MoneyBag MFS — dashboard, transfers, merchant payments, cards, transactions, notifications, and profile.
+Next.js web app for the MoneyBag MFS. Covers dashboard, transfers, merchant payments, cards, transactions, notifications, and profile.
 
 ## Setup
 

@@ -1,7 +1,7 @@
 import { getMe, getNotifications } from "@/utils/api";
 import { AppShell } from "@/components/layout/AppShell";
 
-// All pages under (app) read cookies for auth — must not be statically prerendered.
+// All pages under (app) read cookies for auth; must not be statically prerendered.
 export const dynamic = "force-dynamic";
 
 export default async function AppLayout({
