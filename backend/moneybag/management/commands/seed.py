@@ -1,10 +1,12 @@
-from django.core.management.base import BaseCommand
-from moneybag.models import User, Wallet, Transaction, Notification
-from faker import Faker
-from decimal import Decimal
 import random
+from decimal import Decimal
 
-fake = Faker()
+from django.conf import settings
+from django.core.management.base import BaseCommand
+
+from moneybag.models import Card, Merchant, Notification, Transaction, User, Wallet
+
+PASSWORD = "12345678"
 
 BD_NAMES = [
     "Rahim Uddin",
@@ -32,115 +34,224 @@ BD_NAMES = [
     "Delwar Hossain",
     "Moriam Akter",
     "Mahbubur Rahman",
-    "Sadia Islam",
-    "Zahirul Haque",
-    "Champa Begum",
-    "Rezaul Karim",
-    "Kohinoor Begum",
-    "Imtiaz Ahmed",
-    "Shirina Akter",
-    "Golam Mostafa",
-    "Salma Khatun",
-    "Abul Kalam",
-    "Nargis Sultana",
-    "Harunur Rashid",
-    "Parveen Akter",
-    "Sirajul Islam",
-    "Lutfun Nahar",
-    "Tanvir Hossain",
-    "Shamsun Nahar",
-    "Enamul Haque",
-    "Rubina Akter",
-    "Monirul Islam",
-    "Ferdousi Begum",
-    "Amirul Islam",
-    "Hasina Akter",
-    "Babar Ali",
-    "Josna Akter",
+]
+
+BD_MERCHANTS = [
+    ("Aarong", "retail"),
+    ("Shajgoj", "retail"),
+    ("Daraz Bangladesh", "retail"),
+    ("Kacchi Bhai", "food"),
+    ("Haji Biriyani House", "food"),
+    ("Star Kabab & Restaurant", "food"),
+    ("Pathao", "transport"),
+    ("Shohoz Rides", "transport"),
+    ("Obhai", "transport"),
+    ("DESCO", "utility"),
+    ("Titas Gas", "utility"),
+    ("Ibn Sina Hospital", "health"),
+    ("Brac University", "education"),
+    ("Star Cineplex", "entertainment"),
 ]
 
 
 class Command(BaseCommand):
-    help = "Seed the database with Bangladeshi fake data"
+    help = "Seed the database with realistic Bangladeshi fintech data"
 
-    USER_COUNT = 20
-    TRANSACTION_COUNT = 60
-    NOTIFICATION_COUNT = 40
+    USER_COUNT = 25
+    SEND_COUNT = 35
+    PAYMENT_COUNT = 30
+    CASH_IN_COUNT = 20
+    CASH_OUT_COUNT = 15
 
     def handle(self, *args, **kwargs):
-        self.stdout.write(self.style.WARNING("Clearing old data..."))
+        self.stdout.write(self.style.WARNING("Clearing old data…"))
         self._clear()
 
-        self.stdout.write("Seeding users...")
+        self.stdout.write("Seeding users…")
         users = self._seed_users()
 
-        self.stdout.write("Seeding transactions...")
-        self._seed_transactions(users)
+        self.stdout.write("Seeding merchants…")
+        merchants = self._seed_merchants(users)
 
-        self.stdout.write("Seeding notifications...")
+        self.stdout.write("Seeding cards…")
+        self._seed_cards(users)
+
+        self.stdout.write("Seeding transactions…")
+        self._seed_transactions(users, merchants)
+
+        self.stdout.write("Seeding notifications…")
         self._seed_notifications(users)
 
-        self.stdout.write(self.style.SUCCESS("Seeding complete."))
-
-    # ── Clear ─────────────────────────────────────────────────────────────
+        self.stdout.write(self.style.SUCCESS("\nSeeding complete."))
+        self._print_summary(users, merchants)
 
     def _clear(self):
         Notification.objects.all().delete()
         Transaction.objects.all().delete()
+        Card.objects.all().delete()
+        Merchant.objects.all().delete()
         User.objects.filter(is_superuser=False).delete()
-
-    # ── Users ─────────────────────────────────────────────────────────────
 
     def _seed_users(self):
         users = []
         names = random.sample(BD_NAMES, min(self.USER_COUNT, len(BD_NAMES)))
-
         for name in names:
             user = User.objects.create_user(
                 phone=self._unique_phone(),
-                password="password123",
+                password=PASSWORD,
                 full_name=name,
                 nid=self._unique_nid(),
+                is_verified=random.choices([True, False], weights=[80, 20])[0],
             )
-            user.is_verified = random.choices([True, False], weights=[75, 25])[0]
-            user.save()
-
-            user.wallet.balance = Decimal(random.randint(200, 80000))
-            user.wallet.status = random.choices(["active", "frozen"], weights=[80, 20])[
+            user.wallet.balance = Decimal(str(random.randint(500, 50000)))
+            user.wallet.status = random.choices(["active", "frozen"], weights=[90, 10])[
                 0
             ]
-            user.wallet.save()
-
+            user.wallet.save(update_fields=["balance", "status"])
             users.append(user)
-            self.stdout.write(f"  + {name} ({user.phone})")
-
+            self.stdout.write(
+                f"  + {user.full_name} ({user.phone})  ৳{user.wallet.balance}"
+            )
         return users
 
-    # ── Transactions ──────────────────────────────────────────────────────
+    def _seed_merchants(self, users):
+        merchant_users = random.sample(users, min(len(BD_MERCHANTS), len(users)))
+        merchants = []
+        for user, (biz_name, category) in zip(merchant_users, BD_MERCHANTS):
+            merchant = Merchant.objects.create(
+                user=user,
+                business_name=biz_name,
+                category=category,
+                is_verified=random.choices([True, False], weights=[75, 25])[0],
+            )
+            merchants.append(merchant)
+            status_label = "✓" if merchant.is_verified else "✗"
+            self.stdout.write(f"  {status_label} {biz_name} ({category})")
+        return merchants
 
-    def _seed_transactions(self, users):
-        types = ["send", "receive", "cash_in", "cash_out", "payment"]
+    def _seed_cards(self, users):
+        card_count = 0
+        for user in users:
+            for _ in range(random.randint(1, 2)):
+                Card.objects.create(
+                    user=user,
+                    last_four=str(random.randint(1000, 9999)),
+                    card_type=random.choice(["debit", "prepaid"]),
+                    expiry_month=random.randint(1, 12),
+                    expiry_year=random.randint(2025, 2030),
+                    status=random.choices(
+                        ["active", "blocked", "expired"], weights=[80, 10, 10]
+                    )[0],
+                )
+                card_count += 1
+        self.stdout.write(f"  + {card_count} cards")
 
-        for _ in range(self.TRANSACTION_COUNT):
-            tx_type = random.choice(types)
-            amount = Decimal(random.randint(50, 15000))
-            fee = (amount * Decimal("0.015")).quantize(Decimal("0.01"))
-            sender, receiver = self._pick_parties(users, tx_type)
+    def _seed_transactions(self, users, merchants):
+        fee_rate = Decimal(str(settings.TRANSFER_FEE_PERCENT / 100))
+        active_users = [u for u in users if u.wallet.status == "active"]
+        verified_merchants = [m for m in merchants if m.is_verified]
+
+        for _ in range(self.SEND_COUNT):
+            if len(active_users) < 2:
+                break
+            sender, receiver = random.sample(active_users, 2)
+            amount = Decimal(str(random.randint(100, 5000)))
+            fee = (amount * fee_rate).quantize(Decimal("0.01"))
+            total_debit = amount + fee
+
+            sender_wallet = sender.wallet
+            if sender_wallet.balance < total_debit:
+                sender_wallet.balance = total_debit + Decimal("100")
+                sender_wallet.save(update_fields=["balance"])
+
+            sender_wallet.balance -= total_debit
+            receiver.wallet.balance += amount
+            sender_wallet.save(update_fields=["balance"])
+            receiver.wallet.save(update_fields=["balance"])
 
             Transaction.objects.create(
                 sender=sender,
                 receiver=receiver,
                 amount=amount,
                 fee=fee,
-                type=tx_type,
-                status=random.choices(
-                    ["completed", "pending", "failed", "reversed"],
-                    weights=[70, 15, 10, 5],
-                )[0],
-                note=self._bd_note(tx_type),
+                type="send",
+                status="completed",
+                note=self._send_note(),
             )
 
-    # ── Notifications ─────────────────────────────────────────────────────
+        for _ in range(self.PAYMENT_COUNT):
+            if not verified_merchants or not active_users:
+                break
+            merchant = random.choice(verified_merchants)
+            candidates = [u for u in active_users if u != merchant.user]
+            if not candidates:
+                continue
+            sender = random.choice(candidates)
+            amount = Decimal(str(random.randint(50, 3000)))
+            fee = (amount * fee_rate).quantize(Decimal("0.01"))
+            total_debit = amount + fee
+
+            sender_wallet = sender.wallet
+            if sender_wallet.balance < total_debit:
+                sender_wallet.balance = total_debit + Decimal("100")
+                sender_wallet.save(update_fields=["balance"])
+
+            sender_wallet.balance -= total_debit
+            merchant.user.wallet.balance += amount
+            sender_wallet.save(update_fields=["balance"])
+            merchant.user.wallet.save(update_fields=["balance"])
+
+            Transaction.objects.create(
+                sender=sender,
+                receiver=merchant.user,
+                merchant=merchant,
+                amount=amount,
+                fee=fee,
+                type="payment",
+                status="completed",
+                note=f"Payment at {merchant.business_name}",
+            )
+
+        for _ in range(self.CASH_IN_COUNT):
+            user = random.choice(users)
+            amount = Decimal(str(random.randint(500, 10000)))
+            user.wallet.balance += amount
+            user.wallet.save(update_fields=["balance"])
+            Transaction.objects.create(
+                sender=None,
+                receiver=user,
+                amount=amount,
+                fee=Decimal("0.00"),
+                type="cash_in",
+                status="completed",
+                note=random.choice(["Agent cash in", "Bank deposit", "Salary top-up"]),
+            )
+
+        for _ in range(self.CASH_OUT_COUNT):
+            sender = random.choice(active_users)
+            amount = Decimal(str(random.randint(200, 5000)))
+            fee = (amount * fee_rate).quantize(Decimal("0.01"))
+            total_debit = amount + fee
+
+            sender_wallet = sender.wallet
+            if sender_wallet.balance < total_debit:
+                sender_wallet.balance = total_debit + Decimal("100")
+                sender_wallet.save(update_fields=["balance"])
+
+            sender_wallet.balance -= total_debit
+            sender_wallet.save(update_fields=["balance"])
+
+            Transaction.objects.create(
+                sender=sender,
+                receiver=None,
+                amount=amount,
+                fee=fee,
+                type="cash_out",
+                status="completed",
+                note=random.choice(
+                    ["ATM withdrawal", "Agent cash out", "Emergency cash"]
+                ),
+            )
 
     def _seed_notifications(self, users):
         templates = [
@@ -155,20 +266,21 @@ class Command(BaseCommand):
             "Your daily limit has been reset.",
             "Welcome to MoneyBag!",
         ]
-
-        for _ in range(self.NOTIFICATION_COUNT):
-            Notification.objects.create(
+        notifications = [
+            Notification(
                 user=random.choice(users),
                 message=random.choice(templates).format(
                     amount=random.randint(50, 10000)
                 ),
                 is_read=random.choices([True, False], weights=[40, 60])[0],
             )
-
-    # ── Helpers ───────────────────────────────────────────────────────────
+            for _ in range(40)
+        ]
+        Notification.objects.bulk_create(notifications)
+        self.stdout.write(f"  + {len(notifications)} notifications")
 
     def _unique_phone(self):
-        prefixes = ["01711", "01811", "01911", "01611", "01511", "01311", "01411"]
+        prefixes = ["01711", "01811", "01911", "01611", "01511", "01311", "01412"]
         while True:
             phone = random.choice(prefixes) + str(random.randint(100000, 999999))
             if not User.objects.filter(phone=phone).exists():
@@ -180,36 +292,28 @@ class Command(BaseCommand):
             if not User.objects.filter(nid=nid).exists():
                 return nid
 
-    def _pick_parties(self, users, tx_type):
-        if tx_type == "cash_in":
-            return None, random.choice(users)
-        if tx_type == "cash_out":
-            return random.choice(users), None
-        two = random.sample(users, 2)
-        return two[0], two[1]
-
-    def _bd_note(self, tx_type):
-        notes = {
-            "send": [
+    def _send_note(self):
+        return random.choice(
+            [
                 "House rent",
                 "Grocery bill",
                 "Tuition fee",
                 "Medicine cost",
                 "Transport bill",
-            ],
-            "receive": [
-                "Salary received",
+                "Salary transfer",
                 "Freelance payment",
                 "Family support",
-                "Business income",
-            ],
-            "cash_in": ["Agent cash in", "Bank deposit", "Salary cash in"],
-            "cash_out": ["ATM withdrawal", "Agent cash out", "Emergency withdrawal"],
-            "payment": [
-                "Shop payment",
-                "Restaurant bill",
-                "Rickshaw fare",
+                "Business payment",
                 "Utility bill",
-            ],
-        }
-        return random.choice(notes.get(tx_type, ["MoneyBag transaction"]))
+            ]
+        )
+
+    def _print_summary(self, users, merchants):
+        self.stdout.write(self.style.MIGRATE_HEADING("\n── Seed Summary ──"))
+        self.stdout.write(f"  Users        : {len(users)}")
+        self.stdout.write(f"  Merchants    : {len(merchants)}")
+        self.stdout.write(f"  Cards        : {Card.objects.count()}")
+        self.stdout.write(f"  Transactions : {Transaction.objects.count()}")
+        self.stdout.write(f"  Notifications: {Notification.objects.count()}")
+        self.stdout.write(f"\n  Password: {PASSWORD}")
+        self.stdout.write(self.style.SUCCESS("  All users ready to log in.\n"))
