@@ -2,7 +2,6 @@
 
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Info } from "lucide-react";
 import { transferAction } from "@/app/actions";
 import { Input } from "@/components/ui/Input";
@@ -10,12 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { SuccessModal } from "@/components/ui/SuccessModal";
 
-const initialState = {
-  error: null,
-  success: false,
-  amount: undefined,
-  receiver_phone: undefined,
-};
+const initialState = { error: null, success: false };
 
 export default function SendPage() {
   const [state, action, pending] = useActionState(transferAction, initialState);
@@ -25,25 +19,24 @@ export default function SendPage() {
 
   return (
     <>
-      {/* Success modal */}
-      <AnimatePresence>
-        {showSuccess && (
-          <SuccessModal
-            amount={state.amount!}
-            receiverPhone={state.receiver_phone!}
-            onClose={() => router.push("/dashboard")}
-          />
-        )}
-      </AnimatePresence>
+      {showSuccess && (
+        <SuccessModal
+          amount={state.amount!}
+          to={state.receiver_phone!}
+          label="Transfer Successful"
+          onClose={() => router.push("/dashboard")}
+        />
+      )}
 
       <PageTransition>
-        {/* Header */}
         <div className="bg-white border-b border-sage-mid px-4 h-16 flex items-center gap-3">
           <button
+            type="button"
             onClick={() => router.back()}
+            aria-label="Go back"
             className="text-navy-muted active:opacity-60 transition-opacity"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5" aria-hidden="true" />
           </button>
           <div>
             <p className="text-[10px] text-navy-muted font-semibold uppercase tracking-widest leading-none">
@@ -56,7 +49,6 @@ export default function SendPage() {
         </div>
 
         <div className="px-4 lg:px-8 py-6 max-w-lg mx-auto">
-          {/* Notice */}
           <div className="bg-teal text-white px-4 py-3 mb-5 flex gap-3 items-start">
             <Info className="h-4 w-4 mt-0.5 shrink-0 text-white/70" />
             <p className="text-sm leading-snug">
@@ -65,22 +57,12 @@ export default function SendPage() {
             </p>
           </div>
 
-          {/* Error */}
-          <AnimatePresence>
-            {state.error && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.15 }}
-                className="border-l-4 border-red-500 bg-red-50 px-4 py-3 text-sm text-red-700 mb-5 overflow-hidden"
-              >
-                {state.error}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {state.error && (
+            <div className="border-l-4 border-red-500 bg-red-50 px-4 py-3 text-sm text-red-700 mb-5">
+              {state.error}
+            </div>
+          )}
 
-          {/* Form */}
           <form action={action} className="bg-white border border-sage-mid">
             <div className="divide-y divide-sage-mid">
               <div className="px-5 py-4">

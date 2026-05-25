@@ -1,19 +1,15 @@
 import { getWallet, getTransactions } from "@/utils/api";
+import {
+  formatAmount,
+  formatDate,
+  getTxMeta,
+  STATUS_VARIANT,
+} from "@/utils/helpers";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { Badge } from "@/components/ui/Badge";
-import { formatAmount, formatDate, getTxMeta } from "@/utils/helpers";
+import { TransactionCard } from "@/components/ui/TransactionCard";
 
-const STATUS_VARIANT: Record<
-  string,
-  "success" | "warning" | "danger" | "neutral"
-> = {
-  completed: "success",
-  pending: "warning",
-  failed: "danger",
-  reversed: "neutral",
-};
-
-export default async function TransactionsPage() {
+export default async function TransactionsPage(): Promise<React.ReactElement> {
   const [wallet, transactions] = await Promise.all([
     getWallet(),
     getTransactions(),
@@ -50,6 +46,7 @@ export default async function TransactionsPage() {
                       (h, i) => (
                         <th
                           key={h}
+                          scope="col"
                           className={`px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-navy-muted whitespace-nowrap ${i === 4 ? "text-right" : ""}`}
                         >
                           {h}
@@ -113,44 +110,11 @@ export default async function TransactionsPage() {
               </table>
             </div>
 
-            {/* Mobile list */}
+            {/* Mobile list — reuses shared TransactionCard */}
             <div className="sm:hidden bg-white border border-sage-mid divide-y divide-sage-mid">
-              {transactions.map((tx) => {
-                const meta = getTxMeta(tx, myPhone);
-                return (
-                  <div
-                    key={tx.id}
-                    className="flex items-center justify-between px-4 py-3 hover:bg-sage/40 transition-colors duration-100"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-sm font-semibold ${meta.color}`}>
-                          {meta.label}
-                        </span>
-                        <Badge variant={STATUS_VARIANT[tx.status]}>
-                          {tx.status.charAt(0).toUpperCase() +
-                            tx.status.slice(1)}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-navy-muted mt-0.5 truncate">
-                        {meta.direction === "to" ? "To" : "From"}:{" "}
-                        {meta.counterparty}
-                      </p>
-                      <p className="text-xs text-navy-muted">
-                        {formatDate(tx.created_at)}
-                      </p>
-                    </div>
-                    <div className="text-right ml-4 shrink-0">
-                      <p
-                        className={`text-sm font-bold tabular-nums ${meta.color}`}
-                      >
-                        {meta.minus ? "−" : "+"}
-                        {formatAmount(tx.amount)}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+              {transactions.map((tx) => (
+                <TransactionCard key={tx.id} tx={tx} myPhone={myPhone} />
+              ))}
             </div>
 
             <p className="text-xs text-navy-muted mt-3 text-right">
