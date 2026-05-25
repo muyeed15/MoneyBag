@@ -1,6 +1,6 @@
 # MoneyBag Frontend
 
-Next.js web app for the MoneyBag MFS — dashboard, transfers, transactions, notifications, and profile.
+Next.js web app for the MoneyBag MFS — dashboard, transfers, merchant payments, cards, transactions, notifications, and profile.
 
 ## Setup
 
@@ -15,15 +15,35 @@ Runs at `http://localhost:3000`. Requires the Django backend at `http://127.0.0.
 ## Environment Variables
 
 ```
+DJANGO_API_URL=http://localhost:8000
 ACCESS_TOKEN_MINUTES=30
 REFRESH_TOKEN_MINUTES=30
+NEXT_PUBLIC_SWR_REFRESH_INTERVAL=30000
+NEXT_PUBLIC_TOAST_DURATION_MS=6000
 ```
 
-Must match the backend `.env` values.
+`ACCESS_TOKEN_MINUTES` and `REFRESH_TOKEN_MINUTES` must match the backend `.env` values.
 
 ## Stack
 
-- Next.js 16 · React 19 · TypeScript
+- Next.js 15 · React 19 · TypeScript
 - Tailwind CSS v4
-- SWR for data fetching
-- Framer Motion for animations
+- SWR for data fetching and optimistic updates
+
+## Pages
+
+| Route            | Description                                                             |
+| ---------------- | ----------------------------------------------------------------------- |
+| `/dashboard`     | Balance, quick actions, recent transactions, live notifications via SWR |
+| `/send`          | Send money to another user by phone number                              |
+| `/pay`           | Browse verified merchants and pay by selecting one                      |
+| `/cards`         | View, add, and block debit/prepaid cards                                |
+| `/transactions`  | Full transaction history                                                |
+| `/notifications` | Notification list with per-item and bulk mark-read                      |
+| `/profile`       | User info, wallet summary, card count, sign out                         |
+
+## Architecture Notes
+
+- JWT tokens are stored in httpOnly cookies; Next.js Route Handlers act as a proxy to the Django API so tokens are never exposed to the browser.
+- Server Components fetch initial data at request time; Client Components revalidate with SWR on a configurable interval.
+- Server Actions handle mutations (transfer, pay, add card, block card, mark notifications read).
