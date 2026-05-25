@@ -1,13 +1,12 @@
 import uuid
-from django.db import models
+
 from django.conf import settings
+from django.db import models
 
 
 class Transaction(models.Model):
-
     TYPE_CHOICES = [
         ("send", "Send Money"),
-        ("receive", "Receive Money"),
         ("cash_in", "Cash In"),
         ("cash_out", "Cash Out"),
         ("payment", "QR Payment"),
@@ -20,7 +19,6 @@ class Transaction(models.Model):
         ("reversed", "Reversed"),
     ]
 
-    # uuid4 generates a unique random ID for each transaction
     reference_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     sender = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -36,12 +34,30 @@ class Transaction(models.Model):
         blank=True,
         related_name="received_transactions",
     )
+    # Populated only for type="payment" transactions.
+    merchant = models.ForeignKey(
+        "Merchant",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="received_payments",
+    )
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     fee = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
     note = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Transaction"
+        verbose_name_plural = "Transactions"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["sender", "-created_at"]),
+            models.Index(fields=["receiver", "-created_at"]),
+            models.Index(fields=["merchant", "-created_at"]),
+        ]
 
     def __str__(self):
         return f"{self.reference_id} - {self.type} - {self.status}"
