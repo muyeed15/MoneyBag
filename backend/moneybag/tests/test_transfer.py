@@ -4,73 +4,15 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from moneybag.models import Notification, Transaction, User, Wallet
+from moneybag.models import Notification, Transaction
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
-
-
-def make_user(phone, nid, full_name="Test User", password="testpass123"):
-    return User.objects.create_user(
-        phone=phone, password=password, full_name=full_name, nid=nid
-    )
-
-
-def make_wallet(user, balance="5000.00"):
-    return Wallet.objects.create(user=user, balance=Decimal(balance))
-
-
-# ── Model tests ───────────────────────────────────────────────────────────────
-
-
-class UserModelTest(TestCase):
-    def test_create_user(self):
-        user = make_user("01700000001", "1234567890")
-        self.assertEqual(str(user), "01700000001")
-        self.assertTrue(user.check_password("testpass123"))
-        self.assertFalse(user.is_staff)
-
-    def test_create_superuser(self):
-        user = User.objects.create_superuser(
-            phone="01700000002", password="pass", full_name="Admin", nid="9999999999"
-        )
-        self.assertTrue(user.is_staff)
-        self.assertTrue(user.is_superuser)
-
-    def test_phone_is_required(self):
-        with self.assertRaises(ValueError):
-            User.objects.create_user(
-                phone="", password="pass", full_name="No Phone", nid="111"
-            )
-
-
-class WalletModelTest(TestCase):
-    def setUp(self):
-        self.user = make_user("01700000001", "1111111111")
-        self.wallet = make_wallet(self.user)
-
-    def test_str(self):
-        self.assertIn("01700000001", str(self.wallet))
-
-    def test_default_status_is_active(self):
-        self.assertEqual(self.wallet.status, "active")
-
-    def test_default_daily_limit(self):
-        self.assertEqual(self.wallet.daily_limit, Decimal("10000.00"))
-
-
-class NotificationModelTest(TestCase):
-    def test_str(self):
-        user = make_user("01700000001", "1111111111")
-        n = Notification.objects.create(user=user, message="Test notification")
-        self.assertIn("01700000001", str(n))
-
-
-# ── Transfer view tests ───────────────────────────────────────────────────────
+from .helpers import make_user, make_wallet
 
 
 class TransferViewTest(TestCase):
     def setUp(self):
         self.client = APIClient()
+        self.client.default_format = "json"
         self.sender = make_user("01700000001", "1111111111", full_name="Sender")
         self.receiver = make_user("01700000002", "2222222222", full_name="Receiver")
         self.sender_wallet = make_wallet(self.sender, "5000.00")
