@@ -1,16 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { ArrowUpRight, Store, CreditCard, Receipt } from "lucide-react";
-import type { Wallet, Transaction, Notification, PaginatedResponse } from "@/types";
+import type { Wallet, Transaction, PaginatedResponse } from "@/types";
 import { formatAmount } from "@/utils/helpers";
-import { TOAST_DURATION_MS } from "@/utils/swr";
-import { ToastStack, type Toast } from "@/components/ui/Toast";
 import { TransactionCard } from "@/components/ui/TransactionCard";
 import { PageTransition } from "@/components/ui/PageTransition";
-import { useSSE } from "@/hooks/useSSE";
 
 const ACTIONS = [
   {
@@ -46,7 +43,6 @@ const ACTIONS = [
 type Props = {
   initialWallet: Wallet;
   initialTransactions: Transaction[];
-  initialNotifications: Notification[];
 };
 
 function sortDesc(txs: Transaction[]): Transaction[] {
@@ -59,11 +55,7 @@ function sortDesc(txs: Transaction[]): Transaction[] {
 export default function DashboardClient({
   initialWallet,
   initialTransactions,
-  initialNotifications,
 }: Props): React.ReactElement {
-  const [toasts, setToasts] = useState<Toast[]>([]);
-  const seenIds = useRef(new Set(initialNotifications.map((n) => n.id)));
-
   const { data: wallet = initialWallet } = useSWR<Wallet>("/api/wallet", {
     fallbackData: initialWallet,
     refreshInterval: 0,
@@ -73,11 +65,6 @@ export default function DashboardClient({
   });
   const rawTransactions = txPage?.results ?? initialTransactions;
 
-  const { data: notifPage } = useSWR<PaginatedResponse<Notification>>("/api/notifications?page=1", {
-    refreshInterval: 0,
-  });
-  const notifications = notifPage?.results ?? initialNotifications;
-
   const transactions = useMemo(
     () => sortDesc(rawTransactions),
     [rawTransactions],
@@ -86,41 +73,8 @@ export default function DashboardClient({
   const active = wallet.status === "active";
   const recentTx = useMemo(() => transactions.slice(0, 6), [transactions]);
 
-  const dismissToast = useCallback((id: number) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
-
-  const pushToast = useCallback(
-    (message: string) => {
-      const id = Date.now() + Math.random();
-      setToasts((prev) => [...prev, { id, message }]);
-      setTimeout(() => dismissToast(id), TOAST_DURATION_MS);
-    },
-    [dismissToast],
-  );
-
-  const initialLastId = initialNotifications[0]?.id ?? 0;
-  useSSE(initialLastId, (n) => {
-    if (!seenIds.current.has(n.id)) {
-      seenIds.current.add(n.id);
-      pushToast(n.message);
-    }
-  });
-
-  useEffect(() => {
-    notifications
-      .filter((n) => !seenIds.current.has(n.id))
-      .forEach((n) => {
-        seenIds.current.add(n.id);
-        pushToast(n.message);
-      });
-  }, [notifications, pushToast]);
-
   return (
-    <>
-      <ToastStack toasts={toasts} onDismiss={dismissToast} />
-
-      <PageTransition>
+    <PageTransition>
         <div className="bg-white border-b border-sage-mid px-6 h-16 flex items-center">
           <div>
             <p className="text-[10px] text-navy-muted font-semibold uppercase tracking-widest leading-none">
@@ -258,7 +212,6 @@ export default function DashboardClient({
             </div>
           </div>
         </div>
-      </PageTransition>
-    </>
+    </PageTransition>
   );
 }

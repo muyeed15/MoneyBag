@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ReactNode } from "react";
+import { ReactNode, useState, useEffect, useCallback, useRef } from "react";
 import { Home, Receipt, ArrowUpRight, Bell, User, LogOut } from "lucide-react";
 import useSWR from "swr";
 import { logoutAction } from "@/app/actions";
 import { getInitials } from "@/utils/helpers";
+import { TOAST_DURATION_MS } from "@/utils/swr";
+import { useSSE } from "@/hooks/useSSE";
+import { ToastStack, type Toast } from "@/components/ui/Toast";
 import type {
   User as UserType,
   Notification,
@@ -24,13 +27,18 @@ const NAV = [
 export function AppShell({
   user,
   unreadCount: initialUnread,
+  initialLastId,
   children,
 }: {
   user: UserType;
   unreadCount: number;
+  initialLastId: number;
   children: ReactNode;
 }): React.ReactElement {
   const path = usePathname();
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const seenIds = useRef(new Set<number>());
+  const notifInitialized = useRef(false);
 
   const { data: notifPage } = useSWR<PaginatedResponse<Notification>>(
     "/api/notifications?page=1",
@@ -40,7 +48,44 @@ export function AppShell({
     ? notifPage.results.filter((n) => !n.is_read).length
     : initialUnread;
 
+  const dismissToast = useCallback((id: number) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const pushToast = useCallback(
+    (message: string) => {
+      const id = Date.now() + Math.random();
+      setToasts((prev) => [...prev, { id, message }]);
+      setTimeout(() => dismissToast(id), TOAST_DURATION_MS);
+    },
+    [dismissToast],
+  );
+
+  useSSE(initialLastId, (n) => {
+    if (!seenIds.current.has(n.id)) {
+      seenIds.current.add(n.id);
+      pushToast(n.message);
+    }
+  });
+
+  useEffect(() => {
+    if (!notifPage) return;
+    if (!notifInitialized.current) {
+      notifPage.results.forEach((n) => seenIds.current.add(n.id));
+      notifInitialized.current = true;
+      return;
+    }
+    notifPage.results
+      .filter((n) => !seenIds.current.has(n.id))
+      .forEach((n) => {
+        seenIds.current.add(n.id);
+        pushToast(n.message);
+      });
+  }, [notifPage, pushToast]);
+
   return (
+    <>
+    <ToastStack toasts={toasts} onDismiss={dismissToast} />
     <div className="flex min-h-screen">
       {/* ── Desktop sidebar ───────────────────────────────────── */}
       <aside className="hidden lg:flex flex-col w-52 shrink-0 bg-navy fixed top-0 left-0 h-screen z-20">
@@ -166,5 +211,6 @@ export function AppShell({
         </div>
       </nav>
     </div>
+    </>
   );
 }

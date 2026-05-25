@@ -14,8 +14,9 @@ export default async function AppLayout({
     getNotifications(1),
   ]);
   const unreadCount = notifData.results.filter((n) => !n.is_read).length;
+  const initialLastId = notifData.results[0]?.id ?? 0;
   return (
-    <AppShell user={user} unreadCount={unreadCount}>
+    <AppShell user={user} unreadCount={unreadCount} initialLastId={initialLastId}>
       {children}
     </AppShell>
   );
