@@ -10,6 +10,9 @@ urlpatterns = [
     path("pay/merchant/", views.MerchantPayView.as_view(), name="merchant-pay"),
     path("cards/", views.CardListCreateView.as_view(), name="card-list-create"),
     path("cards/<int:pk>/block/", views.CardBlockView.as_view(), name="card-block"),
+    path(
+        "cards/<int:pk>/unblock/", views.CardUnblockView.as_view(), name="card-unblock"
+    ),
     path("transactions/", views.TransactionListView.as_view(), name="transaction-list"),
     path(
         "transactions/<int:pk>/",
