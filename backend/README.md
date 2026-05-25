@@ -1,131 +1,35 @@
 # MoneyBag Backend
 
-Django REST API for the MoneyBag Mobile Financial Service. Handles user accounts, wallets, transactions, and notifications with JWT authentication.
-
-## Requirements
-
-- Python 3.12.13
-- PostgreSQL
-- Conda 26.5.0+
-
-## Project Structure
-
-```
-backend/
-├── manage.py
-├── core/               # Project configuration (settings, URLs, WSGI/ASGI)
-│   ├── settings.py
-│   ├── urls.py
-│   ├── wsgi.py
-│   └── asgi.py
-└── moneybag/           # Main app (users, wallets, transactions, notifications)
-    ├── models/
-    ├── views.py
-    ├── serializers.py
-    ├── urls.py
-    ├── signals.py
-    ├── admin.py
-    ├── apps.py
-    ├── migrations/
-    └── management/
-        └── commands/
-            └── seed.py
-```
+Django REST API with JWT authentication, PostgreSQL, and a seed command for sample data.
 
 ## Setup
 
-### 1. Create and activate the conda environment
-
 ```bash
-conda create -n django python=3.12.13
-conda activate django
-```
-
-### 2. Install dependencies
-
-```bash
+conda create -n moneybag python=3.12.13
+conda activate moneybag
 pip install -r requirements.txt
-```
-
-### 3. Configure the database
-
-Make sure PostgreSQL is running and create the database:
-
-```sql
-CREATE DATABASE moneybag_db;
-```
-
-The default credentials in `core/settings.py` are:
-
-| Key      | Value       |
-|----------|-------------|
-| NAME     | moneybag_db |
-| USER     | postgres    |
-| PASSWORD | 12345678    |
-| HOST     | localhost   |
-| PORT     | 5432        |
-
-Update these in `core/settings.py` if your setup differs.
-
-### 4. Run migrations
-
-```bash
+cp env.example .env
 python manage.py migrate
-```
-
-### 5. Seed the database (optional)
-
-```bash
-python manage.py seed
-```
-
-Populates the database with Bangladeshi fake users, wallets, transactions, and notifications.
-
-### 6. Create a superuser
-
-```bash
-python manage.py createsuperuser
-```
-
-### 7. Start the development server
-
-```bash
 python manage.py runserver
 ```
 
-Server runs at `http://127.0.0.1:8000`.
+Runs at `http://127.0.0.1:8000`.
 
-## Common Commands
+## Environment Variables
 
-| Command | Description |
-|---|---|
-| `python manage.py runserver` | Start the development server |
-| `python manage.py migrate` | Apply all pending migrations |
-| `python manage.py makemigrations` | Create new migrations from model changes |
-| `python manage.py createsuperuser` | Create an admin user |
-| `python manage.py seed` | Populate the database with sample data |
-| `python manage.py shell` | Open the Django interactive shell |
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/token/` | Obtain JWT access and refresh tokens |
-| POST | `/api/token/refresh/` | Refresh an access token |
-| GET | `/api/me/` | Authenticated user's profile |
-| GET | `/api/wallet/` | Authenticated user's wallet |
-| POST | `/api/transfer/` | Transfer funds to another account |
-| GET | `/api/transactions/` | List the user's transactions |
-| GET | `/api/transactions/<id>/` | Single transaction detail |
-| GET | `/api/notifications/` | List the user's notifications |
-| GET | `/api/notifications/<id>/` | Single notification detail |
-
-All `/api/` routes (except token endpoints) require a `Bearer` JWT in the `Authorization` header.
-
-## Admin Panel
+Copy `env.example` to `.env` and set token lifetimes (in minutes):
 
 ```
-http://127.0.0.1:8000/admin
+ACCESS_TOKEN_MINUTES=30
+REFRESH_TOKEN_MINUTES=30
 ```
 
-Log in with the superuser credentials you created.
+## Useful Commands
+
+```bash
+python manage.py seed              # populate with sample data
+python manage.py createsuperuser   # create admin user
+python manage.py migrate           # apply migrations
+```
+
+Admin panel: `http://127.0.0.1:8000/admin/`

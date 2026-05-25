@@ -1,59 +1,26 @@
 # MoneyBag
 
-A full-stack Mobile Financial Service (MFS) web application for payments, transfers, and wallet management. Built with Django REST Framework on the backend and Next.js on the frontend.
-
-## Tech Stack
-
-| Layer     | Technology                                    |
-|-----------|-----------------------------------------------|
-| Backend   | Django 5.2, Django REST Framework, PostgreSQL |
-| Auth      | JWT (SimpleJWT)                               |
-| Frontend  | Next.js 16, React 19, TypeScript              |
-| Styling   | Tailwind CSS v4                               |
-
-## Project Structure
-
-```
-MoneyBag/
-├── backend/
-│   ├── core/       # Project configuration (settings, URLs, WSGI/ASGI)
-│   ├── moneybag/   # Main app (models, views, serializers, migrations)
-│   └── manage.py
-└── frontend/       # Next.js web app
-```
+A Mobile Financial Service (MFS) web app. Django backend + Next.js frontend.
 
 ## Quick Start
 
-### Backend
-
+**Backend**
 ```bash
 cd backend
-conda create -n django python=3.12.13   # first time only
-conda activate django
-pip install -r requirements.txt          # first time only
+conda create -n moneybag python=3.12.13
+conda activate moneybag
+pip install -r requirements.txt
+cp env.example .env
 python manage.py migrate
 python manage.py runserver
 ```
 
-API available at `http://127.0.0.1:8000`
-
-### Frontend
-
+**Frontend**
 ```bash
 cd frontend
 npm install
+cp env.example .env
 npm run dev
 ```
 
-App available at `http://localhost:3000`
-
-> The frontend expects the backend running at `http://127.0.0.1:8000`. Make sure both servers are running together.
-
-## Features
-
-- Phone-number based user accounts with NID verification
-- Wallet balance, daily limits, and status management
-- Send, receive, cash-in, and cash-out transactions
-- In-app notifications
-- JWT-based authentication
-- Django admin panel at `/admin`
+Backend runs at `http://127.0.0.1:8000`, frontend at `http://localhost:3000`.
