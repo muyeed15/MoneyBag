@@ -50,7 +50,7 @@ export function TransactionCard({
           {meta.minus ? "−" : "+"}
           {formatAmount(tx.amount)}
         </p>
-        <p className="text-xs text-navy-muted">
+        <p className="text-xs text-navy-muted" suppressHydrationWarning>
           {relativeTime
             ? formatRelativeTime(tx.created_at)
             : formatDate(tx.created_at)}
