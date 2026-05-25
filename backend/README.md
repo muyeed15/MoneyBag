@@ -8,7 +8,7 @@ Django REST API with JWT authentication, PostgreSQL, and a seed command for samp
 conda create -n moneybag python=3.12.13
 conda activate moneybag
 pip install -r requirements.txt
-cp env.example .env
+cp .env.example .env
 python manage.py makemigrations moneybag
 python manage.py migrate
 python manage.py runserver
@@ -18,7 +18,7 @@ Runs at `http://127.0.0.1:8000`.
 
 ## Environment Variables
 
-Copy `env.example` to `.env`:
+Copy `.env.example` to `.env`:
 
 ```
 SECRET_KEY=your-secret-key-here
@@ -37,7 +37,11 @@ CORS_ALLOWED_ORIGINS=http://localhost:3000
 ACCESS_TOKEN_MINUTES=30
 REFRESH_TOKEN_MINUTES=30
 TRANSFER_FEE_PERCENT=1.5
+PAGE_SIZE=10
+PAGE_SIZE_MAX=50
 ```
+
+`PAGE_SIZE` sets the default number of rows returned per page. `PAGE_SIZE_MAX` is the hard ceiling — any `page_size` sent by the client is silently clamped to this value.
 
 ## Project Structure
 
@@ -69,6 +73,12 @@ moneybag/
 
 All endpoints require `Authorization: Bearer <token>` unless noted.
 
+List endpoints accept `?page=<n>&page_size=<n>` query parameters and return:
+
+```json
+{ "count": 42, "total_pages": 5, "page": 1, "results": [...] }
+```
+
 | Method     | URL                            | Description                     |
 | ---------- | ------------------------------ | ------------------------------- |
 | POST       | `/api/token/`                  | Obtain JWT (login)              |
@@ -80,6 +90,7 @@ All endpoints require `Authorization: Bearer <token>` unless noted.
 | POST       | `/api/pay/merchant/`           | Pay a merchant                  |
 | GET, POST  | `/api/cards/`                  | List cards / add a card         |
 | PATCH      | `/api/cards/<id>/block/`       | Block a card                    |
+| PATCH      | `/api/cards/<id>/unblock/`     | Unblock a card                  |
 | GET        | `/api/transactions/`           | Transaction history             |
 | GET        | `/api/transactions/<id>/`      | Transaction detail              |
 | GET        | `/api/notifications/`          | Notification list               |
@@ -95,4 +106,20 @@ python manage.py migrate           # apply migrations
 python manage.py test              # run tests
 ```
 
-Admin panel: `http://127.0.0.1:8000/admin/`
+## Admin Panel
+
+`http://127.0.0.1:8000/admin/` — powered by [django-unfold](https://github.com/unfoldadmin/django-unfold) with a custom dashboard.
+
+**Dashboard** (`/admin/`) shows five KPI cards and two 30-day line charts:
+
+| KPI            | Description                                     |
+| -------------- | ----------------------------------------------- |
+| Total Users    | All registered user accounts                    |
+| Active Wallets | Wallets with `status = active`                  |
+| Transactions   | Total transaction records                       |
+| Total Volume   | Sum of completed transaction amounts            |
+| Fee Revenue    | Sum of fees collected on completed transactions |
+
+The two charts plot daily transaction **volume** and **count** over the last 30 days via Chart.js.
+
+Sidebar navigation is grouped into four sections — Overview, Users & Wallets, Finance, and Communication — with Material Symbols icons.
