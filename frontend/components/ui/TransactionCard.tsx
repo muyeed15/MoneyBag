@@ -1,4 +1,4 @@
-import type { Transaction } from "@/utils/api";
+import type { Transaction } from "@/types";
 import {
   getTxMeta,
   formatAmount,

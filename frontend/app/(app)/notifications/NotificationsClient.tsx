@@ -4,7 +4,7 @@ import { useTransition } from "react";
 import useSWR from "swr";
 import { formatDate } from "@/utils/helpers";
 import { markAllReadAction, markNotificationReadAction } from "@/app/actions";
-import type { Notification } from "@/utils/api";
+import type { Notification } from "@/types";
 
 export function NotificationsClient({
   initialNotifications,

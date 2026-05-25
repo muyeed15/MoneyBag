@@ -4,7 +4,7 @@ import { useActionState, useTransition, useState } from "react";
 import useSWR from "swr";
 import { CreditCard, Plus, X } from "lucide-react";
 import { addCardAction, blockCardAction } from "@/app/actions";
-import type { Card } from "@/utils/api";
+import type { Card } from "@/types";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";

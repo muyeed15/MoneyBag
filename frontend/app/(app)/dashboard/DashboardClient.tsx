@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { ArrowUpRight, Store, CreditCard, Receipt } from "lucide-react";
-import type { Wallet, Transaction, Notification } from "@/utils/api";
+import type { Wallet, Transaction, Notification } from "@/types";
 import { formatAmount } from "@/utils/helpers";
 import { TOAST_DURATION_MS } from "@/utils/swr";
 import { ToastStack, type Toast } from "@/components/ui/Toast";

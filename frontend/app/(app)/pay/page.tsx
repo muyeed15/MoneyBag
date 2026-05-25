@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { ArrowLeft, Info, Store } from "lucide-react";
 import { merchantPayAction } from "@/app/actions";
-import type { Merchant } from "@/utils/api";
+import type { Merchant } from "@/types";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { PageTransition } from "@/components/ui/PageTransition";

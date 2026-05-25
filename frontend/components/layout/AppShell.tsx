@@ -7,7 +7,7 @@ import { Home, Receipt, ArrowUpRight, Bell, User, LogOut } from "lucide-react";
 import useSWR from "swr";
 import { logoutAction } from "@/app/actions";
 import { getInitials } from "@/utils/helpers";
-import type { User as UserType, Notification } from "@/utils/api";
+import type { User as UserType, Notification } from "@/types";
 
 const NAV = [
   { href: "/dashboard", icon: Home, label: "Home" },
