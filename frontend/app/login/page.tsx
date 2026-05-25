@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState } from "react";
-import { motion } from "framer-motion";
 import { loginAction } from "@/app/actions";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -25,12 +24,7 @@ export default function LoginPage() {
       </div>
 
       {/* Form block */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.2 }}
-        className="flex-1 flex flex-col"
-      >
+      <div className="flex-1 flex flex-col">
         <div className="bg-white border-b border-sage-mid px-6 py-8 sm:max-w-sm sm:mx-auto sm:w-full sm:mt-8 sm:border sm:border-sage-mid">
           <h2 className="text-navy font-bold text-lg mb-5">
             Sign in to your account
@@ -76,7 +70,7 @@ export default function LoginPage() {
         <p className="text-center text-xs text-navy-muted mt-6">
           MoneyBag · Secure Digital Wallet
         </p>
-      </motion.div>
+      </div>
     </div>
   );
 }
