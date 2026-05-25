@@ -8,3 +8,4 @@ from .notification import (
 from .transaction import TransactionDetailView, TransactionListView, TransferView
 from .user import MeView
 from .wallet import WalletDetailView
+from .sse import NotificationStreamView

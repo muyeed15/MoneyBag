@@ -20,6 +20,11 @@ urlpatterns = [
         name="transaction-detail",
     ),
     path(
+        "notifications/stream/",
+        views.NotificationStreamView.as_view(),
+        name="notification-stream",
+    ),
+    path(
         "notifications/", views.NotificationListView.as_view(), name="notification-list"
     ),
     path(
