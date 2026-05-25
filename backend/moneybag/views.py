@@ -1,101 +1,93 @@
 from decimal import Decimal
 
+from django.conf import settings
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Q, Sum
 from django.utils import timezone
-from rest_framework import generics, status
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from moneybag.models import Transaction, Notification, Wallet
+from moneybag.models import Card, Merchant, Notification, Transaction, Wallet
 from moneybag.serializers import (
+    CardSerializer,
+    MerchantPaySerializer,
+    MerchantSerializer,
+    NotificationSerializer,
+    TransactionSerializer,
+    TransferSerializer,
     UserSerializer,
     WalletSerializer,
-    TransactionSerializer,
-    NotificationSerializer,
-    TransferSerializer,
 )
 
 
-class MeView(generics.RetrieveAPIView):
-    """GET /api/me/ — returns the authenticated user's own profile."""
-
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_object(self):
-        # No pk lookup needed; the user is identified by their JWT token.
-        return self.request.user
-
-
-class WalletDetailView(generics.RetrieveAPIView):
-    """GET /api/wallet/ — returns the authenticated user's wallet balance and status."""
-
-    serializer_class = WalletSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_object(self):
-        # Each user has exactly one wallet via OneToOneField.
-        return self.request.user.wallet
-
-
-class TransactionListView(generics.ListAPIView):
-    """GET /api/transactions/ — lists all transactions the authenticated user participated in."""
-
-    serializer_class = TransactionSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        # Include transactions where the user is either the sender or the receiver.
-        user = self.request.user
-        return Transaction.objects.filter(sender=user) | Transaction.objects.filter(
-            receiver=user
+def _transaction_qs(user):
+    return (
+        Transaction.objects.filter(Q(sender=user) | Q(receiver=user))
+        .select_related("sender", "receiver", "merchant")
+        .only(
+            "id",
+            "reference_id",
+            "sender__phone",
+            "receiver__phone",
+            "merchant__business_name",
+            "amount",
+            "fee",
+            "type",
+            "status",
+            "note",
+            "created_at",
         )
+        .order_by("-created_at")
+    )
 
 
-class TransactionDetailView(generics.RetrieveAPIView):
-    """GET /api/transactions/<pk>/ — returns a single transaction the user owns."""
+def _daily_spent(user, today):
+    return Transaction.objects.filter(
+        sender=user,
+        type__in=["send", "payment"],
+        status="completed",
+        created_at__date=today,
+    ).aggregate(total=Sum("amount"))["total"] or Decimal("0")
 
-    serializer_class = TransactionSerializer
+
+class MeView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        # Scoping to the user's transactions ensures a foreign pk returns 404, not 403.
-        user = self.request.user
-        return Transaction.objects.filter(sender=user) | Transaction.objects.filter(
-            receiver=user
-        )
+    def get(self, request):
+        return Response(UserSerializer(request.user).data)
 
 
-class NotificationListView(generics.ListAPIView):
-    """GET /api/notifications/ — lists all notifications for the authenticated user."""
-
-    serializer_class = NotificationSerializer
+class WalletDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return Notification.objects.filter(user=self.request.user).order_by(
-            "-created_at"
-        )
+    def get(self, request):
+        wallet = Wallet.objects.select_related("user").get(user=request.user)
+        return Response(WalletSerializer(wallet).data)
 
 
-class NotificationDetailView(generics.RetrieveAPIView):
-    """GET /api/notifications/<pk>/ — returns a single notification the user owns."""
-
-    serializer_class = NotificationSerializer
+class TransactionListView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        # Same scoping pattern as transactions — foreign pk silently returns 404.
-        return Notification.objects.filter(user=self.request.user)
+    def get(self, request):
+        transactions = _transaction_qs(request.user)[:100]
+        return Response(TransactionSerializer(transactions, many=True).data)
+
+
+class TransactionDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            tx = _transaction_qs(request.user).get(pk=pk)
+        except Transaction.DoesNotExist:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(TransactionSerializer(tx).data)
 
 
 class TransferView(APIView):
-    """POST /api/transfer/ — atomically moves funds from the authenticated user to another account."""
-
     permission_classes = [IsAuthenticated]
-    FEE_RATE = Decimal("0.015")  # 1.5% per transfer, charged to sender
 
     def post(self, request):
         serializer = TransferSerializer(data=request.data)
@@ -111,20 +103,27 @@ class TransferView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        fee = (amount * self.FEE_RATE).quantize(Decimal("0.01"))
+        fee_rate = Decimal(str(settings.TRANSFER_FEE_PERCENT / 100))
+        fee = (amount * fee_rate).quantize(Decimal("0.01"))
         total_debit = amount + fee
 
         try:
             with transaction.atomic():
-                # Lock both wallet rows for the duration of this transaction.
-                # select_for_update() prevents another request from reading or
-                # modifying these rows until this block commits or rolls back.
                 sender_wallet = Wallet.objects.select_for_update().get(
                     user=request.user
                 )
-                receiver_wallet = Wallet.objects.select_for_update().get(
-                    user__phone=receiver_phone
-                )
+
+                try:
+                    receiver_wallet = (
+                        Wallet.objects.select_for_update()
+                        .select_related("user")
+                        .get(user__phone=receiver_phone)
+                    )
+                except Wallet.DoesNotExist:
+                    return Response(
+                        {"detail": "Recipient account not found."},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
 
                 if sender_wallet.status != "active":
                     raise ValueError("Your wallet is frozen.")
@@ -132,27 +131,22 @@ class TransferView(APIView):
                     raise ValueError("Receiver's wallet is frozen.")
                 if sender_wallet.balance < total_debit:
                     raise ValueError(
-                        f"Insufficient balance. Required: ৳{total_debit} (৳{amount} + ৳{fee} fee)."
+                        f"Insufficient balance. Required: ৳{total_debit} "
+                        f"(৳{amount} + ৳{fee} fee)."
                     )
 
-                # Daily limit: sum of amounts already sent today (completed transfers only).
                 today = timezone.now().date()
-                sent_today = Transaction.objects.filter(
-                    sender=request.user,
-                    type="send",
-                    status="completed",
-                    created_at__date=today,
-                ).aggregate(total=Sum("amount"))["total"] or Decimal("0")
-                if sent_today + amount > sender_wallet.daily_limit:
-                    remaining = sender_wallet.daily_limit - sent_today
+                spent_today = _daily_spent(request.user, today)
+                if spent_today + amount > sender_wallet.daily_limit:
+                    remaining = sender_wallet.daily_limit - spent_today
                     raise ValueError(
                         f"Daily limit exceeded. Remaining today: ৳{remaining}."
                     )
 
                 sender_wallet.balance -= total_debit
                 receiver_wallet.balance += amount
-                sender_wallet.save()
-                receiver_wallet.save()
+                sender_wallet.save(update_fields=["balance"])
+                receiver_wallet.save(update_fields=["balance"])
 
                 tx = Transaction.objects.create(
                     sender=request.user,
@@ -187,3 +181,221 @@ class TransferView(APIView):
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(TransactionSerializer(tx).data, status=status.HTTP_201_CREATED)
+
+
+class MerchantListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        merchants = (
+            Merchant.verified.select_related("user")
+            .only("id", "business_name", "category", "is_verified", "user__phone")
+            .order_by("business_name")
+        )
+        return Response(MerchantSerializer(merchants, many=True).data)
+
+
+class MerchantPayView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = MerchantPaySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        merchant_id = serializer.validated_data["merchant_id"]
+        amount = serializer.validated_data["amount"]
+        note = serializer.validated_data["note"]
+
+        try:
+            merchant = Merchant.objects.select_related("user").get(
+                pk=merchant_id, is_verified=True
+            )
+        except Merchant.DoesNotExist:
+            return Response(
+                {"detail": "Merchant not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if merchant.user == request.user:
+            return Response(
+                {"detail": "Cannot pay your own merchant account."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        fee_rate = Decimal(str(settings.TRANSFER_FEE_PERCENT / 100))
+        fee = (amount * fee_rate).quantize(Decimal("0.01"))
+        total_debit = amount + fee
+
+        try:
+            with transaction.atomic():
+                sender_wallet = Wallet.objects.select_for_update().get(
+                    user=request.user
+                )
+                merchant_wallet = Wallet.objects.select_for_update().get(
+                    user=merchant.user
+                )
+
+                if sender_wallet.status != "active":
+                    raise ValueError("Your wallet is frozen.")
+                if merchant_wallet.status != "active":
+                    raise ValueError("Merchant wallet is unavailable.")
+                if sender_wallet.balance < total_debit:
+                    raise ValueError(
+                        f"Insufficient balance. Required: ৳{total_debit} "
+                        f"(৳{amount} + ৳{fee} fee)."
+                    )
+
+                today = timezone.now().date()
+                spent_today = _daily_spent(request.user, today)
+                if spent_today + amount > sender_wallet.daily_limit:
+                    remaining = sender_wallet.daily_limit - spent_today
+                    raise ValueError(
+                        f"Daily limit exceeded. Remaining today: ৳{remaining}."
+                    )
+
+                sender_wallet.balance -= total_debit
+                merchant_wallet.balance += amount
+                sender_wallet.save(update_fields=["balance"])
+                merchant_wallet.save(update_fields=["balance"])
+
+                tx = Transaction.objects.create(
+                    sender=request.user,
+                    receiver=merchant.user,
+                    merchant=merchant,
+                    amount=amount,
+                    fee=fee,
+                    type="payment",
+                    status="completed",
+                    note=note or f"Payment to {merchant.business_name}",
+                )
+
+                Notification.objects.bulk_create(
+                    [
+                        Notification(
+                            user=request.user,
+                            message=(
+                                f"You paid ৳{amount} to {merchant.business_name}. "
+                                f"Fee: ৳{fee}. Ref: {tx.reference_id}"
+                            ),
+                        ),
+                        Notification(
+                            user=merchant.user,
+                            message=(
+                                f"Payment of ৳{amount} received from {request.user.phone} "
+                                f"at {merchant.business_name}. Ref: {tx.reference_id}"
+                            ),
+                        ),
+                    ]
+                )
+
+        except ValueError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(TransactionSerializer(tx).data, status=status.HTTP_201_CREATED)
+
+
+class CardListCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        cards = (
+            Card.objects.filter(user=request.user)
+            .only(
+                "id",
+                "last_four",
+                "card_type",
+                "expiry_month",
+                "expiry_year",
+                "status",
+                "created_at",
+            )
+            .order_by("-created_at")
+        )
+        return Response(CardSerializer(cards, many=True).data)
+
+    def post(self, request):
+        serializer = CardSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        card = serializer.save(user=request.user)
+        return Response(CardSerializer(card).data, status=status.HTTP_201_CREATED)
+
+
+class CardBlockView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        try:
+            card = Card.objects.get(pk=pk, user=request.user)
+        except Card.DoesNotExist:
+            return Response(
+                {"detail": "Card not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        if card.status == "blocked":
+            return Response(
+                {"detail": "Card is already blocked."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        card.status = "blocked"
+        card.save(update_fields=["status"])
+
+        Notification.objects.create(
+            user=request.user,
+            message=f"Your card ending in {card.last_four} has been blocked.",
+        )
+
+        return Response(CardSerializer(card).data)
+
+
+class NotificationListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        notifications = (
+            Notification.objects.filter(user=request.user)
+            .only("id", "message", "is_read", "created_at")
+            .order_by("-created_at")[:50]
+        )
+        return Response(NotificationSerializer(notifications, many=True).data)
+
+
+class NotificationDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def _get_notification(self, user, pk):
+        try:
+            return (
+                Notification.objects.filter(user=user)
+                .only("id", "message", "is_read", "created_at")
+                .get(pk=pk)
+            )
+        except Notification.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        notification = self._get_notification(request.user, pk)
+        if notification is None:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(NotificationSerializer(notification).data)
+
+    def patch(self, request, pk):
+        notification = self._get_notification(request.user, pk)
+        if notification is None:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if not notification.is_read:
+            notification.is_read = True
+            notification.save(update_fields=["is_read"])
+
+        return Response(NotificationSerializer(notification).data)
+
+
+class NotificationMarkAllReadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        updated = Notification.objects.filter(user=request.user, is_read=False).update(
+            is_read=True
+        )
+        return Response({"marked_read": updated})
