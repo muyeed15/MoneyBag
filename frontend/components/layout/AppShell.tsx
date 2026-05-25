@@ -9,8 +9,6 @@ import { logoutAction } from "@/app/actions";
 import { getInitials } from "@/utils/helpers";
 import type { User as UserType, Notification } from "@/utils/api";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
-
 const NAV = [
   { href: "/dashboard", icon: Home, label: "Home" },
   { href: "/transactions", icon: Receipt, label: "Transactions" },
@@ -27,19 +25,12 @@ export function AppShell({
   user: UserType;
   unreadCount: number;
   children: ReactNode;
-}) {
+}): React.ReactElement {
   const path = usePathname();
 
-  const { data: notifications } = useSWR<Notification[]>(
-    "/api/notifications",
-    fetcher,
-    {
-      fallbackData: [],
-      refreshInterval: 30_000,
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-    },
-  );
+  const { data: notifications } = useSWR<Notification[]>("/api/notifications", {
+    fallbackData: [],
+  });
 
   const unreadCount =
     notifications && notifications.length > 0
@@ -56,7 +47,7 @@ export function AppShell({
           </span>
         </div>
 
-        <nav className="flex-1 py-3">
+        <nav className="flex-1 py-3" aria-label="Main navigation">
           {NAV.map((item) => {
             const { href, label } = item;
             const Icon = item.icon;
@@ -66,6 +57,7 @@ export function AppShell({
               <Link
                 key={href}
                 href={href}
+                aria-current={active ? "page" : undefined}
                 className={`flex items-center gap-3 px-5 py-3 text-sm font-medium border-l-2 transition-colors duration-100 ${
                   active
                     ? "border-orange bg-white/10 text-white"
@@ -75,10 +67,13 @@ export function AppShell({
                 }`}
               >
                 <div className="relative">
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-4 w-4" aria-hidden="true" />
                   {href === "/notifications" && unreadCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 rounded-full bg-orange text-white text-[8px] font-bold flex items-center justify-center">
-                      {unreadCount > 9 ? "9" : unreadCount}
+                    <span
+                      className="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 rounded-full bg-orange text-white text-[8px] font-bold flex items-center justify-center"
+                      aria-label={`${unreadCount} unread notifications`}
+                    >
+                      {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                   )}
                 </div>
@@ -90,7 +85,10 @@ export function AppShell({
 
         <div className="border-t border-white/10 px-5 py-4 space-y-3">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 bg-teal flex items-center justify-center shrink-0">
+            <div
+              className="h-8 w-8 bg-teal flex items-center justify-center shrink-0"
+              aria-hidden="true"
+            >
               <span className="text-white text-xs font-bold">
                 {getInitials(user.full_name)}
               </span>
@@ -107,7 +105,7 @@ export function AppShell({
               type="submit"
               className="flex items-center gap-2 text-xs text-white/50 active:opacity-60 transition-opacity"
             >
-              <LogOut className="h-3.5 w-3.5" /> Sign out
+              <LogOut className="h-3.5 w-3.5" aria-hidden="true" /> Sign out
             </button>
           </form>
         </div>
@@ -119,7 +117,10 @@ export function AppShell({
       </div>
 
       {/* ── Mobile bottom nav ─────────────────────────────────── */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-white border-t-2 border-sage-mid">
+      <nav
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-white border-t-2 border-sage-mid"
+        aria-label="Mobile navigation"
+      >
         <div className="flex">
           {NAV.map((item) => {
             const { href, label } = item;
@@ -130,6 +131,7 @@ export function AppShell({
               <Link
                 key={href}
                 href={href}
+                aria-current={active ? "page" : undefined}
                 className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 ${
                   active
                     ? "border-t-2 border-teal"
@@ -139,9 +141,13 @@ export function AppShell({
                 <div className="relative">
                   <Icon
                     className={`h-5 w-5 ${active ? "text-teal" : accent ? "text-orange" : "text-navy-muted"}`}
+                    aria-hidden="true"
                   />
                   {href === "/notifications" && unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1.5 h-3 w-3 rounded-full bg-orange text-white text-[7px] font-bold flex items-center justify-center">
+                    <span
+                      className="absolute -top-1 -right-1.5 h-3 w-3 rounded-full bg-orange text-white text-[7px] font-bold flex items-center justify-center"
+                      aria-label={`${unreadCount} unread`}
+                    >
                       {unreadCount}
                     </span>
                   )}
