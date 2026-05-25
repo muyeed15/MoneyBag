@@ -13,7 +13,9 @@ export default async function ProfilePage() {
     getWallet(),
     getCards(1),
   ]);
-  const activeCards = cardsData.results.filter((c) => c.status === "active").length;
+  const activeCards = cardsData.results.filter(
+    (c) => c.status === "active",
+  ).length;
 
   return (
     <PageTransition>
@@ -142,7 +144,7 @@ export default async function ProfilePage() {
               </p>
             </div>
           </div>
-          <span className="text-xs font-semibold text-teal">Manage →</span>
+          <span className="text-xs font-semibold text-teal">Manage</span>
         </Link>
 
         {/* Sign out */}
