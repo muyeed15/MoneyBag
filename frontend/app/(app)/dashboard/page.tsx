@@ -2,17 +2,17 @@ import { getWallet, getTransactions, getNotifications } from "@/utils/api";
 import DashboardClient from "./DashboardClient";
 
 export default async function DashboardPage() {
-  const [wallet, transactions, notifications] = await Promise.all([
+  const [wallet, txData, notifData] = await Promise.all([
     getWallet(),
-    getTransactions(),
-    getNotifications(),
+    getTransactions(1),
+    getNotifications(1),
   ]);
 
   return (
     <DashboardClient
       initialWallet={wallet}
-      initialTransactions={transactions}
-      initialNotifications={notifications}
+      initialTransactions={txData.results}
+      initialNotifications={notifData.results}
     />
   );
 }
