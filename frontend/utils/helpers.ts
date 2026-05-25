@@ -2,8 +2,15 @@ import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import type { Transaction } from './api'
 
-export function cn(...inputs: ClassValue[]) {
+export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs))
+}
+
+export const STATUS_VARIANT: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
+  completed: 'success',
+  pending: 'warning',
+  failed: 'danger',
+  reversed: 'neutral',
 }
 
 export function formatAmount(amount: string | number): string {
@@ -60,14 +67,6 @@ export function getTxMeta(tx: Transaction, myPhone: string): TxMeta {
         direction: isSender ? 'to' : 'from',
         counterparty: isSender ? (tx.receiver_phone ?? '—') : (tx.sender_phone ?? '—'),
       }
-    case 'receive':
-      return {
-        label: 'Receive',
-        color: 'text-teal',
-        minus: false,
-        direction: 'from',
-        counterparty: tx.sender_phone ?? '—',
-      }
     case 'cash_in':
       return {
         label: 'Cash In',
@@ -86,11 +85,14 @@ export function getTxMeta(tx: Transaction, myPhone: string): TxMeta {
       }
     case 'payment':
       return {
-        label: 'Payment',
+        label: isSender ? 'QR Payment' : 'Payment Received',
         color: isSender ? 'text-orange' : 'text-teal',
         minus: isSender,
         direction: isSender ? 'to' : 'from',
-        counterparty: isSender ? (tx.receiver_phone ?? '—') : (tx.sender_phone ?? '—'),
+        // Payer sees the merchant name; merchant sees the payer's phone.
+        counterparty: isSender
+          ? (tx.merchant_name ?? tx.receiver_phone ?? '—')
+          : (tx.sender_phone ?? '—'),
       }
     default:
       return {
