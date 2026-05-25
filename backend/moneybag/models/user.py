@@ -7,11 +7,9 @@ from django.db import models
 
 
 class UserManager(BaseUserManager):
-    # Handles how User objects are created
-
     def create_user(self, phone, password=None, **extra_fields):
         if not phone:
-            raise ValueError("Phone number is required")
+            raise ValueError("Phone number is required.")
         user = self.model(phone=phone, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -24,9 +22,6 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    # AbstractBaseUser: gives password hashing and session support
-    # PermissionsMixin: gives is_superuser, groups, and permissions
-
     phone = models.CharField(max_length=15, unique=True)
     full_name = models.CharField(max_length=100)
     nid = models.CharField(max_length=20, unique=True)
@@ -35,10 +30,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    USERNAME_FIELD = "phone"  # used as the login field
+    USERNAME_FIELD = "phone"
     REQUIRED_FIELDS = ["full_name", "nid"]
 
     objects = UserManager()
+
+    class Meta:
+        verbose_name = "User"
+        verbose_name_plural = "Users"
+        ordering = ["-created_at"]
 
     def __str__(self):
         return self.phone
