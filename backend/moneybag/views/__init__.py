@@ -1,4 +1,5 @@
 from .card import CardBlockView, CardListCreateView, CardUnblockView
+from .qr import QRCodeView
 from .merchant import MerchantListView, MerchantPayView
 from .notification import (
     NotificationDetailView,

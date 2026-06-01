@@ -13,6 +13,7 @@ urlpatterns = [
     path(
         "cards/<int:pk>/unblock/", views.CardUnblockView.as_view(), name="card-unblock"
     ),
+    path("qr/", views.QRCodeView.as_view(), name="qr-code"),
     path("transactions/", views.TransactionListView.as_view(), name="transaction-list"),
     path(
         "transactions/<int:pk>/",
