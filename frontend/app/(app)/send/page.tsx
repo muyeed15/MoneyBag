@@ -1,24 +1,37 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Info } from "lucide-react";
+import { ArrowLeft, Info, QrCode } from "lucide-react";
 import { transferAction } from "@/app/actions";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { SuccessModal } from "@/components/ui/SuccessModal";
+import { QRScanner } from "@/components/ui/QRScanner";
 
 const initialState = { error: null, success: false };
 
 export default function SendPage() {
   const [state, action, pending] = useActionState(transferAction, initialState);
   const router = useRouter();
+  const [showScanner, setShowScanner] = useState(false);
+  const [receiverPhone, setReceiverPhone] = useState("");
 
   const showSuccess = state.success && !!state.amount && !!state.receiver_phone;
 
   return (
     <>
+      {showScanner && (
+        <QRScanner
+          onScan={(phone) => {
+            setReceiverPhone(phone);
+            setShowScanner(false);
+          }}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
+
       {showSuccess && (
         <SuccessModal
           amount={state.amount!}
@@ -66,14 +79,28 @@ export default function SendPage() {
           <form action={action} className="bg-white border border-sage-mid">
             <div className="divide-y divide-sage-mid">
               <div className="px-5 py-4">
-                <Input
-                  label="Recipient Phone Number"
-                  name="receiver_phone"
-                  type="tel"
-                  required
-                  placeholder="01XXXXXXXXX"
-                  autoComplete="off"
-                />
+                <div className="flex items-end gap-2">
+                  <div className="flex-1">
+                    <Input
+                      label="Recipient Phone Number"
+                      name="receiver_phone"
+                      type="tel"
+                      required
+                      placeholder="01XXXXXXXXX"
+                      autoComplete="off"
+                      value={receiverPhone}
+                      onChange={(e) => setReceiverPhone(e.target.value)}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowScanner(true)}
+                    className="h-10 w-10 mb-0.5 flex items-center justify-center border border-sage-mid bg-white text-navy-muted active:opacity-60 shrink-0"
+                    aria-label="Scan QR code"
+                  >
+                    <QrCode className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
               <div className="px-5 py-4">
                 <Input
