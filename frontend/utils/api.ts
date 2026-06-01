@@ -38,3 +38,19 @@ export const getTransactions = (page = 1) => serverFetch<PaginatedResponse<Trans
 export const getNotifications= (page = 1) => serverFetch<PaginatedResponse<Notification>>('/api/notifications/', 'notifications', page)
 export const getCards        = (page = 1) => serverFetch<PaginatedResponse<Card>>('/api/cards/', 'cards', page)
 export const getMerchants    = (page = 1) => serverFetch<PaginatedResponse<Merchant>>('/api/merchants/', 'merchants', page)
+
+export async function getQRCode(): Promise<string> {
+  const cookieStore = await cookies()
+  const token = cookieStore.get('access_token')?.value
+  try {
+    const res = await fetch(`${API}/api/qr/`, {
+      headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      cache: 'no-store',
+    })
+    if (!res.ok) throw new Error('Failed to fetch QR code')
+    const buf = Buffer.from(await res.arrayBuffer())
+    return `data:image/png;base64,${buf.toString('base64')}`
+  } catch {
+    return ''
+  }
+}
