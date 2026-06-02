@@ -147,7 +147,7 @@ class Command(BaseCommand):
         self.stdout.write(f"  + {card_count} cards")
 
     def _seed_transactions(self, users, merchants):
-        fee_rate = Decimal(str(settings.TRANSFER_FEE_PERCENT / 100))
+        fee_rate = Decimal(str(settings.TRANSFER_FEE_PERCENT)) / Decimal("100")
         active_users = [u for u in users if u.wallet.status == "active"]
         verified_merchants = [m for m in merchants if m.is_verified]
 
