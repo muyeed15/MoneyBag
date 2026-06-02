@@ -1,10 +1,11 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import type { User, Wallet, Transaction, Notification, Card, Merchant, PaginatedResponse } from '@/types'
+import { logger } from './logger'
 
 export type { User, Wallet, Transaction, Notification, Card, Merchant, PaginatedResponse }
 
-const API = process.env.DJANGO_API_URL ?? 'http://localhost:8000'
+const API = (process.env.DJANGO_API_URL ?? 'http://localhost:8000').replace('://0.0.0.0', '://127.0.0.1')
 const PAGE_SIZE = process.env.PAGE_SIZE ?? '10'
 
 async function authHeaders(): Promise<HeadersInit> {
@@ -28,6 +29,7 @@ async function serverFetch<T>(path: string, label: string, page?: number): Promi
     return res.json()
   } catch (err) {
     if ((err as { digest?: string }).digest?.startsWith('NEXT_REDIRECT')) throw err
+    logger.error('api:serverFetch', `Could not load ${label}`, { path, error: err })
     throw new Error(`Could not load ${label}.`)
   }
 }
@@ -50,7 +52,8 @@ export async function getQRCode(): Promise<string> {
     if (!res.ok) throw new Error('Failed to fetch QR code')
     const buf = Buffer.from(await res.arrayBuffer())
     return `data:image/png;base64,${buf.toString('base64')}`
-  } catch {
+  } catch (err) {
+    logger.error('api:getQRCode', 'Failed to fetch QR code', err)
     return ''
   }
 }

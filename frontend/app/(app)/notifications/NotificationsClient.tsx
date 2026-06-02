@@ -29,18 +29,24 @@ export function NotificationsClient({
   const unread = notifications.filter((n) => !n.is_read).length;
 
   const markAllRead = () => {
+    const prev = data;
     if (data)
       mutate(
         { ...data, results: data.results.map((n) => ({ ...n, is_read: true })) },
         false,
       );
     startTransition(async () => {
-      await markAllReadAction();
+      try {
+        await markAllReadAction();
+      } catch {
+        if (prev) mutate(prev, false);
+      }
       mutate();
     });
   };
 
   const markRead = (id: number) => {
+    const prev = data;
     if (data)
       mutate(
         {
@@ -52,7 +58,11 @@ export function NotificationsClient({
         false,
       );
     startTransition(async () => {
-      await markNotificationReadAction(id);
+      try {
+        await markNotificationReadAction(id);
+      } catch {
+        if (prev) mutate(prev, false);
+      }
       mutate();
     });
   };

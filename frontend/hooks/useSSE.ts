@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { mutate } from 'swr'
 import type { Notification } from '@/types'
+import { logger } from '@/utils/logger'
 
 type SSENotification = Pick<Notification, 'id' | 'message' | 'is_read' | 'created_at'>
 
@@ -31,12 +32,17 @@ export function useSSE(
         const data: SSENotification = JSON.parse(e.data)
         lastIdRef.current = Math.max(lastIdRef.current, data.id)
         onNotificationRef.current(data)
-        void mutate('/api/notifications?page=1')
+        void mutate(
+          (key) => typeof key === 'string' && key.startsWith('/api/notifications'),
+        )
         void mutate('/api/wallet')
-        void mutate('/api/transactions?page=1')
+        void mutate(
+          (key) => typeof key === 'string' && key.startsWith('/api/transactions'),
+        )
       })
 
-      es.onerror = () => {
+      es.onerror = (ev: Event) => {
+        logger.error('useSSE', 'SSE connection error, reconnecting in 3s', ev)
         es?.close()
         es = null
         if (active) retryTimeout = setTimeout(connect, 3000)
