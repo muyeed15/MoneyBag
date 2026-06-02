@@ -38,6 +38,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "moneybag.middleware.RequestLoggingMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -121,6 +122,58 @@ SIMPLE_JWT = {
 TRANSFER_FEE_PERCENT = float(os.environ.get("TRANSFER_FEE_PERCENT", 1.5))
 PAGE_SIZE = int(os.environ.get("PAGE_SIZE", 10))
 PAGE_SIZE_MAX = int(os.environ.get("PAGE_SIZE_MAX", 50))
+
+LOGGING_DIR = BASE_DIR / "logs"
+LOGGING_DIR.mkdir(exist_ok=True)
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {name} {module}:{lineno} {message}",
+            "style": "{",
+        },
+        "request": {
+            "format": "{levelname} {asctime} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "file_error": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": LOGGING_DIR / "error.log",
+            "maxBytes": 10 * 1024 * 1024,
+            "backupCount": 5,
+            "formatter": "verbose",
+            "level": "ERROR",
+        },
+        "file_request": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": LOGGING_DIR / "request.log",
+            "maxBytes": 10 * 1024 * 1024,
+            "backupCount": 3,
+            "formatter": "request",
+        },
+    },
+    "loggers": {
+        "moneybag": {
+            "handlers": ["file_error"],
+            "level": "DEBUG" if DEBUG else "INFO",
+            "propagate": False,
+        },
+        "moneybag.request": {
+            "handlers": ["file_request", "file_error"],
+            "level": "DEBUG" if DEBUG else "INFO",
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["file_error"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
+}
 
 UNFOLD = {
     "SITE_TITLE": "MoneyBag",

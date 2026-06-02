@@ -32,16 +32,23 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_CONN_MAX_AGE=60
 
-CORS_ALLOWED_ORIGINS=http://localhost:3000
-
-ACCESS_TOKEN_MINUTES=30
-REFRESH_TOKEN_MINUTES=30
+ACCESS_TOKEN_MINUTES=1440
+REFRESH_TOKEN_MINUTES=43200
 TRANSFER_FEE_PERCENT=1.5
 PAGE_SIZE=10
 PAGE_SIZE_MAX=50
 ```
 
 `PAGE_SIZE` sets the default number of rows returned per page. `PAGE_SIZE_MAX` is the hard ceiling — any `page_size` sent by the client is silently clamped to this value.
+
+## Logging
+
+Logs are written to `backend/logs/`:
+
+| File          | Contents                                     |
+| ------------- | -------------------------------------------- |
+| `error.log`   | All errors (rotates at 10 MB, 5 backups)     |
+| `request.log` | Every HTTP request (method, path, status, ms, IP, user) |
 
 ## Project Structure
 
