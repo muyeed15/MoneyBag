@@ -15,15 +15,24 @@ Runs at `http://localhost:3000`. Requires the Django backend at `http://127.0.0.
 ## Environment Variables
 
 ```
-DJANGO_API_URL=http://localhost:8000
-ACCESS_TOKEN_MINUTES=30
-REFRESH_TOKEN_MINUTES=30
+DJANGO_API_URL=http://0.0.0.0:8000
+ACCESS_TOKEN_MINUTES=1440
+REFRESH_TOKEN_MINUTES=43200
 NEXT_PUBLIC_TOAST_DURATION_MS=6000
 PAGE_SIZE=10
 PAGE_SIZE_MAX=50
 ```
 
 `ACCESS_TOKEN_MINUTES` and `REFRESH_TOKEN_MINUTES` must match the backend `.env` values.
+
+## Logging
+
+Logs are written to `frontend/logs/` on the Next.js server (never in the browser console):
+
+| File        | Contents                                               |
+| ----------- | ------------------------------------------------------ |
+| `error.log` | All errors (rotates at 10 MB)                          |
+| `app.log`   | All app-level logs (info, warn, debug) (rotates at 10 MB) |
 
 `PAGE_SIZE` controls how many rows are requested per page. `PAGE_SIZE_MAX` is the maximum allowed — the backend enforces this ceiling regardless of what the frontend sends.
 
