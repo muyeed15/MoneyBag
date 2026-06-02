@@ -2,29 +2,22 @@ import json
 import time
 
 from django.http import StreamingHttpResponse
-from django.views import View
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 
 from moneybag.models import Notification
 
 
-class NotificationStreamView(View):
-    def get(self, request):
-        auth = JWTAuthentication()
-        try:
-            result = auth.authenticate(request)
-            if result is None:
-                return StreamingHttpResponse(status=401)
-            user, _ = result
-        except (InvalidToken, TokenError):
-            return StreamingHttpResponse(status=401)
+class NotificationStreamView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request):
         last_id = int(request.GET.get("last_id", 0))
+
+        user = request.user
 
         def event_stream():
             nonlocal last_id
-            # Flush immediately so the proxy knows the connection is live
             yield ": connected\n\n"
             last_heartbeat = time.time()
             try:
