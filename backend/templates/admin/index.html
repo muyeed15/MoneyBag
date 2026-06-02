@@ -90,9 +90,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script>
   (function () {
-    const labels = {{ chart_labels|safe }};
-    const volume = {{ chart_volume|safe }};
-    const count  = {{ chart_count|safe }};
+    const labels = {{ chart_labels_json|safe }};
+    const volume = {{ chart_volume_json|safe }};
+    const count  = {{ chart_count_json|safe }};
     const isDark = document.documentElement.classList.contains("dark");
     const gridColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)";
     const textColor = isDark ? "#9ca3af" : "#6b7280";

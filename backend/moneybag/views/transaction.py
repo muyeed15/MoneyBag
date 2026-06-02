@@ -1,6 +1,8 @@
+import logging
 from decimal import Decimal
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Q, Sum
 from django.utils import timezone
@@ -10,6 +12,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from moneybag.models import Notification, Transaction, Wallet
+
+logger = logging.getLogger(__name__)
 from moneybag.pagination import get_page, get_page_size, paginate
 from moneybag.serializers import TransactionSerializer, TransferSerializer
 
@@ -89,12 +93,6 @@ class TransferView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if not Wallet.objects.filter(user__phone=receiver_phone).exists():
-            return Response(
-                {"detail": "Recipient account not found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
         fee_rate = Decimal(str(settings.TRANSFER_FEE_PERCENT)) / Decimal("100")
         fee = (amount * fee_rate).quantize(Decimal("0.01"))
         total_debit = amount + fee
@@ -104,11 +102,14 @@ class TransferView(APIView):
                 sender_wallet = Wallet.objects.select_for_update().get(
                     user=request.user
                 )
-                receiver_wallet = (
-                    Wallet.objects.select_for_update()
-                    .select_related("user")
-                    .get(user__phone=receiver_phone)
-                )
+                try:
+                    receiver_wallet = (
+                        Wallet.objects.select_for_update()
+                        .select_related("user")
+                        .get(user__phone=receiver_phone)
+                    )
+                except ObjectDoesNotExist:
+                    raise ValueError("Recipient account not found.")
 
                 if sender_wallet.status != "active":
                     raise ValueError("Your wallet is frozen.")
@@ -122,8 +123,10 @@ class TransferView(APIView):
 
                 today = timezone.now().date()
                 spent_today = _daily_spent(request.user, today)
-                if spent_today + amount > sender_wallet.daily_limit:
-                    remaining = sender_wallet.daily_limit - spent_today
+                if spent_today + total_debit > sender_wallet.daily_limit:
+                    remaining = max(
+                        sender_wallet.daily_limit - spent_today, Decimal("0")
+                    )
                     raise ValueError(
                         f"Daily limit exceeded. Remaining today: ৳{remaining}."
                     )
@@ -162,7 +165,11 @@ class TransferView(APIView):
                     ]
                 )
 
-        except ValueError as e:
+        except (ValueError, ObjectDoesNotExist) as e:
+            logger.warning(
+                "TransferView: %s — user=%s to=%s amount=%s",
+                e, request.user.phone, receiver_phone, amount,
+            )
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(TransactionSerializer(tx).data, status=status.HTTP_201_CREATED)

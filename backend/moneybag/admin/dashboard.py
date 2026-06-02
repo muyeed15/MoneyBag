@@ -1,3 +1,4 @@
+import json
 from datetime import date, timedelta
 
 from django.db.models import Count, Sum
@@ -54,9 +55,9 @@ def dashboard_callback(request, context):
                 "total_fees": round(float(total_fees), 2),
                 "active_wallets": active_wallets,
             },
-            "chart_labels": chart_labels,
-            "chart_volume": chart_volume,
-            "chart_count": chart_count,
+            "chart_labels_json": json.dumps(chart_labels),
+            "chart_volume_json": json.dumps(chart_volume),
+            "chart_count_json": json.dumps(chart_count),
         }
     )
     return context

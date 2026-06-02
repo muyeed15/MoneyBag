@@ -1,9 +1,13 @@
+import logging
 from decimal import Decimal
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import status
+
+logger = logging.getLogger(__name__)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -45,19 +49,9 @@ class MerchantPayView(APIView):
         serializer = MerchantPaySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        merchant_id = serializer.validated_data["merchant_id"]
+        merchant = serializer._merchant
         amount = serializer.validated_data["amount"]
         note = serializer.validated_data["note"]
-
-        try:
-            merchant = Merchant.objects.select_related("user").get(
-                pk=merchant_id, is_verified=True
-            )
-        except Merchant.DoesNotExist:
-            return Response(
-                {"detail": "Merchant not found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
 
         if merchant.user == request.user:
             return Response(
@@ -74,9 +68,12 @@ class MerchantPayView(APIView):
                 sender_wallet = Wallet.objects.select_for_update().get(
                     user=request.user
                 )
-                merchant_wallet = Wallet.objects.select_for_update().get(
-                    user=merchant.user
-                )
+                try:
+                    merchant_wallet = Wallet.objects.select_for_update().get(
+                        user=merchant.user
+                    )
+                except ObjectDoesNotExist:
+                    raise ValueError("Merchant wallet is unavailable.")
 
                 if sender_wallet.status != "active":
                     raise ValueError("Your wallet is frozen.")
@@ -90,7 +87,7 @@ class MerchantPayView(APIView):
 
                 today = timezone.now().date()
                 spent_today = _daily_spent(request.user, today)
-                if spent_today + amount > sender_wallet.daily_limit:
+                if spent_today + total_debit > sender_wallet.daily_limit:
                     remaining = sender_wallet.daily_limit - spent_today
                     raise ValueError(
                         f"Daily limit exceeded. Remaining today: ৳{remaining}."
@@ -131,7 +128,11 @@ class MerchantPayView(APIView):
                     ]
                 )
 
-        except ValueError as e:
+        except (ValueError, ObjectDoesNotExist) as e:
+            logger.warning(
+                "MerchantPayView: %s — user=%s merchant=%s amount=%s",
+                e, request.user.phone, merchant.business_name, amount,
+            )
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(TransactionSerializer(tx).data, status=status.HTTP_201_CREATED)

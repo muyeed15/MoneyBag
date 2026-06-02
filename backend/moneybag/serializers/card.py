@@ -29,6 +29,14 @@ class CardSerializer(serializers.ModelSerializer):
         return value
 
     def validate_expiry_year(self, value):
-        if value < timezone.now().year:
+        now = timezone.now()
+        if value < now.year:
             raise serializers.ValidationError("Card is already expired.")
+        if value == now.year and self.initial_data.get("expiry_month"):
+            try:
+                month = int(self.initial_data["expiry_month"])
+                if month < now.month:
+                    raise serializers.ValidationError("Card is already expired.")
+            except (ValueError, TypeError):
+                pass
         return value

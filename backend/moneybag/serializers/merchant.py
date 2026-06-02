@@ -23,6 +23,11 @@ class MerchantPaySerializer(serializers.Serializer):
         return value
 
     def validate_merchant_id(self, value):
-        if not Merchant.objects.filter(id=value, is_verified=True).exists():
+        try:
+            merchant = Merchant.objects.select_related("user").get(
+                pk=value, is_verified=True
+            )
+        except Merchant.DoesNotExist:
             raise serializers.ValidationError("Merchant not found or not verified.")
+        self._merchant = merchant
         return value

@@ -22,7 +22,7 @@ class QRCodeView(APIView):
             buf.getvalue(),
             content_type="image/png",
             headers={
-                "Cache-Control": "private, max-age=86400",
+                "Cache-Control": "no-cache",
                 "Content-Disposition": f'inline; filename="qr-{phone}.png"',
             },
         )
