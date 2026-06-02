@@ -196,7 +196,7 @@ export function AppShell({
                       className="absolute -top-1 -right-1.5 h-3 w-3 bg-orange text-white text-[7px] font-bold flex items-center justify-center"
                       aria-label={`${unreadCount} unread`}
                     >
-                      {unreadCount}
+                      {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                   )}
                 </div>

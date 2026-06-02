@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { logger } from "@/utils/logger";
 
 export default function GlobalError({
   error,
@@ -10,7 +11,7 @@ export default function GlobalError({
   reset: () => void;
 }): React.ReactElement {
   useEffect(() => {
-    console.error(error);
+    logger.error("app:GlobalError", "Unhandled global error", error);
   }, [error]);
 
   return (

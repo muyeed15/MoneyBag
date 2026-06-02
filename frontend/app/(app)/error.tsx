@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
+import { logger } from "@/utils/logger";
 
 export default function Error({
   error,
@@ -11,7 +12,7 @@ export default function Error({
   reset: () => void;
 }): React.ReactElement {
   useEffect(() => {
-    console.error(error);
+    logger.error("app:(app):Error", "Unhandled layout error", error);
   }, [error]);
 
   return (
