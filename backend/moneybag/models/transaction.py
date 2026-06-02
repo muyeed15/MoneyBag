@@ -43,7 +43,7 @@ class Transaction(models.Model):
         related_name="received_payments",
     )
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    fee = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    fee = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
     note = models.TextField(blank=True, null=True)

@@ -52,10 +52,6 @@ class Card(models.Model):
                 condition=models.Q(expiry_month__gte=1, expiry_month__lte=12),
                 name="card_valid_expiry_month",
             ),
-            models.CheckConstraint(
-                condition=models.Q(expiry_year__gte=2024),
-                name="card_expiry_year_not_past",
-            ),
         ]
 
     def __str__(self):
