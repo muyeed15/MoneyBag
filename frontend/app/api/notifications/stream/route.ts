@@ -2,11 +2,12 @@ import { cookies } from 'next/headers'
 import { NextRequest } from 'next/server'
 import * as http from 'http'
 import * as https from 'https'
+import { logger } from '@/utils/logger'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-const API = process.env.DJANGO_API_URL ?? 'http://localhost:8000'
+const API = (process.env.DJANGO_API_URL ?? 'http://localhost:8000').replace('://0.0.0.0', '://127.0.0.1')
 
 export async function GET(request: NextRequest): Promise<Response> {
   const token = (await cookies()).get('access_token')?.value
@@ -26,11 +27,17 @@ export async function GET(request: NextRequest): Promise<Response> {
     (res) => {
       res.on('data', (chunk: Buffer) => void writer.write(chunk))
       res.on('end', () => void writer.close())
-      res.on('error', (err) => void writer.abort(err))
+      res.on('error', (err) => {
+        logger.error('proxy:sse', 'Stream error from upstream', err)
+        void writer.abort(err)
+      })
     },
   )
 
-  upstreamReq.on('error', (err) => void writer.abort(err))
+  upstreamReq.on('error', (err) => {
+    logger.error('proxy:sse', 'Failed to connect to upstream SSE', err)
+    void writer.abort(err)
+  })
 
   request.signal.addEventListener('abort', () => {
     upstreamReq.destroy()

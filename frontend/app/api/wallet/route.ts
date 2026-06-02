@@ -1,7 +1,8 @@
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { logger } from '@/utils/logger'
 
-const API = process.env.DJANGO_API_URL ?? 'http://localhost:8000'
+const API = (process.env.DJANGO_API_URL ?? 'http://localhost:8000').replace('://0.0.0.0', '://127.0.0.1')
 
 export async function GET(): Promise<NextResponse> {
   const token = (await cookies()).get('access_token')?.value
@@ -14,7 +15,8 @@ export async function GET(): Promise<NextResponse> {
     })
     const data = await res.json()
     return NextResponse.json(data, { status: res.status })
-  } catch {
+  } catch (err) {
+    logger.error('proxy:wallet', 'Backend unreachable', { error: err })
     return NextResponse.json({ detail: 'Failed to reach backend.' }, { status: 502 })
   }
 }
