@@ -1,6 +1,6 @@
-# MoneyBag
+# Yaqeen
 
-A Mobile Financial Service (MFS) web app. Django REST backend + Next.js frontend.
+A Sharia-compliant Islamic digital wallet. Django REST backend + Next.js frontend.
 
 ## Quick Start
 
@@ -8,11 +8,10 @@ A Mobile Financial Service (MFS) web app. Django REST backend + Next.js frontend
 
 ```bash
 cd backend
-conda create -n moneybag python=3.12.13
-conda activate moneybag
+conda create -n yaqeen python=3.12.13
+conda activate yaqeen
 pip install -r requirements.txt
 cp .env.example .env   # fill in DB credentials and SECRET_KEY
-python manage.py makemigrations moneybag
 python manage.py migrate
 python manage.py seed  # optional: load sample data (password: 12345678)
 python manage.py runserver
