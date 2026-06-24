@@ -106,7 +106,7 @@ class SadaqahJariyah(models.Model):
                               help_text="Recurring cause (e.g., water well, education fund)")
     frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES, default="monthly")
     is_active = models.BooleanField(default=True)
-    start_date = models.DateField(default=timezone.now)
+    start_date = models.DateField(default=timezone.localdate)
     next_due_date = models.DateField(blank=True, null=True)
     total_donated = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
     created_at = models.DateTimeField(auto_now_add=True)

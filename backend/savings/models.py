@@ -41,7 +41,7 @@ class MudarabahAccount(models.Model):
     plan = models.ForeignKey(MudarabahPlan, on_delete=models.PROTECT, related_name="accounts")
     account_number = models.CharField(max_length=12, unique=True, editable=False)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="active")
-    start_date = models.DateField(default=timezone.now)
+    start_date = models.DateField(default=timezone.localdate)
     maturity_date = models.DateField()
     total_deposited = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
     expected_payout = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
