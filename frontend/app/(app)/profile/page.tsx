@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CreditCard, Store } from "lucide-react";
-import { getMe, getWallet, getCards, getQRCode } from "@/utils/api";
+import { getMe, getWallet, getCards } from "@/utils/api";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { Button } from "@/components/ui/Button";
 import { BackButton } from "@/components/ui/BackButton";
@@ -8,11 +8,10 @@ import { logoutAction } from "@/app/actions";
 import { formatAmount, formatDate, getInitials } from "@/utils/helpers";
 
 export default async function ProfilePage() {
-  const [user, wallet, cardsData, qrDataUrl] = await Promise.all([
+  const [user, wallet, cardsData] = await Promise.all([
     getMe(),
     getWallet(),
     getCards(1),
-    getQRCode(),
   ]);
   const activeCards = cardsData.results.filter(
     (c) => c.status === "active",
@@ -85,27 +84,6 @@ export default async function ProfilePage() {
             </div>
           ))}
         </div>
-
-        {/* QR Code */}
-        {qrDataUrl && (
-          <div className="bg-white border border-sage-mid">
-            <div className="px-4 py-2 bg-sage border-b border-sage-mid">
-              <p className="text-xs font-semibold uppercase tracking-widest text-navy-muted">
-                Scan to Pay
-              </p>
-            </div>
-            <div className="flex flex-col items-center px-4 py-5">
-              <img
-                src={qrDataUrl}
-                alt="Your QR code"
-                className="h-48 w-48"
-              />
-              <p className="text-xs text-navy-muted mt-3">
-                Scan this QR code to send money to {user.phone}
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* Wallet */}
         <div className="bg-white border border-sage-mid">
