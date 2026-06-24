@@ -58,7 +58,7 @@ type TxMeta = {
 export function getTxMeta(tx: Transaction, myPhone: string): TxMeta {
   const isSender = tx.sender_phone === myPhone
 
-  switch (tx.type) {
+  switch (tx.transaction_type) {
     case 'send':
       return {
         label: isSender ? 'Send Money' : 'Received',
@@ -96,7 +96,7 @@ export function getTxMeta(tx: Transaction, myPhone: string): TxMeta {
       }
     default:
       return {
-        label: tx.type,
+        label: tx.transaction_type,
         color: 'text-navy',
         minus: isSender,
         direction: isSender ? 'to' : 'from',
