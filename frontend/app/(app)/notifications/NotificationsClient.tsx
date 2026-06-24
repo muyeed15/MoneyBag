@@ -8,6 +8,7 @@ import { formatDate } from "@/utils/helpers";
 import { markAllReadAction, markNotificationReadAction } from "@/app/actions";
 import type { Notification, PaginatedResponse } from "@/types";
 import { Pagination } from "@/components/ui/Pagination";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { PageTransition } from "@/components/ui/PageTransition";
 
 export function NotificationsClient({
@@ -69,16 +70,7 @@ export function NotificationsClient({
 
   return (
     <PageTransition>
-      {/* Header */}
-      <div className="bg-white border-b border-sage-mid px-4 h-16 flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          aria-label="Go back"
-          className="text-navy-muted active:opacity-60 transition-opacity"
-        >
-          <ArrowLeft className="h-5 w-5" aria-hidden="true" />
-        </button>
+      <PageHeader showBack>
         <div className="flex-1">
           <p className="text-[10px] text-navy-muted font-semibold uppercase tracking-widest leading-none">
             Activity
@@ -88,7 +80,7 @@ export function NotificationsClient({
               Notifications
             </h1>
             {unread > 0 && (
-              <span className="bg-orange text-white text-[10px] font-bold px-2 py-0.5 leading-none">
+              <span className="bg-teal text-white text-[10px] font-bold px-2 py-0.5 leading-none">
                 {unread} new
               </span>
             )}
@@ -99,16 +91,16 @@ export function NotificationsClient({
             type="button"
             disabled={isPending}
             onClick={markAllRead}
-            className="text-xs font-semibold text-teal active:opacity-60 transition-opacity disabled:opacity-40 shrink-0"
+            className="text-xs font-semibold text-navy active:opacity-60 transition-opacity disabled:opacity-40 shrink-0"
           >
             Mark all read
           </button>
         )}
-      </div>
+      </PageHeader>
 
       <div className="px-4 lg:px-8 py-6 max-w-3xl mx-auto">
         {notifications.length === 0 ? (
-          <div className="bg-white border border-sage-mid px-6 py-16 text-center">
+          <div className="bg-white border border-sage-mid px-6 py-16 text-center rounded-xl">
             <Bell
               className="h-10 w-10 text-navy-muted mx-auto mb-3"
               strokeWidth={1.5}
@@ -119,12 +111,12 @@ export function NotificationsClient({
             </p>
           </div>
         ) : (
-          <div className="bg-white border border-sage-mid divide-y divide-sage-mid overflow-hidden">
+          <div className="bg-white border border-sage-mid divide-y divide-sage-mid overflow-hidden rounded-xl">
             {notifications.map((n) =>
               n.is_read ? (
                 <div
                   key={n.id}
-                  className="px-5 py-4 flex gap-4"
+                  className="px-5 py-4 flex gap-4 transition-colors hover:bg-teal/5"
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-navy leading-relaxed">
@@ -140,7 +132,7 @@ export function NotificationsClient({
                   key={n.id}
                   type="button"
                   onClick={() => markRead(n.id)}
-                  className="w-full px-5 py-4 flex gap-4 text-left border-l-4 border-orange bg-orange/5 hover:bg-orange/10 active:opacity-70 transition-colors duration-100 cursor-pointer"
+                  className="w-full px-5 py-4 flex gap-4 text-left transition-colors cursor-pointer hover:bg-teal/10"
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-navy leading-relaxed">
@@ -150,7 +142,7 @@ export function NotificationsClient({
                       {formatDate(n.created_at)}
                     </p>
                   </div>
-                  <div className="h-2 w-2 bg-orange mt-1.5 shrink-0" />
+                  <div className="h-2 w-2 bg-teal mt-1.5 shrink-0 rounded-full" />
                 </button>
               ),
             )}
