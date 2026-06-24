@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.test import TestCase
 
-from accounts.models import User, Wallet
+from accounts.models import Foundation, User, Wallet
 
 
 def make_user(phone, nid, full_name="Test User", password="testpass123"):
@@ -52,3 +52,71 @@ class WalletModelTest(TestCase):
 
     def test_default_daily_limit(self):
         self.assertEqual(self.wallet.daily_limit, Decimal("10000.00"))
+
+
+class FoundationModelTest(TestCase):
+    def setUp(self):
+        self.user = make_user("01700000001", "1111111111")
+        self.foundation = Foundation.objects.create(
+            user=self.user,
+            organization_name="Helping Hands",
+            registration_number="REG-001",
+            cause="education",
+            contact_email="help@example.com",
+            contact_phone="01700000002",
+        )
+
+    def test_str(self):
+        self.assertEqual(str(self.foundation), "Helping Hands")
+
+    def test_default_is_not_verified(self):
+        self.assertFalse(self.foundation.is_verified)
+
+    def test_registration_number_unique(self):
+        with self.assertRaises(Exception):
+            Foundation.objects.create(
+                user=make_user("01700000003", "3333333333"),
+                organization_name="Another",
+                registration_number="REG-001",
+                cause="health",
+            )
+
+    def test_cause_choices(self):
+        valid_causes = [c[0] for c in Foundation.CAUSE_CHOICES]
+        self.assertIn(self.foundation.cause, valid_causes)
+
+    def test_ordering(self):
+        user2 = make_user("01700000002", "2222222222")
+        f2 = Foundation.objects.create(
+            user=user2,
+            organization_name="A Fund",
+            registration_number="REG-002",
+            cause="health",
+        )
+        qs = Foundation.objects.all()
+        self.assertEqual(qs.first(), f2)
+
+    def test_all_cause_choices_valid(self):
+        for i, (cause_key, _) in enumerate(Foundation.CAUSE_CHOICES):
+            phone = f"0170000{i+1:0>2}99"
+            nid = str(1000000000 + i)
+            reg = f"REG-C{i}"
+            f = Foundation.objects.create(
+                user=make_user(phone, nid),
+                organization_name=f"Fund {cause_key}",
+                registration_number=reg,
+                cause=cause_key,
+            )
+            self.assertEqual(f.cause, cause_key)
+
+    def test_minimal_foundation(self):
+        f = Foundation.objects.create(
+            user=make_user("0170000099", "9999999999"),
+            organization_name="Minimal",
+            registration_number="REG-MIN",
+            cause="general",
+        )
+        self.assertEqual(f.website, "")
+        self.assertEqual(f.contact_email, "")
+        self.assertEqual(f.contact_phone, "")
+        self.assertEqual(f.description, "")
