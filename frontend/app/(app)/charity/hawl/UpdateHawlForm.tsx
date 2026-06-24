@@ -9,10 +9,10 @@ export function UpdateHawlForm() {
   const [state, action, pending] = useActionState(updateHawlAction, null)
 
   return (
-    <div className="bg-white border border-sage-mid p-5">
+    <div className="bg-white border border-sage-mid p-5 rounded-xl">
       <h2 className="text-navy font-semibold text-sm mb-4">Update Wealth</h2>
       {state?.success && (
-        <div className="mb-4 bg-teal/10 border border-teal/20 px-4 py-3 text-sm text-teal">
+        <div className="mb-4 bg-teal/10 border border-teal/20 px-4 py-3 text-sm text-navy">
           Hawl tracking updated.
         </div>
       )}

@@ -4,6 +4,7 @@ import { useActionState } from "react"
 import { payZakatAction } from "@/app/actions"
 import { Input } from "@/components/ui/Input"
 import { Button } from "@/components/ui/Button"
+import { Card } from "@/components/ui/Card"
 import { formatAmount } from "@/utils/helpers"
 import type { Foundation } from "@/types"
 
@@ -11,10 +12,10 @@ export function PayZakatForm({ foundations }: { foundations: Foundation[] }) {
   const [state, action, pending] = useActionState(payZakatAction, null)
 
   return (
-    <div className="bg-white border border-sage-mid p-5">
+    <Card>
       <h2 className="text-navy font-semibold text-sm mb-4">Pay Zakat</h2>
       {state?.success && (
-        <div className="mb-4 bg-teal/10 border border-teal/20 px-4 py-3 text-sm text-teal">
+        <div className="mb-4 bg-teal/10 border border-teal/20 px-4 py-3 text-sm text-navy">
           Paid {formatAmount(state.amount)} successfully.
         </div>
       )}
@@ -27,7 +28,7 @@ export function PayZakatForm({ foundations }: { foundations: Foundation[] }) {
           <select
             name="recipient_id"
             required
-            className="w-full border border-sage-mid px-3 py-2 text-sm text-navy focus:outline-none focus:border-teal"
+            className="w-full border border-sage-mid px-3 py-2 text-sm text-navy focus:outline-none focus:border-teal rounded-lg"
           >
             <option value="">Select a foundation</option>
             {foundations.map((f) => (
@@ -40,6 +41,6 @@ export function PayZakatForm({ foundations }: { foundations: Foundation[] }) {
           {pending ? "Paying..." : "Pay Zakat"}
         </Button>
       </form>
-    </div>
+    </Card>
   )
 }

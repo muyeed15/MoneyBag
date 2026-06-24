@@ -10,7 +10,7 @@ export function RenewHawlButton() {
   return (
     <form action={action}>
       {state && !('error' in state) && (
-        <div className="mb-3 bg-teal/10 border border-teal/20 px-4 py-3 text-sm text-teal">Hawl renewed.</div>
+        <div className="mb-3 bg-teal/10 border border-teal/20 px-4 py-3 text-sm text-navy">Hawl renewed.</div>
       )}
       {state && 'error' in state && (
         <div className="mb-3 border-l-4 border-red-500 bg-red-50 px-4 py-3 text-sm text-red-700">{state.error}</div>

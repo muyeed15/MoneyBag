@@ -15,7 +15,7 @@ export function AccountCreateForm({ plans }: { plans: MudarabahPlan[] }) {
   }
 
   return (
-    <form action={action} className="bg-white border border-sage-mid p-5">
+    <form action={action} className="bg-white border border-sage-mid p-5 rounded-xl">
       <h3 className="text-navy font-semibold text-sm mb-3">Open New Account</h3>
       {state?.error && (
         <div className="mb-3 border-l-4 border-red-500 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -25,7 +25,7 @@ export function AccountCreateForm({ plans }: { plans: MudarabahPlan[] }) {
       <select
         name="plan_id"
         required
-        className="w-full border border-sage-mid px-3 py-2 text-sm text-navy mb-3 focus:outline-none focus:border-teal"
+        className="w-full border border-sage-mid px-3 py-2 text-sm text-navy mb-3 focus:outline-none focus:border-teal rounded-lg"
       >
         <option value="">Select a plan</option>
         {plans.map((p) => (

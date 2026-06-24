@@ -16,15 +16,15 @@ export function ToastStack({
       {toasts.map((t) => (
         <div
           key={t.id}
-          className="bg-navy text-white text-sm px-4 py-3 border-l-4 border-orange flex items-start gap-3 shadow-lg"
+          className="relative bg-white text-navy text-sm px-4 py-3 border border-sage-mid shadow-lg rounded-xl"
         >
-          <span className="flex-1 leading-snug">{t.message}</span>
+          <span className="block leading-snug pr-6">{t.message}</span>
           {onDismiss && (
             <button
               type="button"
               onClick={() => onDismiss(t.id)}
               aria-label="Dismiss notification"
-              className="text-white/50 hover:text-white mt-0.5 shrink-0 transition-colors"
+              className="absolute top-2 right-2 text-navy-muted hover:text-navy transition-colors"
             >
               <X className="h-3.5 w-3.5" aria-hidden="true" />
             </button>

@@ -50,7 +50,7 @@ export function QRScanner({ onScan, onClose }: QRScannerProps) {
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const code = jsQR(imageData.data, imageData.width, imageData.height);
           if (code) {
-            const phone = code.data.replace("moneybag://pay/", "");
+            const phone = code.data.replace(/^yaqeen:\/\/pay\//, "");
             if (phone) onScanRef.current(phone);
           }
         }
@@ -71,7 +71,7 @@ export function QRScanner({ onScan, onClose }: QRScannerProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/80 px-4">
-      <div className="bg-white w-full max-w-sm overflow-hidden">
+      <div className="bg-white w-full max-w-sm overflow-hidden rounded-xl">
         <div className="flex items-center justify-between px-4 py-3 border-b border-sage-mid">
           <p className="text-sm font-semibold text-navy">Scan QR Code</p>
           <button
@@ -102,7 +102,7 @@ export function QRScanner({ onScan, onClose }: QRScannerProps) {
           </div>
           <canvas ref={canvasRef} className="hidden" />
           <p className="text-xs text-navy-muted text-center mt-3">
-            Point your camera at a MoneyBag QR code
+            Point your camera at a Yaqeen QR code
           </p>
         </div>
       </div>

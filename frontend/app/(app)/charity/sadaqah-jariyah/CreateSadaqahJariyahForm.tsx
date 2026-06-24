@@ -11,10 +11,10 @@ export function CreateSadaqahJariyahForm({ foundations }: { foundations: Foundat
   const [state, action, pending] = useActionState(createSadaqahJariyahAction, null)
 
   return (
-    <div className="bg-white border border-sage-mid p-5">
+    <div className="bg-white border border-sage-mid p-5 rounded-xl">
       <h2 className="text-navy font-semibold text-sm mb-4">Create Recurring Donation</h2>
       {state?.success && (
-        <div className="mb-4 bg-teal/10 border border-teal/20 px-4 py-3 text-sm text-teal">
+        <div className="mb-4 bg-teal/10 border border-teal/20 px-4 py-3 text-sm text-navy">
           Recurring donation of {formatAmount(state.amount)} created.
         </div>
       )}
@@ -27,7 +27,7 @@ export function CreateSadaqahJariyahForm({ foundations }: { foundations: Foundat
           <select
             name="recipient_id"
             required
-            className="w-full border border-sage-mid px-3 py-2 text-sm text-navy focus:outline-none focus:border-teal"
+            className="w-full border border-sage-mid px-3 py-2 text-sm text-navy focus:outline-none focus:border-teal rounded-lg"
           >
             <option value="">Select a foundation</option>
             {foundations.map((f) => (
