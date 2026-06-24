@@ -1,9 +1,17 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import type { User, Wallet, Transaction, Notification, Card, Merchant, PaginatedResponse } from '@/types'
+import type {
+  User, Wallet, Transaction, Notification, Card, Merchant,
+  PaginatedResponse, Foundation, MudarabahPlan, MudarabahAccount,
+  MudarabahContribution, ZakatPayment, Sadaqah, HawlTracking, SadaqahJariyah,
+} from '@/types'
 import { logger } from './logger'
 
-export type { User, Wallet, Transaction, Notification, Card, Merchant, PaginatedResponse }
+export type {
+  User, Wallet, Transaction, Notification, Card, Merchant,
+  PaginatedResponse, Foundation, MudarabahPlan, MudarabahAccount,
+  MudarabahContribution, ZakatPayment, Sadaqah, HawlTracking, SadaqahJariyah,
+}
 
 const API = (process.env.DJANGO_API_URL ?? 'http://localhost:8000').replace('://0.0.0.0', '://127.0.0.1')
 const PAGE_SIZE = process.env.PAGE_SIZE ?? '10'
@@ -34,12 +42,23 @@ async function serverFetch<T>(path: string, label: string, page?: number): Promi
   }
 }
 
-export const getMe           = () => serverFetch<User>('/api/me/', 'user profile')
-export const getWallet       = () => serverFetch<Wallet>('/api/wallet/', 'wallet')
-export const getTransactions = (page = 1) => serverFetch<PaginatedResponse<Transaction>>('/api/transactions/', 'transactions', page)
-export const getNotifications= (page = 1) => serverFetch<PaginatedResponse<Notification>>('/api/notifications/', 'notifications', page)
-export const getCards        = (page = 1) => serverFetch<PaginatedResponse<Card>>('/api/cards/', 'cards', page)
-export const getMerchants    = (page = 1) => serverFetch<PaginatedResponse<Merchant>>('/api/merchants/', 'merchants', page)
+export const getMe              = () => serverFetch<User>('/api/me/', 'user profile')
+export const getWallet          = () => serverFetch<Wallet>('/api/wallet/', 'wallet')
+export const getTransactions    = (page = 1) => serverFetch<PaginatedResponse<Transaction>>('/api/transactions/', 'transactions', page)
+export const getNotifications   = (page = 1) => serverFetch<PaginatedResponse<Notification>>('/api/notifications/', 'notifications', page)
+export const getCards           = (page = 1) => serverFetch<PaginatedResponse<Card>>('/api/cards/', 'cards', page)
+export const getMerchants       = (page = 1) => serverFetch<PaginatedResponse<Merchant>>('/api/merchants/', 'merchants', page)
+export const getFoundations     = () => serverFetch<Foundation[]>('/api/foundations/', 'foundations')
+export const getFoundation      = (pk: number) => serverFetch<Foundation>(`/api/foundations/${pk}/`, 'foundation')
+export const getMudarabahPlans  = () => serverFetch<MudarabahPlan[]>('/api/mudarabah/plans/', 'mudarabah plans')
+export const getMudarabahAccounts = (page = 1) => serverFetch<MudarabahAccount[]>('/api/mudarabah/accounts/', 'mudarabah accounts', page)
+export const getMudarabahAccount = (accountNumber: string) => serverFetch<MudarabahAccount>(`/api/mudarabah/accounts/${accountNumber}/`, 'mudarabah account')
+export const getMudarabahContributions = (accountNumber: string) => serverFetch<MudarabahContribution[]>(`/api/mudarabah/accounts/${accountNumber}/contributions/`, 'contributions')
+export const getZakatHistory    = () => serverFetch<ZakatPayment[]>('/api/zakat/history/', 'zakat history')
+export const getSadaqahHistory  = () => serverFetch<Sadaqah[]>('/api/sadaqah/history/', 'sadaqah history')
+export const getHawl            = () => serverFetch<HawlTracking>('/api/hawl/', 'hawl tracking')
+export const getSadaqahJariyahList = () => serverFetch<SadaqahJariyah[]>('/api/sadaqah-jariyah/', 'sadaqah jariyah')
+export const getSadaqahJariyah  = (id: number) => serverFetch<SadaqahJariyah>(`/api/sadaqah-jariyah/${id}/`, 'sadaqah jariyah')
 
 export async function getQRCode(): Promise<string> {
   const cookieStore = await cookies()

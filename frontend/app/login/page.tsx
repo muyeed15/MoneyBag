@@ -18,9 +18,9 @@ export default function LoginPage() {
           Welcome to
         </p>
         <h1 className="text-white text-3xl font-bold tracking-tight">
-          MoneyBag
+          Yaqeen
         </h1>
-        <p className="text-white/70 text-sm mt-1">Mobile financial services</p>
+        <p className="text-white/70 text-sm mt-1">Sharia-compliant Islamic digital wallet</p>
       </div>
 
       {/* Form block */}
@@ -68,7 +68,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-xs text-navy-muted mt-6">
-          MoneyBag · Secure Digital Wallet
+          Yaqeen · Secure Digital Wallet
         </p>
       </div>
     </div>

@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MoneyBag",
-  description: "Mobile banking wallet",
+  title: "Yaqeen",
+  description: "Sharia-compliant Islamic digital wallet",
 };
 
 export default function RootLayout({
