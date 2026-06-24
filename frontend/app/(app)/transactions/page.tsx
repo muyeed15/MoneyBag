@@ -8,7 +8,7 @@ import {
 import { PageTransition } from "@/components/ui/PageTransition";
 import { Badge } from "@/components/ui/Badge";
 import { TransactionCard } from "@/components/ui/TransactionCard";
-import { BackButton } from "@/components/ui/BackButton";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { PaginationUrl } from "@/components/ui/PaginationUrl";
 
 export default async function TransactionsPage({
@@ -28,21 +28,11 @@ export default async function TransactionsPage({
 
   return (
     <PageTransition>
-      <div className="bg-white border-b border-sage-mid px-4 h-16 flex items-center gap-3">
-        <BackButton />
-        <div>
-          <p className="text-[10px] text-navy-muted font-semibold uppercase tracking-widest leading-none">
-            History
-          </p>
-          <h1 className="text-navy font-bold text-lg leading-tight mt-0.5">
-            Transactions
-          </h1>
-        </div>
-      </div>
+      <PageHeader title="Transactions" subtitle="History" showBack />
 
       <div className="px-4 lg:px-8 py-6 max-w-5xl mx-auto">
         {transactions.length === 0 ? (
-          <div className="bg-white border border-sage-mid px-6 py-16 text-center">
+          <div className="bg-white border border-sage-mid px-6 py-16 text-center rounded-xl">
             <p className="text-navy font-semibold">No transactions yet</p>
             <p className="text-sm text-navy-muted mt-1">
               Your transaction history will appear here.
@@ -51,7 +41,7 @@ export default async function TransactionsPage({
         ) : (
           <>
             {/* Desktop table */}
-            <div className="hidden sm:block bg-white border border-sage-mid overflow-hidden">
+            <div className="hidden sm:block bg-white border border-sage-mid overflow-hidden rounded-xl">
               <table className="w-full text-sm border-collapse">
                 <thead>
                   <tr className="bg-sage border-b border-sage-mid text-left">
@@ -124,7 +114,7 @@ export default async function TransactionsPage({
             </div>
 
             {/* Mobile list */}
-            <div className="sm:hidden bg-white border border-sage-mid divide-y divide-sage-mid">
+            <div className="sm:hidden bg-white border border-sage-mid divide-y divide-sage-mid rounded-xl">
               {transactions.map((tx) => (
                 <TransactionCard key={tx.id} tx={tx} myPhone={myPhone} />
               ))}

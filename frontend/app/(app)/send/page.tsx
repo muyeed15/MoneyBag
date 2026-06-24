@@ -1,27 +1,42 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Info, QrCode } from "lucide-react";
+import { ArrowUpRight, Info, QrCode } from "lucide-react";
 import { transferAction } from "@/app/actions";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { SuccessModal } from "@/components/ui/SuccessModal";
 import { QRScanner } from "@/components/ui/QRScanner";
+import { formatAmount } from "@/utils/helpers";
 
 const initialState = { error: null, success: false };
 
 export default function SendPage() {
-  const [state, action, pending] = useActionState(transferAction, initialState);
+  const [state, formAction, pending] = useActionState(transferAction, initialState);
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
+  const submitRef = useRef<HTMLButtonElement>(null);
   const [showScanner, setShowScanner] = useState(false);
   const [receiverPhone, setReceiverPhone] = useState("");
+  const [confirmData, setConfirmData] = useState<{ phone: string; amount: string; note: string } | null>(null);
 
   const showSuccess = state.success && !!state.amount && !!state.receiver_phone;
 
+  const handleConfirm = () => {
+    const form = formRef.current;
+    if (!form) return;
+    const data = new FormData(form);
+    const phone = data.get("receiver_phone") as string;
+    const amount = data.get("amount") as string;
+    if (!phone || !amount) return;
+    setConfirmData({ phone, amount, note: (data.get("note") as string) || "" });
+  };
+
   return (
-    <>
+    <div>
       {showScanner && (
         <QRScanner
           onScan={(phone) => {
@@ -42,43 +57,26 @@ export default function SendPage() {
       )}
 
       <PageTransition>
-        <div className="bg-white border-b border-sage-mid px-4 h-16 flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            aria-label="Go back"
-            className="text-navy-muted active:opacity-60 transition-opacity"
-          >
-            <ArrowLeft className="h-5 w-5" aria-hidden="true" />
-          </button>
-          <div>
-            <p className="text-[10px] text-navy-muted font-semibold uppercase tracking-widest leading-none">
-              Transfer
-            </p>
-            <h1 className="text-navy font-bold text-lg leading-tight">
-              Send Money
-            </h1>
-          </div>
-        </div>
+        <PageHeader title="Send Money" subtitle="Transfer" showBack />
 
         <div className="px-4 lg:px-8 py-6 max-w-lg mx-auto">
-          <div className="bg-teal text-white px-4 py-3 mb-5 flex gap-3 items-start">
-            <Info className="h-4 w-4 mt-0.5 shrink-0 text-white/70" />
-            <p className="text-sm leading-snug">
-              Transfers are instant and <strong>cannot be reversed</strong>.
-              Verify the number before sending.
-            </p>
-          </div>
-
           {state.error && (
             <div className="border-l-4 border-red-500 bg-red-50 px-4 py-3 text-sm text-red-700 mb-5">
               {state.error}
             </div>
           )}
 
-          <form action={action} className="bg-white border border-sage-mid">
-            <div className="divide-y divide-sage-mid">
-              <div className="px-5 py-4">
+          <form ref={formRef} action={formAction} className="bg-white border border-sage-mid rounded-xl p-5">
+            <button ref={submitRef} type="submit" className="hidden" />
+            <div className="text-navy-muted pb-4 flex gap-2 items-start">
+              <Info className="h-4 w-4 mt-0.5 shrink-0 text-navy-muted" />
+              <p className="text-xs leading-snug">
+                Transfers are instant and <strong>cannot be reversed</strong>.
+                Verify the number before sending.
+              </p>
+            </div>
+            <div>
+              <div className="py-4">
                 <div className="flex items-end gap-2">
                   <div className="flex-1">
                     <Input
@@ -95,14 +93,14 @@ export default function SendPage() {
                   <button
                     type="button"
                     onClick={() => setShowScanner(true)}
-                    className="h-10 w-10 mb-0.5 flex items-center justify-center border border-sage-mid bg-white text-navy-muted active:opacity-60 shrink-0"
+                    className="h-10 w-10 mb-0.5 flex items-center justify-center border border-sage-mid bg-white text-navy-muted active:opacity-60 shrink-0 rounded-lg"
                     aria-label="Scan QR code"
                   >
                     <QrCode className="h-5 w-5" />
                   </button>
                 </div>
               </div>
-              <div className="px-5 py-4">
+              <div className="py-4">
                 <Input
                   label="Amount (৳)"
                   name="amount"
@@ -117,7 +115,7 @@ export default function SendPage() {
                   transfer.
                 </p>
               </div>
-              <div className="px-5 py-4">
+              <div className="py-4">
                 <Input
                   label="Note (Optional)"
                   name="note"
@@ -127,26 +125,74 @@ export default function SendPage() {
               </div>
             </div>
 
-            <div className="flex border-t border-sage-mid">
+            <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="flex-1 py-4 text-sm font-semibold text-navy-muted border-r border-sage-mid active:opacity-60 transition-opacity"
+                className="flex-1 py-4 text-sm font-semibold text-white bg-red-500 rounded-xl active:opacity-80 transition-opacity"
               >
                 Cancel
               </button>
               <Button
-                type="submit"
-                variant="cta"
-                loading={pending}
-                className="flex-1 rounded-none h-auto py-4 text-base"
+                type="button"
+                variant="primary"
+                onClick={handleConfirm}
+                className="flex-1 h-auto py-4 text-base rounded-xl"
               >
-                {pending ? "Sending…" : "Confirm & Send"}
+                Confirm
               </Button>
             </div>
           </form>
         </div>
       </PageTransition>
-    </>
+
+      {confirmData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-navy/60" onClick={() => setConfirmData(null)}>
+          <div className="bg-white w-full max-w-sm rounded-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 space-y-4">
+              <div className="text-center">
+                <div className="mx-auto h-12 w-12 bg-teal/10 rounded-full flex items-center justify-center mb-3">
+                  <ArrowUpRight className="h-6 w-6 text-teal" />
+                </div>
+                <p className="text-navy font-bold text-base">Confirm Transfer</p>
+                <p className="text-xs text-navy-muted mt-1">Are you sure you want to send?</p>
+              </div>
+              <div className="bg-sage rounded-lg px-4 py-3 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-navy-muted">To</span>
+                  <span className="text-navy font-semibold">{confirmData.phone}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-navy-muted">Amount</span>
+                  <span className="text-navy font-bold">{formatAmount(confirmData.amount)}</span>
+                </div>
+                {confirmData.note && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-navy-muted">Note</span>
+                    <span className="text-navy">{confirmData.note}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex border-t border-sage-mid">
+              <button
+                type="button"
+                onClick={() => setConfirmData(null)}
+                className="flex-1 py-4 text-sm font-semibold text-navy border-r border-sage-mid active:opacity-70 transition-opacity"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => { setConfirmData(null); submitRef.current?.click(); }}
+                className="flex-1 py-4 text-sm font-semibold text-teal active:opacity-70 transition-opacity"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
