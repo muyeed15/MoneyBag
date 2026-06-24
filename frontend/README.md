@@ -1,6 +1,6 @@
-# MoneyBag Frontend
+# Yaqeen Frontend
 
-Next.js web app for the MoneyBag MFS. Covers dashboard, transfers, merchant payments, cards, transactions, notifications, and profile.
+Next.js web app for Yaqeen — a Sharia-compliant Islamic digital wallet. Covers dashboard, transfers, merchant payments, cards, transactions, notifications, and profile.
 
 ## Setup
 
