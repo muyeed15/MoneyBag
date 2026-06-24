@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode, useState, useEffect, useCallback, useRef } from "react";
-import { Home, Receipt, ArrowUpRight, Bell, User, LogOut } from "lucide-react";
+import {
+  Home, Receipt, ArrowUpRight, Bell, User, LogOut,
+  CreditCard, ShoppingCart, Landmark, Heart, LayoutGrid, QrCode,
+} from "lucide-react";
 import useSWR from "swr";
 import { logoutAction } from "@/app/actions";
 import { getInitials } from "@/utils/helpers";
@@ -18,10 +21,23 @@ import type {
 
 const NAV = [
   { href: "/dashboard", icon: Home, label: "Home" },
-  { href: "/transactions", icon: Receipt, label: "Transactions" },
-  { href: "/send", icon: ArrowUpRight, label: "Send Money", accent: true },
+  { href: "/send", icon: ArrowUpRight, label: "Send" },
+  { href: "/receive", icon: QrCode, label: "Receive" },
+  { href: "/pay", icon: ShoppingCart, label: "Pay" },
+  { href: "/savings", icon: Landmark, label: "Savings" },
+  { href: "/charity", icon: Heart, label: "Charity" },
+  { href: "/cards", icon: CreditCard, label: "Cards" },
+  { href: "/transactions", icon: Receipt, label: "History" },
   { href: "/notifications", icon: Bell, label: "Alerts" },
   { href: "/profile", icon: User, label: "Profile" },
+] as const;
+
+const MOBILE_NAV = [
+  { href: "/dashboard", icon: Home, label: "Home" },
+  { href: "/send", icon: ArrowUpRight, label: "Send" },
+  { href: "/pay", icon: ShoppingCart, label: "Pay" },
+  { href: "/receive", icon: QrCode, label: "Receive" },
+  { href: "/more", icon: LayoutGrid, label: "More" },
 ] as const;
 
 export function AppShell({
@@ -91,16 +107,15 @@ export function AppShell({
       <aside className="hidden lg:flex flex-col w-52 shrink-0 bg-navy fixed top-0 left-0 h-screen z-20">
         <div className="px-5 py-5 border-b border-white/10">
           <span className="text-white font-bold text-base tracking-tight">
-            MoneyBag
+            Yaqeen
           </span>
         </div>
 
-        <nav className="flex-1 py-3" aria-label="Main navigation">
+        <nav className="flex-1 py-3 overflow-y-auto" aria-label="Main navigation">
           {NAV.map((item) => {
             const { href, label } = item;
             const Icon = item.icon;
-            const accent = "accent" in item && item.accent;
-            const active = path === href;
+            const active = path === href || path.startsWith(href);
             return (
               <Link
                 key={href}
@@ -109,9 +124,7 @@ export function AppShell({
                 className={`flex items-center gap-3 px-5 py-3 text-sm font-medium border-l-2 transition-colors duration-100 ${
                   active
                     ? "border-orange bg-white/10 text-white"
-                    : accent
-                      ? "border-transparent text-orange hover:bg-white/5 hover:text-orange/90"
-                      : "border-transparent text-white/60 hover:bg-white/5 hover:text-white/90"
+                    : "border-transparent text-white/60 hover:bg-white/5 hover:text-white/90"
                 }`}
               >
                 <div className="relative">
@@ -170,11 +183,10 @@ export function AppShell({
         aria-label="Mobile navigation"
       >
         <div className="flex">
-          {NAV.map((item) => {
+          {MOBILE_NAV.map((item) => {
             const { href, label } = item;
             const Icon = item.icon;
-            const accent = "accent" in item && item.accent;
-            const active = path === href;
+            const active = path === href || path.startsWith(href + "/");
             return (
               <Link
                 key={href}
@@ -188,10 +200,10 @@ export function AppShell({
               >
                 <div className="relative">
                   <Icon
-                    className={`h-5 w-5 ${active ? "text-teal" : accent ? "text-orange" : "text-navy-muted"}`}
+                    className={`h-5 w-5 ${active ? "text-teal" : "text-navy-muted"}`}
                     aria-hidden="true"
                   />
-                  {href === "/notifications" && unreadCount > 0 && (
+                  {href === "/more" && unreadCount > 0 && (
                     <span
                       className="absolute -top-1 -right-1.5 h-3 w-3 bg-orange text-white text-[7px] font-bold flex items-center justify-center"
                       aria-label={`${unreadCount} unread`}
@@ -201,7 +213,7 @@ export function AppShell({
                   )}
                 </div>
                 <span
-                  className={`text-[10px] font-medium ${active ? "text-teal" : accent ? "text-orange" : "text-navy-muted"}`}
+                  className={`text-[10px] font-medium ${active ? "text-teal" : "text-navy-muted"}`}
                 >
                   {label}
                 </span>
