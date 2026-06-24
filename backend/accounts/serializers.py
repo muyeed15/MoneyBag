@@ -36,12 +36,13 @@ class WalletSerializer(serializers.ModelSerializer):
 
 class FoundationSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(source="user.phone", read_only=True)
+    user_id = serializers.IntegerField(source="user.id", read_only=True)
 
     class Meta:
         model = Foundation
         fields = [
             "id", "organization_name", "cause", "description",
             "website", "contact_email", "contact_phone", "is_verified",
-            "phone", "created_at",
+            "phone", "user_id", "created_at",
         ]
         read_only_fields = ["is_verified", "created_at"]
