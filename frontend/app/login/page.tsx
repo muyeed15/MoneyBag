@@ -13,7 +13,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col bg-sage">
       {/* Top color block */}
-      <div className="bg-teal px-6 pt-12 pb-10">
+      <div className="bg-teal px-6 pt-12 pb-10 rounded-b-xl">
         <p className="text-white/60 text-xs font-semibold uppercase tracking-widest mb-1">
           Welcome to
         </p>
@@ -25,7 +25,7 @@ export default function LoginPage() {
 
       {/* Form block */}
       <div className="flex-1 flex flex-col">
-        <div className="bg-white border-b border-sage-mid px-6 py-8 sm:max-w-sm sm:mx-auto sm:w-full sm:mt-8 sm:border sm:border-sage-mid">
+        <div className="bg-white px-6 py-8 rounded-xl sm:max-w-sm sm:mx-auto sm:w-full sm:mt-8 sm:border sm:border-sage-mid">
           <h2 className="text-navy font-bold text-lg mb-5">
             Sign in to your account
           </h2>
@@ -56,7 +56,7 @@ export default function LoginPage() {
             <div className="pt-2">
               <Button
                 type="submit"
-                variant="cta"
+                variant="primary"
                 size="lg"
                 loading={pending}
                 className="w-full"

@@ -14,9 +14,9 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants: Record<Variant, string> = {
   primary: "bg-teal text-white active:opacity-80",
-  cta: "bg-orange text-white active:opacity-80",
+  cta: "bg-teal text-white active:opacity-80",
   secondary: "bg-white text-navy border border-sage-mid active:opacity-70",
-  ghost: "text-teal active:opacity-60",
+  ghost: "text-navy active:opacity-60",
   destructive: "text-red-500 active:opacity-60",
 };
 
@@ -38,7 +38,7 @@ export function Button({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center gap-2 font-semibold transition-opacity duration-100 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed select-none",
+        "inline-flex items-center justify-center gap-2 font-semibold transition-opacity duration-100 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed select-none rounded-lg",
         variants[variant],
         sizes[size],
         className,
