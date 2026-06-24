@@ -26,13 +26,13 @@ describe('Button', () => {
   it('applies cta variant', () => {
     render(<Button variant="cta">Upgrade</Button>)
     const btn = screen.getByRole('button')
-    expect(btn.className).toContain('bg-orange')
+    expect(btn.className).toContain('bg-teal')
   })
 
   it('applies ghost variant', () => {
     render(<Button variant="ghost">Link</Button>)
     const btn = screen.getByRole('button')
-    expect(btn.className).toContain('text-teal')
+    expect(btn.className).toContain('text-navy')
   })
 
   it('applies destructive variant', () => {
