@@ -1,15 +1,16 @@
 "use client";
 
-import { useActionState, useTransition, useState, useEffect } from "react";
+import { useActionState, useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
-import { ArrowLeft, CreditCard, Plus, X } from "lucide-react";
-import { addCardAction, blockCardAction, unblockCardAction } from "@/app/actions";
+import { ArrowRight, CreditCard, Plus, X } from "lucide-react";
+import { addCardAction } from "@/app/actions";
 import type { Card, PaginatedResponse } from "@/types";
 import { Pagination } from "@/components/ui/Pagination";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { PageTransition } from "@/components/ui/PageTransition";
 
 const CARD_STATUS_VARIANT: Record<string, "success" | "danger" | "neutral"> = {
@@ -31,23 +32,6 @@ export default function CardsPage() {
     addCardAction,
     initialState,
   );
-  const [blocking, startBlock] = useTransition();
-  const [unblocking, startUnblock] = useTransition();
-
-  const handleBlock = (cardId: number) => {
-    startBlock(async () => {
-      await blockCardAction(cardId);
-      mutate();
-    });
-  };
-
-  const handleUnblock = (cardId: number) => {
-    startUnblock(async () => {
-      await unblockCardAction(cardId);
-      mutate();
-    });
-  };
-
   useEffect(() => {
     if (state.success) {
       setShowForm(false);
@@ -57,15 +41,7 @@ export default function CardsPage() {
 
   return (
     <PageTransition>
-      <div className="bg-white border-b border-sage-mid px-4 h-16 flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          aria-label="Go back"
-          className="text-navy-muted active:opacity-60 transition-opacity"
-        >
-          <ArrowLeft className="h-5 w-5" aria-hidden="true" />
-        </button>
+      <PageHeader showBack>
         <div className="flex-1">
           <p className="text-[10px] text-navy-muted font-semibold uppercase tracking-widest leading-none">
             Payment Methods
@@ -78,7 +54,7 @@ export default function CardsPage() {
           type="button"
           onClick={() => setShowForm((v) => !v)}
           aria-label={showForm ? "Cancel" : "Add card"}
-          className="flex items-center gap-1.5 text-xs font-semibold text-teal active:opacity-60 transition-opacity"
+          className="flex items-center gap-1.5 text-xs font-semibold text-navy active:opacity-60 transition-opacity"
         >
           {showForm ? (
             <>
@@ -90,16 +66,14 @@ export default function CardsPage() {
             </>
           )}
         </button>
-      </div>
+      </PageHeader>
 
       <div className="px-4 lg:px-8 py-6 max-w-2xl mx-auto space-y-5">
         {showForm && (
-          <form action={formAction} className="bg-white border border-sage-mid">
-            <div className="px-4 py-2 bg-sage border-b border-sage-mid">
-              <p className="text-xs font-semibold uppercase tracking-widest text-navy-muted">
-                Add New Card
-              </p>
-            </div>
+          <form action={formAction} className="bg-white border border-sage-mid rounded-xl p-5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-navy-muted mb-4">
+              Add New Card
+            </p>
 
             {state.error && (
               <div className="mx-5 mt-4 border-l-4 border-red-500 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -107,8 +81,8 @@ export default function CardsPage() {
               </div>
             )}
 
-            <div className="divide-y divide-sage-mid">
-              <div className="px-5 py-4">
+            <div>
+              <div className="py-4">
                 <Input
                   label="Last 4 Digits"
                   name="last_four"
@@ -119,20 +93,20 @@ export default function CardsPage() {
                   placeholder="e.g. 4242"
                 />
               </div>
-              <div className="px-5 py-4">
+              <div className="py-4">
                 <label className="block text-xs font-semibold uppercase tracking-widest text-navy-muted mb-2">
                   Card Type
                 </label>
                 <select
                   name="card_type"
                   required
-                  className="w-full border border-sage-mid px-3 py-2 text-sm text-navy bg-white focus:outline-none focus:ring-1 focus:ring-teal"
+                  className="w-full border border-sage-mid px-3 py-2 text-sm text-navy bg-white focus:outline-none focus:ring-1 focus:ring-teal rounded-lg"
                 >
                   <option value="debit">Debit Card</option>
                   <option value="prepaid">Prepaid Card</option>
                 </select>
               </div>
-              <div className="px-5 py-4 grid grid-cols-2 gap-4">
+              <div className="py-4 grid grid-cols-2 gap-4">
                 <Input
                   label="Expiry Month"
                   name="expiry_month"
@@ -153,12 +127,12 @@ export default function CardsPage() {
               </div>
             </div>
 
-            <div className="border-t border-sage-mid">
+            <div className="flex gap-3 pt-4">
               <Button
                 type="submit"
-                variant="cta"
+                variant="primary"
                 loading={pending}
-                className="w-full rounded-none h-auto py-4 text-base"
+                className="flex-1 h-auto py-4 text-base rounded-xl"
               >
                 {pending ? "Adding…" : "Add Card"}
               </Button>
@@ -167,7 +141,7 @@ export default function CardsPage() {
         )}
 
         {cards.length === 0 && !showForm ? (
-          <div className="bg-white border border-sage-mid px-6 py-16 text-center">
+          <div className="bg-white border border-sage-mid px-6 py-16 text-center rounded-xl">
             <CreditCard
               className="h-10 w-10 text-navy-muted mx-auto mb-3"
               strokeWidth={1.5}
@@ -180,9 +154,10 @@ export default function CardsPage() {
         ) : (
           <div className="space-y-3">
             {cards.map((card) => (
-              <div
+              <Link
                 key={card.id}
-                className="bg-navy text-white px-6 py-5 flex items-center justify-between"
+                href={`/cards/${card.id}`}
+                className="bg-teal text-white px-6 py-5 flex items-center justify-between rounded-xl hover:bg-teal/90 transition-colors"
               >
                 <div>
                   <p className="text-white/50 text-xs font-semibold tracking-widest uppercase mb-1">
@@ -197,31 +172,18 @@ export default function CardsPage() {
                   </p>
                 </div>
                 <div className="flex flex-col items-end gap-3">
-                  <Badge variant={CARD_STATUS_VARIANT[card.status]}>
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-md ${
+                    card.status === "active"
+                      ? "bg-white/20 text-white"
+                      : card.status === "blocked"
+                      ? "bg-red-400/30 text-red-200"
+                      : "bg-white/10 text-white/60"
+                  }`}>
                     {card.status.charAt(0).toUpperCase() + card.status.slice(1)}
-                  </Badge>
-                  {card.status === "active" && (
-                    <button
-                      type="button"
-                      disabled={blocking}
-                      onClick={() => handleBlock(card.id)}
-                      className="text-xs font-semibold text-red-300 hover:text-red-200 active:opacity-60 transition-opacity disabled:opacity-40"
-                    >
-                      Block
-                    </button>
-                  )}
-                  {card.status === "blocked" && (
-                    <button
-                      type="button"
-                      disabled={unblocking}
-                      onClick={() => handleUnblock(card.id)}
-                      className="text-xs font-semibold text-green-300 hover:text-green-200 active:opacity-60 transition-opacity disabled:opacity-40"
-                    >
-                      Unblock
-                    </button>
-                  )}
+                  </span>
+                  <ArrowRight className="h-4 w-4 text-white/40" />
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

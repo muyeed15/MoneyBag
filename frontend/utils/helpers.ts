@@ -62,7 +62,7 @@ export function getTxMeta(tx: Transaction, myPhone: string): TxMeta {
     case 'send':
       return {
         label: isSender ? 'Send Money' : 'Received',
-        color: isSender ? 'text-orange' : 'text-teal',
+        color: isSender ? 'text-navy-muted' : 'text-navy',
         minus: isSender,
         direction: isSender ? 'to' : 'from',
         counterparty: isSender ? (tx.receiver_phone ?? '—') : (tx.sender_phone ?? '—'),
@@ -70,7 +70,7 @@ export function getTxMeta(tx: Transaction, myPhone: string): TxMeta {
     case 'cash_in':
       return {
         label: 'Cash In',
-        color: 'text-teal',
+        color: 'text-navy',
         minus: false,
         direction: 'from',
         counterparty: 'Agent',
@@ -78,7 +78,7 @@ export function getTxMeta(tx: Transaction, myPhone: string): TxMeta {
     case 'cash_out':
       return {
         label: 'Cash Out',
-        color: 'text-orange',
+        color: 'text-navy-muted',
         minus: true,
         direction: 'to',
         counterparty: 'Agent',
@@ -86,7 +86,7 @@ export function getTxMeta(tx: Transaction, myPhone: string): TxMeta {
     case 'payment':
       return {
         label: isSender ? 'QR Payment' : 'Payment Received',
-        color: isSender ? 'text-orange' : 'text-teal',
+        color: isSender ? 'text-navy-muted' : 'text-navy',
         minus: isSender,
         direction: isSender ? 'to' : 'from',
         // Payer sees the merchant name; merchant sees the payer's phone.

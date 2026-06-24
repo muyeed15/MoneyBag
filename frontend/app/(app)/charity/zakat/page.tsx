@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { getZakatHistory, getFoundations } from "@/utils/api"
 import { formatAmount, formatDate } from "@/utils/helpers"
+import { PageHeader } from "@/components/ui/PageHeader"
 import { CalculateZakatForm } from "./CalculateZakatForm"
 import { PayZakatForm } from "./PayZakatForm"
 
@@ -29,11 +30,9 @@ export default async function ZakatPage({
   ] as const
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-5xl mx-auto">
-      <div className="bg-white border-b border-sage-mid px-6 -mx-4 lg:-mx-8 -mt-6 mb-6 py-4 lg:px-8">
-        <Link href="/charity" className="text-navy-muted text-sm hover:underline">&larr; Charity</Link>
-        <h1 className="text-navy font-bold text-lg">Zakat</h1>
-      </div>
+    <div>
+      <PageHeader title="Zakat" subtitle="Charity" showBack />
+      <div className="px-4 lg:px-8 py-6 max-w-5xl mx-auto">
 
       <div className="flex border-b border-sage-mid mb-6">
         {TABS.map((t) => (
@@ -42,7 +41,7 @@ export default async function ZakatPage({
             href={`/charity/zakat?tab=${t.key}`}
             className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
               activeTab === t.key
-                ? "border-teal text-teal"
+                ? "border-navy text-navy"
                 : "border-transparent text-navy-muted hover:text-navy"
             }`}
           >
@@ -54,7 +53,7 @@ export default async function ZakatPage({
       {activeTab === "calculate" && <CalculateZakatForm />}
       {activeTab === "pay" && <PayZakatForm foundations={foundationList} />}
       {activeTab === "history" && (
-        <div className="bg-white border border-sage-mid divide-y divide-sage-mid">
+        <div className="bg-white border border-sage-mid divide-y divide-sage-mid rounded-xl">
           {paymentList.length === 0 ? (
             <div className="px-5 py-8 text-center text-navy-muted text-sm">No zakat payments yet.</div>
           ) : (
@@ -70,6 +69,7 @@ export default async function ZakatPage({
           )}
         </div>
       )}
+      </div>
     </div>
   )
 }

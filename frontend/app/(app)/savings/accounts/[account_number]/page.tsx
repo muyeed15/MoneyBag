@@ -1,7 +1,7 @@
-import Link from "next/link"
 import { getMudarabahAccount, getMudarabahContributions } from "@/utils/api"
 import { formatAmount, formatDate } from "@/utils/helpers"
 import { Badge } from "@/components/ui/Badge"
+import { PageHeader } from "@/components/ui/PageHeader"
 import { PayContributionForm } from "./PayContributionForm"
 
 export const dynamic = "force-dynamic"
@@ -24,13 +24,11 @@ export default async function SavingsAccountDetailPage({
   const isComplete = nextNumber > totalInstallments
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-5xl mx-auto">
-      <div className="bg-white border-b border-sage-mid px-6 -mx-4 lg:-mx-8 -mt-6 mb-6 py-4 lg:px-8">
-        <Link href="/savings/accounts" className="text-navy-muted text-sm hover:underline">&larr; My Accounts</Link>
-        <h1 className="text-navy font-bold text-lg mt-1">{account.account_number}</h1>
-      </div>
+    <div>
+      <PageHeader title={account.account_number} subtitle="Account" showBack />
+      <div className="px-4 lg:px-8 py-6 max-w-5xl mx-auto">
 
-      <div className="bg-white border border-sage-mid p-5 mb-6">
+      <div className="bg-white border border-sage-mid p-5 mb-6 rounded-xl">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-navy font-semibold">{account.plan_details?.name}</h2>
           <Badge variant={account.status === "active" ? "success" : account.status === "matured" ? "warning" : "neutral"}>
@@ -44,7 +42,7 @@ export default async function SavingsAccountDetailPage({
           </div>
           <div>
             <span className="text-navy-muted">Expected Payout</span>
-            <p className="text-teal font-semibold">{formatAmount(account.expected_payout)}</p>
+            <p className="text-navy font-semibold">{formatAmount(account.expected_payout)}</p>
           </div>
           <div>
             <span className="text-navy-muted">Start Date</span>
@@ -65,7 +63,7 @@ export default async function SavingsAccountDetailPage({
         <PayContributionForm accountNumber={account.account_number} monthlyAmount={account.plan_details?.monthly_amount ?? "0"} />
       )}
 
-      <div className="bg-white border border-sage-mid divide-y divide-sage-mid mt-4">
+      <div className="bg-white border border-sage-mid divide-y divide-sage-mid mt-4 rounded-xl">
         {contributionList.length === 0 ? (
           <div className="px-5 py-8 text-center text-navy-muted text-sm">No contributions yet.</div>
         ) : (
@@ -82,6 +80,7 @@ export default async function SavingsAccountDetailPage({
             </div>
           ))
         )}
+      </div>
       </div>
     </div>
   )

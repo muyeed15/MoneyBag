@@ -18,7 +18,7 @@ export default function Error({
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center">
       <AlertTriangle
-        className="h-10 w-10 text-orange mb-4"
+        className="h-10 w-10 text-navy-muted mb-4"
         aria-hidden="true"
       />
       <h2 className="text-navy font-bold text-lg mb-1">Something went wrong</h2>
