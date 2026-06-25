@@ -3,7 +3,7 @@
 import { useTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
-import { ArrowLeft, Bell } from "lucide-react";
+import { Bell } from "lucide-react";
 import { formatDate } from "@/utils/helpers";
 import { markAllReadAction, markNotificationReadAction } from "@/app/actions";
 import type { Notification, PaginatedResponse } from "@/types";
@@ -98,7 +98,7 @@ export function NotificationsClient({
         )}
       </PageHeader>
 
-      <div className="px-4 lg:px-8 py-6 max-w-3xl mx-auto">
+      <div className="px-4 lg:px-8 py-6 mx-auto">
         {notifications.length === 0 ? (
           <div className="bg-white border border-sage-mid px-6 py-16 text-center rounded-xl">
             <Bell
