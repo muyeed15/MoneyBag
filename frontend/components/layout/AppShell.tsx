@@ -104,7 +104,8 @@ export function AppShell({
     <div className="h-dvh flex flex-col overflow-hidden">
       {/* ── Desktop sidebar ───────────────────────────────────── */}
       <aside className="hidden lg:flex flex-col w-52 shrink-0 bg-white border-r border-sage-mid fixed top-0 left-0 h-dvh z-20">
-        <div className="px-5 h-16 flex items-center">
+        <div className="px-5 h-16 flex items-center gap-2">
+          <img src="/logo.svg" alt="Yaqeen" className="w-8 h-8 shrink-0" />
           <span className="text-navy font-bold text-base tracking-tight">
             Yaqeen
           </span>
