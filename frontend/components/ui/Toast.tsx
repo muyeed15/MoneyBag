@@ -24,7 +24,7 @@ export function ToastStack({
               type="button"
               onClick={() => onDismiss(t.id)}
               aria-label="Dismiss notification"
-              className="absolute top-2 right-2 text-navy-muted hover:text-navy transition-colors"
+              className="absolute top-2 right-2 text-navy-muted transition-colors"
             >
               <X className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
