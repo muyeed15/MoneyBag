@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { BackButton } from "./BackButton";
 
 type Props = {
-  title: string;
+  title?: string;
   subtitle?: string;
   showBack?: boolean;
   children?: ReactNode;
