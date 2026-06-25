@@ -49,7 +49,6 @@ export const getNotifications   = (page = 1) => serverFetch<PaginatedResponse<No
 export const getCards           = (page = 1) => serverFetch<PaginatedResponse<Card>>('/api/cards/', 'cards', page)
 export const getMerchants       = (page = 1) => serverFetch<PaginatedResponse<Merchant>>('/api/merchants/', 'merchants', page)
 export const getFoundations     = () => serverFetch<Foundation[]>('/api/foundations/', 'foundations')
-export const getFoundation      = (pk: number) => serverFetch<Foundation>(`/api/foundations/${pk}/`, 'foundation')
 export const getMudarabahPlans  = () => serverFetch<MudarabahPlan[]>('/api/mudarabah/plans/', 'mudarabah plans')
 export const getMudarabahAccounts = (page = 1) => serverFetch<MudarabahAccount[]>('/api/mudarabah/accounts/', 'mudarabah accounts', page)
 export const getMudarabahAccount = (accountNumber: string) => serverFetch<MudarabahAccount>(`/api/mudarabah/accounts/${accountNumber}/`, 'mudarabah account')
@@ -58,7 +57,6 @@ export const getZakatHistory    = () => serverFetch<ZakatPayment[]>('/api/zakat/
 export const getSadaqahHistory  = () => serverFetch<Sadaqah[]>('/api/sadaqah/history/', 'sadaqah history')
 export const getHawl            = () => serverFetch<HawlTracking>('/api/hawl/', 'hawl tracking')
 export const getSadaqahJariyahList = () => serverFetch<SadaqahJariyah[]>('/api/sadaqah-jariyah/', 'sadaqah jariyah')
-export const getSadaqahJariyah  = (id: number) => serverFetch<SadaqahJariyah>(`/api/sadaqah-jariyah/${id}/`, 'sadaqah jariyah')
 
 export async function getQRCode(): Promise<string> {
   const cookieStore = await cookies()
