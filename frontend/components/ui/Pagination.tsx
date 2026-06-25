@@ -30,7 +30,7 @@ export function Pagination({ page, totalPages, onPageChange }: Props) {
         type="button"
         onClick={() => onPageChange(page - 1)}
         disabled={page === 1}
-        className="px-3 h-8 text-xs font-semibold border border-sage-mid text-navy bg-white hover:bg-sage disabled:opacity-40 disabled:cursor-not-allowed transition-colors rounded-lg"
+        className="px-3 h-8 text-xs font-semibold border border-sage-mid text-navy bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors rounded-lg"
       >
         ← Prev
       </button>
@@ -51,7 +51,7 @@ export function Pagination({ page, totalPages, onPageChange }: Props) {
             className={`w-8 h-8 text-xs font-semibold border transition-colors rounded-lg ${
               p === page
                 ? "bg-teal text-white border-teal"
-                : "bg-white border-sage-mid text-navy hover:bg-sage"
+                : "bg-white border-sage-mid text-navy"
             }`}
           >
             {p}
@@ -63,7 +63,7 @@ export function Pagination({ page, totalPages, onPageChange }: Props) {
         type="button"
         onClick={() => onPageChange(page + 1)}
         disabled={page === totalPages}
-        className="px-3 h-8 text-xs font-semibold border border-sage-mid text-navy bg-white hover:bg-sage disabled:opacity-40 disabled:cursor-not-allowed transition-colors rounded-lg"
+        className="px-3 h-8 text-xs font-semibold border border-sage-mid text-navy bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors rounded-lg"
       >
         Next →
       </button>
