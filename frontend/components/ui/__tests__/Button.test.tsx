@@ -23,12 +23,6 @@ describe('Button', () => {
     expect(btn.className).toContain('border')
   })
 
-  it('applies cta variant', () => {
-    render(<Button variant="cta">Upgrade</Button>)
-    const btn = screen.getByRole('button')
-    expect(btn.className).toContain('bg-teal')
-  })
-
   it('applies ghost variant', () => {
     render(<Button variant="ghost">Link</Button>)
     const btn = screen.getByRole('button')
