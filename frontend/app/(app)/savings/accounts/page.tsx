@@ -18,7 +18,7 @@ export default async function SavingsAccountsPage() {
   return (
     <div>
       <PageHeader title="My Savings Accounts" subtitle="Savings" showBack />
-      <div className="px-4 lg:px-8 py-6 max-w-5xl mx-auto">
+      <div className="px-4 py-3 lg:px-6 lg:py-6 mx-auto">
 
       <div className="space-y-4">
         {accountList.length === 0 ? (
@@ -32,7 +32,7 @@ export default async function SavingsAccountsPage() {
               <Link
                 key={acc.account_number}
                 href={`/savings/accounts/${acc.account_number}`}
-                className="block bg-white border border-sage-mid hover:border-teal transition-colors rounded-xl overflow-hidden"
+                className="block bg-white border border-sage-mid transition-colors rounded-xl overflow-hidden"
               >
                 <div className="p-5">
                   <div className="flex items-center justify-between mb-2">
