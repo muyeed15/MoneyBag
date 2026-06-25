@@ -1,76 +1,31 @@
-"use client";
-
-import { useActionState } from "react";
-import { loginAction } from "@/app/actions";
-import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
-
-const initialState = { error: null };
+import { readFileSync } from "fs"
+import { join } from "path"
+import { LoginForm } from "./LoginForm"
 
 export default function LoginPage() {
-  const [state, action, pending] = useActionState(loginAction, initialState);
+  const svgPath = join(process.cwd(), "assets", "yaqeen-balance-background.svg")
+  let svgDataUri = ""
+  try {
+    const svg = readFileSync(svgPath, "utf-8")
+    svgDataUri = `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`
+  } catch {}
 
   return (
-    <div className="min-h-screen flex flex-col bg-sage">
-      {/* Top color block */}
-      <div className="bg-teal px-6 pt-12 pb-10 rounded-b-xl">
-        <p className="text-white/60 text-xs font-semibold uppercase tracking-widest mb-1">
-          Welcome to
-        </p>
-        <h1 className="text-white text-3xl font-bold tracking-tight">
-          Yaqeen
-        </h1>
-        <p className="text-white/70 text-sm mt-1">Sharia-compliant Islamic digital wallet</p>
-      </div>
+    <div className="h-dvh bg-teal relative flex items-center justify-center px-6 overflow-hidden">
+      {svgDataUri && (
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url(${svgDataUri})`,
+            backgroundPosition: "100% 100%",
+            backgroundSize: "auto 100%",
+            backgroundRepeat: "no-repeat",
+          }}
+        />
+      )}
+      <div className="absolute inset-0 bg-teal/60" />
 
-      {/* Form block */}
-      <div className="flex-1 flex flex-col">
-        <div className="bg-white px-6 py-8 rounded-xl sm:max-w-sm sm:mx-auto sm:w-full sm:mt-8 sm:border sm:border-sage-mid">
-          <h2 className="text-navy font-bold text-lg mb-5">
-            Sign in to your account
-          </h2>
-
-          {state.error && (
-            <div className="mb-4 border-l-4 border-red-500 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {state.error}
-            </div>
-          )}
-
-          <form action={action} className="space-y-4">
-            <Input
-              label="Phone Number"
-              name="phone"
-              type="tel"
-              autoComplete="tel"
-              required
-              placeholder="01XXXXXXXXX"
-            />
-            <Input
-              label="Password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              placeholder="••••••••"
-            />
-            <div className="pt-2">
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                loading={pending}
-                className="w-full"
-              >
-                {pending ? "Signing in…" : "Sign In"}
-              </Button>
-            </div>
-          </form>
-        </div>
-
-        <p className="text-center text-xs text-navy-muted mt-6">
-          Yaqeen · Secure Digital Wallet
-        </p>
-      </div>
+      <LoginForm />
     </div>
   );
 }
