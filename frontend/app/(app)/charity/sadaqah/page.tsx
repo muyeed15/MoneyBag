@@ -29,7 +29,7 @@ export default async function SadaqahPage({
   return (
     <div>
       <PageHeader title="Sadaqah" subtitle="Charity" showBack />
-      <div className="px-4 lg:px-8 py-6 max-w-5xl mx-auto">
+      <div className="px-4 py-3 lg:px-6 lg:py-6 mx-auto">
 
       <div className="flex border-b border-sage-mid mb-6">
         {TABS.map((t) => (
@@ -39,7 +39,7 @@ export default async function SadaqahPage({
             className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
               activeTab === t.key
                 ? "border-navy text-navy"
-                : "border-transparent text-navy-muted hover:text-navy"
+                : "border-transparent text-navy-muted"
             }`}
           >
             {t.label}
