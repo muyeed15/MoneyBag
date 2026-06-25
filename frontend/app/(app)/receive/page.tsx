@@ -13,7 +13,7 @@ export default async function ReceivePage() {
   return (
     <div>
       <PageHeader title="Receive" showBack />
-      <div className="px-4 lg:px-8 py-6 max-w-md mx-auto">
+      <div className="px-4 py-3 lg:px-6 lg:py-6 mx-auto max-w-lg">
       <Card className="p-8 w-full">
         <div className="flex flex-col items-center">
           {qrDataUrl ? (
