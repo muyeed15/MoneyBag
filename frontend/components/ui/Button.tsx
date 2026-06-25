@@ -2,7 +2,7 @@ import { ButtonHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/utils/helpers";
 import { Loader2 } from "lucide-react";
 
-type Variant = "primary" | "cta" | "secondary" | "ghost" | "destructive";
+type Variant = "primary" | "secondary" | "ghost" | "destructive";
 type Size = "sm" | "md" | "lg";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -14,7 +14,6 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants: Record<Variant, string> = {
   primary: "bg-teal text-white active:opacity-80",
-  cta: "bg-teal text-white active:opacity-80",
   secondary: "bg-white text-navy border border-sage-mid active:opacity-70",
   ghost: "text-navy active:opacity-60",
   destructive: "text-red-500 active:opacity-60",
