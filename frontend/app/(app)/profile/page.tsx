@@ -21,7 +21,7 @@ export default async function ProfilePage() {
     <PageTransition>
       <PageHeader title="Profile" subtitle="Account" showBack />
 
-      <div className="px-4 lg:px-8 py-6 max-w-2xl mx-auto space-y-5">
+      <div className="px-4 lg:px-8 py-6 mx-auto space-y-5">
         {/* Identity */}
         <div className="bg-teal text-white px-6 py-5 flex items-center gap-5 rounded-xl">
           <div className="h-14 w-14 bg-white/20 flex items-center justify-center text-white text-xl font-bold shrink-0 rounded-full">
@@ -141,9 +141,9 @@ export default async function ProfilePage() {
         <form action={logoutAction}>
           <Button
             type="submit"
-            variant="secondary"
+            variant="destructive"
             size="md"
-            className="w-full"
+            className="w-full border border-red-500"
           >
             Sign Out
           </Button>
