@@ -24,8 +24,7 @@ export function TransactionCard({
 
   return (
     <div
-      className={`flex items-center justify-between px-4 py-3.5 transition-colors duration-100
-        ${meta.minus ? "hover:bg-orange/5" : "hover:bg-teal/5"}`}
+      className={`flex items-center justify-between px-4 py-3.5 transition-colors duration-100`}
     >
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 flex-wrap">
