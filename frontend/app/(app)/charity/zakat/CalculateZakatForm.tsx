@@ -25,7 +25,7 @@ export function CalculateZakatForm() {
           </p>
           <p className="text-lg font-bold text-navy mt-1">{formatAmount(state.zakat_due)}</p>
           {state.is_eligible && (
-            <a href="/charity/zakat?tab=pay" className="inline-block mt-3 bg-teal text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-teal/90">
+            <a href="/charity/zakat/pay" className="inline-block mt-3 bg-teal text-white text-sm font-semibold px-4 py-2 rounded-lg">
               Pay Zakat Now
             </a>
           )}
