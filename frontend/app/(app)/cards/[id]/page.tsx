@@ -36,9 +36,9 @@ export default function CardDetailPage({
           <BackButton />
           <h1 className="text-navy font-bold text-lg">Card Details</h1>
         </div>
-        <div className="px-4 lg:px-8 py-6 max-w-lg mx-auto">
+        <div className="px-4 py-3 lg:px-6 lg:py-6 mx-auto max-w-lg">
           <div className="bg-white border border-sage-mid px-6 py-16 text-center rounded-xl">
-            <CreditCard className="h-10 w-10 text-navy-muted mx-auto mb-3" strokeWidth={1.5} />
+            <CreditCard className="h-10 w-10 text-navy-muted mb-3" strokeWidth={1.5} />
             <p className="text-navy font-semibold">Card not found</p>
           </div>
         </div>
@@ -52,7 +52,7 @@ export default function CardDetailPage({
         <BackButton />
         <h1 className="text-navy font-bold text-lg">Card Details</h1>
       </div>
-      <div className="px-4 lg:px-8 py-6 max-w-lg mx-auto space-y-6">
+      <div className="px-4 py-3 lg:px-6 lg:py-6 mx-auto max-w-lg space-y-6">
         <div className="relative bg-gradient-to-br from-teal to-teal/80 text-white rounded-xl p-6 aspect-[1.586] flex flex-col justify-between shadow-lg overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full border-[6px] border-white" />
@@ -133,7 +133,7 @@ export default function CardDetailPage({
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-navy/60" onClick={() => setConfirmFreeze(false)}>
             <div className="bg-white w-full max-w-sm rounded-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
               <div className="p-6 text-center space-y-3">
-                <div className={`mx-auto h-12 w-12 rounded-full flex items-center justify-center ${
+                <div className={`h-12 w-12 rounded-full flex items-center justify-center ${
                   card.status === "active" ? "bg-red-100" : "bg-teal/10"
                 }`}>
                   <Snowflake className={`h-6 w-6 ${card.status === "active" ? "text-red-500" : "text-teal"}`} />
