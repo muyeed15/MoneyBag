@@ -1,6 +1,5 @@
 from decimal import Decimal
 
-from django.db import transaction
 from django.db.models import Sum
 from rest_framework import status
 from rest_framework.response import Response
@@ -16,17 +15,6 @@ def daily_spent(user, today):
         status="completed",
         created_at__date=today,
     ).aggregate(total=Sum("amount"))["total"] or Decimal("0")
-
-
-def deduct_wallet(user, amount):
-    wallet = Wallet.objects.get(user=user)
-    if wallet.status != "active":
-        return None
-    if wallet.balance < amount:
-        return None
-    wallet.balance -= amount
-    wallet.save(update_fields=["balance"])
-    return wallet
 
 
 def locked_deduct_wallet(user, amount):
