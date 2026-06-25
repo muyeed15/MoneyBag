@@ -2,7 +2,6 @@
 
 import { useActionState, useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { ArrowRight, CreditCard, Plus, X } from "lucide-react";
 import { addCardAction } from "@/app/actions";
@@ -13,16 +12,9 @@ import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PageTransition } from "@/components/ui/PageTransition";
 
-const CARD_STATUS_VARIANT: Record<string, "success" | "danger" | "neutral"> = {
-  active: "success",
-  blocked: "danger",
-  expired: "neutral",
-};
-
 const initialState = { error: null, success: false };
 
 export default function CardsPage() {
-  const router = useRouter();
   const [page, setPage] = useState(1);
   const { data, mutate } = useSWR<PaginatedResponse<Card>>(`/api/cards?page=${page}`);
   const cards = data?.results ?? [];
@@ -68,7 +60,7 @@ export default function CardsPage() {
         </button>
       </PageHeader>
 
-      <div className="px-4 lg:px-8 py-6 max-w-2xl mx-auto space-y-5">
+      <div className="px-4 lg:px-8 py-6 mx-auto space-y-5">
         {showForm && (
           <form action={formAction} className="bg-white border border-sage-mid rounded-xl p-5">
             <p className="text-xs font-semibold uppercase tracking-widest text-navy-muted mb-4">
