@@ -30,7 +30,7 @@ export default async function TransactionsPage({
     <PageTransition>
       <PageHeader title="Transactions" subtitle="History" showBack />
 
-      <div className="px-4 lg:px-8 py-6 max-w-5xl mx-auto">
+      <div className="px-4 lg:px-8 py-6 mx-auto">
         {transactions.length === 0 ? (
           <div className="bg-white border border-sage-mid px-6 py-16 text-center rounded-xl">
             <p className="text-navy font-semibold">No transactions yet</p>
