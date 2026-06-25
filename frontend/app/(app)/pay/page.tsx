@@ -71,7 +71,7 @@ export default function PayPage() {
           </div>
         </div>
 
-        <div className="px-4 lg:px-8 py-6 max-w-lg mx-auto">
+        <div className="px-4 lg:px-8 py-6 mx-auto">
           {!selected ? (
             <>
               {merchants.length === 0 ? (
