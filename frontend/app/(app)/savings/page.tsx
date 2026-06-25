@@ -13,17 +13,17 @@ export default async function SavingsPage() {
     <div>
       <PageHeader title="Mudarabah Plans" subtitle="Savings" showBack />
 
-      <div className="px-4 lg:px-8 py-6 max-w-5xl mx-auto space-y-6">
+      <div className="px-4 py-3 lg:px-6 lg:py-6 mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-navy font-semibold">Available Plans</h2>
-          <Link href="/savings/accounts" className="text-navy text-sm font-medium hover:underline">
+          <Link href="/savings/accounts" className="text-navy text-sm font-medium">
             My Accounts
           </Link>
         </div>
 
         {plans.length === 0 ? (
           <div className="bg-white border border-sage-mid px-6 py-10 text-center rounded-xl">
-            <Landmark className="h-8 w-8 mx-auto text-sage-mid mb-3" />
+            <Landmark className="h-8 w-8 text-sage-mid mb-3" />
             <p className="text-navy-muted text-sm">No savings plans available.</p>
           </div>
         ) : (
@@ -44,7 +44,7 @@ export default async function SavingsPage() {
                     <input type="hidden" name="plan_id" value={plan.id} />
                     <button
                       type="submit"
-                      className="bg-teal text-white text-sm font-semibold px-4 py-2 w-full hover:bg-teal/90 rounded-lg"
+                      className="bg-teal text-white text-sm font-semibold px-4 py-2 w-full rounded-lg"
                     >
                       Start Saving
                     </button>
