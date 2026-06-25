@@ -71,6 +71,7 @@ export default function CardDetailPage({
                 </div>
               </div>
             </div>
+            <img src="/logo.svg" alt="" className="w-10 h-10" />
           </div>
           <div className="relative space-y-4">
             <p className="text-xl sm:text-2xl font-bold tracking-[0.25em] tabular-nums">
