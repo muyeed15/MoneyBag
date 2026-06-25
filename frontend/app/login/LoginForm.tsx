@@ -12,7 +12,10 @@ export function LoginForm(): React.ReactElement {
   return (
     <div className="w-full max-w-sm relative z-10">
       <div className="text-center mb-8">
-        <h1 className="text-white text-2xl font-bold">Yaqeen</h1>
+        <div className="flex items-center justify-center gap-2">
+          <img src="/logo.svg" alt="" className="w-10 h-10" />
+          <h1 className="text-white text-2xl font-bold">Yaqeen</h1>
+        </div>
       </div>
 
       <div className="bg-white border border-sage-mid rounded-xl p-6">
