@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode, useState, useEffect, useCallback, useRef } from "react";
+
 import {
   Home, Receipt, ArrowUpRight, Bell, User,
   CreditCard, ShoppingCart, Landmark, Heart, LayoutGrid, QrCode,
@@ -32,9 +33,9 @@ const NAV = [
 
 const MOBILE_NAV = [
   { href: "/dashboard", icon: Home, label: "Home" },
-  { href: "/send", icon: ArrowUpRight, label: "Send" },
-  { href: "/pay", icon: ShoppingCart, label: "Pay" },
   { href: "/receive", icon: QrCode, label: "Receive" },
+  { href: "/send", icon: ArrowUpRight, label: "Send" },
+  { href: "/notifications", icon: Bell, label: "Alerts" },
   { href: "/more", icon: LayoutGrid, label: "More" },
 ] as const;
 
@@ -122,7 +123,7 @@ export function AppShell({
                 className={`flex items-center gap-3 px-5 py-3 text-sm font-medium border-l-2 transition-colors duration-100 ${
                   active
                     ? "border-teal bg-teal/5 text-navy"
-                    : "border-transparent text-navy-muted hover:bg-sage hover:text-navy"
+                    : "border-transparent text-navy-muted"
                 }`}
               >
                 <div className="relative">
@@ -176,7 +177,7 @@ export function AppShell({
                     className={`h-5 w-5 ${active ? "text-navy" : "text-navy-muted"}`}
                     aria-hidden="true"
                   />
-                  {href === "/more" && unreadCount > 0 && (
+                  {href === "/notifications" && unreadCount > 0 && (
                     <span
                       className="absolute -top-1 -right-1.5 h-3 w-3 bg-teal text-white text-[7px] font-bold flex items-center justify-center rounded-full"
                       aria-label={`${unreadCount} unread`}
