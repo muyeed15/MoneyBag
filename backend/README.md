@@ -4,6 +4,8 @@ Sharia-compliant Islamic digital wallet API. Django REST + JWT + PostgreSQL.
 
 **Islamic features:** Mudarabah savings, Zakat calculation & payment, Sadaqah giving.
 
+> See the [project README](../README.md) for the full quick start and production deployment with PM2.
+
 ## Setup
 
 ```bash
@@ -12,10 +14,15 @@ conda activate yaqeen
 pip install -r requirements.txt
 cp .env.example .env
 python manage.py migrate
+python manage.py seed
 python manage.py runserver
 ```
 
 Runs at `http://127.0.0.1:8000`.
+
+## Production
+
+The backend runs under PM2 via `gunicorn` inside the `yaqeen` conda environment. See the [project README](../README.md#production) for startup commands.
 
 ## Environment Variables
 

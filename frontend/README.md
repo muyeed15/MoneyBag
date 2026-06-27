@@ -1,6 +1,8 @@
 # Yaqeen Frontend
 
-Next.js web app for Yaqeen — a Sharia-compliant Islamic digital wallet.
+Next.js web app for Yaqeen, a Sharia-compliant Islamic digital wallet.
+
+> See the [project README](../README.md) for the full quick start and production deployment with PM2.
 
 ## Setup
 
@@ -12,13 +14,26 @@ npm run dev
 
 Runs at `http://localhost:3000` by default. Requires the Django backend at `http://127.0.0.1:8000`.
 
+## Production
+
+Build and start with PM2:
+
+```bash
+npm run build
+pm2 start ../ecosystem.config.js --only yaqeen-frontend
+```
+
+The PM2 config (`ecosystem.config.js` at the project root) starts `server.mjs` with `NODE_ENV=production`.
+
 ### Running with HTTPS
+
+For local development:
 
 ```bash
 npm run dev:https         # development with HTTPS
-USE_HTTPS=true npm start  # production with HTTPS
 ```
-HTTPS requires `certificates/localhost-key.pem` and `certificates/localhost.pem`.
+
+For production, uncomment the `USE_HTTPS: 'true'` block in `ecosystem.config.js` and ensure certificates exist in `certificates/`.
 
 ## Environment Variables
 
