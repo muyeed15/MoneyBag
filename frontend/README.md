@@ -10,7 +10,15 @@ cp .env.example .env
 npm run dev
 ```
 
-Runs at `http://localhost:3000`. Requires the Django backend at `http://127.0.0.1:8000`.
+Runs at `http://localhost:3000` by default. Requires the Django backend at `http://127.0.0.1:8000`.
+
+### Running with HTTPS
+
+```bash
+npm run dev:https         # development with HTTPS
+USE_HTTPS=true npm start  # production with HTTPS
+```
+HTTPS requires `certificates/localhost-key.pem` and `certificates/localhost.pem`.
 
 ## Environment Variables
 
