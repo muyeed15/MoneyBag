@@ -158,7 +158,7 @@ class TransferView(APIView):
 
         except (ValueError, ObjectDoesNotExist) as e:
             logger.warning(
-                "TransferView: %s — user=%s to=%s amount=%s",
+                "TransferView: %s, user=%s to=%s amount=%s",
                 e, request.user.phone, receiver_phone, amount,
             )
             return error_response(str(e))

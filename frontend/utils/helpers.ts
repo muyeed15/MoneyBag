@@ -65,7 +65,7 @@ export function getTxMeta(tx: Transaction, myPhone: string): TxMeta {
         color: isSender ? 'text-navy-muted' : 'text-navy',
         minus: isSender,
         direction: isSender ? 'to' : 'from',
-        counterparty: isSender ? (tx.receiver_phone ?? '—') : (tx.sender_phone ?? '—'),
+        counterparty: isSender ? (tx.receiver_phone ?? '-') : (tx.sender_phone ?? '-'),
       }
     case 'cash_in':
       return {
@@ -91,8 +91,8 @@ export function getTxMeta(tx: Transaction, myPhone: string): TxMeta {
         direction: isSender ? 'to' : 'from',
         // Payer sees the merchant name; merchant sees the payer's phone.
         counterparty: isSender
-          ? (tx.merchant_name ?? tx.receiver_phone ?? '—')
-          : (tx.sender_phone ?? '—'),
+          ? (tx.merchant_name ?? tx.receiver_phone ?? '-')
+          : (tx.sender_phone ?? '-'),
       }
     default:
       return {
@@ -100,7 +100,7 @@ export function getTxMeta(tx: Transaction, myPhone: string): TxMeta {
         color: 'text-navy',
         minus: isSender,
         direction: isSender ? 'to' : 'from',
-        counterparty: isSender ? (tx.receiver_phone ?? '—') : (tx.sender_phone ?? '—'),
+        counterparty: isSender ? (tx.receiver_phone ?? '-') : (tx.sender_phone ?? '-'),
       }
   }
 }

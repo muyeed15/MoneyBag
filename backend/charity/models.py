@@ -71,7 +71,7 @@ class HawlTracking(models.Model):
     )
     next_hawl_date = models.DateField(
         blank=True, null=True,
-        help_text="One lunar year after nisab_crossed_at — zakat becomes due"
+        help_text="One lunar year after nisab_crossed_at; zakat becomes due"
     )
     is_eligible = models.BooleanField(
         default=False,

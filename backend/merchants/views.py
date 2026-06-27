@@ -127,7 +127,7 @@ class MerchantPayView(APIView):
 
         except (ValueError, ObjectDoesNotExist) as e:
             logger.warning(
-                "MerchantPayView: %s — user=%s merchant=%s amount=%s",
+                "MerchantPayView: %s, user=%s merchant=%s amount=%s",
                 e, request.user.phone, merchant.business_name, amount,
             )
             return error_response(str(e))

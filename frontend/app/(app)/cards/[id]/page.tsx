@@ -101,7 +101,7 @@ export default function CardDetailPage({
           <div className="divide-y divide-sage-mid">
             <div className="flex items-center justify-between px-4 py-3">
               <span className="text-xs text-navy-muted">Card Holder</span>
-              <span className="text-sm font-semibold text-navy">{user?.full_name ?? "—"}</span>
+              <span className="text-sm font-semibold text-navy">{user?.full_name ?? "-"}</span>
             </div>
             <div className="flex items-center justify-between px-4 py-3">
               <span className="text-xs text-navy-muted">Status</span>

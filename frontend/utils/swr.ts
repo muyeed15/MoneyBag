@@ -11,7 +11,7 @@ export const TOAST_DURATION_MS = parseInt(process.env.NEXT_PUBLIC_TOAST_DURATION
 export async function fetcher<T>(url: string): Promise<T> {
   const res = await fetch(url)
   if (res.status === 401 && typeof window !== 'undefined') {
-    logger.warn('swr:fetcher', 'Unauthorized — redirecting to login', { url })
+    logger.warn('swr:fetcher', 'Unauthorized; redirecting to login', { url })
     window.location.href = '/login'
     throw new Error('Unauthorized')
   }
