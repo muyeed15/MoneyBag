@@ -1,5 +1,5 @@
 import random
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 from django.conf import settings
@@ -124,6 +124,9 @@ class Command(BaseCommand):
         self.stdout.write("Seeding Sadaqah Jariyah…")
         self._seed_sadaqah_jariyah(users, foundations)
 
+        self.stdout.write("Ensuring minimum balances…")
+        self._ensure_minimum_balances(users)
+
         self.stdout.write(self.style.SUCCESS("\nSeeding complete."))
         self._print_summary(users, merchants, foundations)
 
@@ -183,7 +186,7 @@ class Command(BaseCommand):
                 is_active=True,
             )
             plans.append(plan)
-            self.stdout.write(f"  + {name} — ৳{monthly}/mo x {months}m (profit: {profit}%)")
+            self.stdout.write(f"  + {name}: ৳{monthly}/mo x {months}m (profit: {profit}%)")
         return plans
 
     def _seed_mudarabah_accounts(self, users, plans):
@@ -204,7 +207,7 @@ class Command(BaseCommand):
             account.update_expected_payout()
             account.save(update_fields=["total_deposited", "expected_payout"])
             count += 1
-            self.stdout.write(f"  + {account.account_number} — {plan.name} ({paid}/{plan.duration_months} paid)")
+            self.stdout.write(f"  + {account.account_number}: {plan.name} ({paid}/{plan.duration_months} paid)")
         self.stdout.write(f"  + {count} Mudarabah accounts")
 
     def _seed_foundations(self):
@@ -327,6 +330,26 @@ class Command(BaseCommand):
             wallet.balance = required + Decimal("100")
             wallet.save(update_fields=["balance"])
 
+    def _ensure_minimum_balances(self, users):
+        """Top up any active user below a reasonable sendable amount."""
+        minimum = Decimal("5000")
+        count = 0
+        for user in users:
+            if user.wallet.status == "active" and user.wallet.balance < minimum:
+                user.wallet.balance = Decimal(str(random.randint(5000, 20000)))
+                user.wallet.save(update_fields=["balance"])
+                count += 1
+        self.stdout.write(f"  + {count} users topped up to sendable balance")
+
+    def _past(self, days=90):
+        """Return a random past datetime so daily limits aren't exhausted."""
+        offset = random.randint(1, days)
+        return timezone.now() - timedelta(
+            days=offset,
+            hours=random.randint(0, 23),
+            minutes=random.randint(0, 59),
+        )
+
     def _seed_send_transactions(self, active_users):
         fee_rate = Decimal(str(settings.TRANSFER_FEE_PERCENT)) / Decimal("100")
         for _ in range(self.SEND_COUNT):
@@ -347,6 +370,7 @@ class Command(BaseCommand):
                 amount=amount, fee=fee,
                 transaction_type="send", status="completed",
                 note=self._send_note(),
+                created_at=self._past(),
             )
 
     def _seed_payment_transactions(self, active_users, verified_merchants):
@@ -373,6 +397,7 @@ class Command(BaseCommand):
                 merchant=merchant, amount=amount, fee=fee,
                 transaction_type="payment", status="completed",
                 note=f"Payment at {merchant.business_name}",
+                created_at=self._past(),
             )
 
     def _seed_cash_in_transactions(self, users):
@@ -386,6 +411,7 @@ class Command(BaseCommand):
                 amount=amount, fee=Decimal("0.00"),
                 transaction_type="cash_in", status="completed",
                 note=random.choice(["Agent cash in", "Bank deposit", "Salary top-up"]),
+                created_at=self._past(),
             )
 
     def _seed_cash_out_transactions(self, active_users):
@@ -404,6 +430,7 @@ class Command(BaseCommand):
                 amount=amount, fee=fee,
                 transaction_type="cash_out", status="completed",
                 note=random.choice(["ATM withdrawal", "Agent cash out", "Emergency cash"]),
+                created_at=self._past(),
             )
 
     def _seed_transactions(self, users, merchants):
