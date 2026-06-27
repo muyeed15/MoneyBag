@@ -28,6 +28,7 @@ type Props = {
   initialWallet: Wallet;
   initialTransactions: Transaction[];
   svgDataUri?: string;
+  fullName?: string;
 };
 
 function sortDesc(txs: Transaction[]): Transaction[] {
@@ -41,6 +42,7 @@ export default function DashboardClient({
   initialWallet,
   initialTransactions,
   svgDataUri,
+  fullName,
 }: Props): React.ReactElement {
   const { data: wallet = initialWallet } = useSWR<Wallet>("/api/wallet", {
     fallbackData: initialWallet,
@@ -70,6 +72,11 @@ export default function DashboardClient({
             <img src={svgDataUri} alt="" className="absolute top-0 left-0 w-full h-full object-cover object-top pointer-events-none" />
           )}
           <div className="relative flex flex-col justify-center h-full">
+            {fullName && (
+              <p className="text-white/90 text-base sm:text-lg font-semibold mb-1">
+                Welcome, {fullName}
+              </p>
+            )}
             <p className="text-white/80 text-xs font-medium tracking-wide mb-1">
               Balance
             </p>

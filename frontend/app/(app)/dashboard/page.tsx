@@ -1,12 +1,13 @@
 import { readFileSync } from "fs"
 import { join } from "path"
-import { getWallet, getTransactions } from "@/utils/api";
+import { getWallet, getTransactions, getMe } from "@/utils/api";
 import DashboardClient from "./DashboardClient";
 
 export default async function DashboardPage() {
-  const [wallet, txData] = await Promise.all([
+  const [wallet, txData, user] = await Promise.all([
     getWallet(),
     getTransactions(1),
+    getMe(),
   ]);
 
   const svgPath = join(process.cwd(), "assets", "yaqeen-balance-background.svg")
@@ -23,6 +24,7 @@ export default async function DashboardPage() {
       initialWallet={wallet}
       initialTransactions={txData.results}
       svgDataUri={svgDataUri}
+      fullName={user.full_name.split(" ").pop()}
     />
   );
 }
