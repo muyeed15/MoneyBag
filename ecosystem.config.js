@@ -1,6 +1,7 @@
 const os = require('os');
 const path = require('path');
 const fs = require('fs');
+const { execSync } = require('child_process');
 
 const FRONTEND_PORT = process.env.FRONTEND_PORT;
 const FRONTEND_HOST = process.env.FRONTEND_HOST;
@@ -8,11 +9,16 @@ const BACKEND_PORT = process.env.BACKEND_PORT;
 const BACKEND_HOST = process.env.BACKEND_HOST;
 
 function findGunicorn() {
+  if (process.env.GUNICORN_PATH && fs.existsSync(process.env.GUNICORN_PATH)) {
+    return process.env.GUNICORN_PATH;
+  }
+
   const home = os.homedir();
   const isWin = process.platform === 'win32';
   const bin = isWin ? 'Scripts' + path.sep + 'gunicorn.exe' : path.join('bin', 'gunicorn');
 
   const condaBases = [
+    process.env.CONDA_PREFIX,
     path.join(home, 'miniconda3'),
     path.join(home, 'anaconda3'),
     path.join(home, 'miniforge3'),
@@ -25,12 +31,15 @@ function findGunicorn() {
     '/opt/homebrew/miniconda3',
     '/usr/local/anaconda3',
     '/usr/local/miniconda3',
+    '/var/www/miniconda3',
+    '/var/www/anaconda3',
+    '/var/www/miniforge3',
     'C:\\ProgramData\\miniconda3',
     'C:\\ProgramData\\anaconda3',
     'C:\\ProgramData\\miniforge3',
     path.join(home, 'AppData', 'Local', 'miniconda3'),
     path.join(home, 'AppData', 'Local', 'anaconda3'),
-  ];
+  ].filter(Boolean);
 
   for (const base of condaBases) {
     const candidate = path.join(base, 'envs', 'yaqeen', bin);
@@ -45,7 +54,17 @@ function findGunicorn() {
     }
   }
 
-  return isWin ? 'gunicorn' : 'gunicorn3';
+  try {
+    const which = isWin ? 'where gunicorn' : 'which gunicorn';
+    const found = execSync(which, { encoding: 'utf8' }).trim().split('\n')[0];
+    if (found && fs.existsSync(found)) return found;
+  } catch {}
+
+  throw new Error(
+    'Could not find gunicorn in the yaqeen conda environment.\n' +
+    'Run: conda activate yaqeen && which gunicorn\n' +
+    'Then set GUNICORN_PATH=/full/path/to/gunicorn before starting PM2.'
+  );
 }
 
 module.exports = {
