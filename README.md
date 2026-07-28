@@ -28,9 +28,9 @@ npm run dev
 
 | Service     | URL                                |
 |-------------|------------------------------------|
-| Backend API | `http://127.0.0.1:8000`            |
-| Admin panel | `http://127.0.0.1:8000/admin/`     |
-| Frontend    | `http://localhost:3000`            |
+| Backend API | `http://127.0.0.1:8003`            |
+| Admin panel | `http://127.0.0.1:8003/admin/`     |
+| Frontend    | `http://localhost:3003`            |
 
 ## Production
 
@@ -70,8 +70,8 @@ pm2 start ecosystem.config.js --only yaqeen-frontend
 
 | Service         | URL                             | Port |
 |-----------------|---------------------------------|------|
-| Backend API     | `http://0.0.0.0:8000`           | 8000 |
-| Frontend        | `http://0.0.0.0:3000`           | 3000 |
+| Backend API     | `http://127.0.0.1:8003`           | 8003 |
+| Frontend        | `http://127.0.0.1:3003`           | 3003 |
 
 ## Further Reading
 

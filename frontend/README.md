@@ -12,7 +12,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Runs at `http://localhost:3000` by default. Requires the Django backend at `http://127.0.0.1:8000`.
+Runs at `http://localhost:3003` by default. Requires the Django backend at `http://127.0.0.1:8003`.
 
 ## Production
 
@@ -38,7 +38,7 @@ For production, uncomment the `USE_HTTPS: 'true'` block in `ecosystem.config.js`
 ## Environment Variables
 
 ```
-DJANGO_API_URL=http://0.0.0.0:8000
+DJANGO_API_URL=http://127.0.0.1:8003
 ACCESS_TOKEN_MINUTES=1440
 REFRESH_TOKEN_MINUTES=43200
 NEXT_PUBLIC_TOAST_DURATION_MS=6000

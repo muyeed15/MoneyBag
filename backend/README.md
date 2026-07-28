@@ -18,7 +18,7 @@ python manage.py seed
 python manage.py runserver
 ```
 
-Runs at `http://127.0.0.1:8000`.
+Runs at `http://127.0.0.1:8003`.
 
 ## Production
 
