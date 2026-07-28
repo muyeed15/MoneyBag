@@ -70,6 +70,16 @@ function findGunicorn() {
     } catch {}
   }
 
+  try {
+    const found = execSync('conda run -n yaqeen which gunicorn', { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }).trim().split('\n')[0];
+    if (found && fs.existsSync(found)) return found;
+  } catch {}
+
+  try {
+    const found = execSync('bash -l -c "which gunicorn"', { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }).trim().split('\n')[0];
+    if (found && fs.existsSync(found)) return found;
+  } catch {}
+
   if (process.env.PATH) {
     for (const dir of process.env.PATH.split(path.delimiter)) {
       const candidate = path.join(dir, 'gunicorn');
