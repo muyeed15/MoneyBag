@@ -34,15 +34,6 @@ npm run dev
 
 ## Production
 
-**Prerequisites**
-
-Install `gunicorn` inside the conda environment:
-
-```bash
-conda activate yaqeen
-pip install gunicorn
-```
-
 **Build frontend**
 
 ```bash
