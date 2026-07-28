@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { logger } from '@/utils/logger'
 
-const API = (process.env.DJANGO_API_URL ?? 'http://localhost:8000').replace('://0.0.0.0', '://127.0.0.1')
+const API = (process.env.DJANGO_API_URL ?? 'http://localhost:8003').replace('://0.0.0.0', '://127.0.0.1')
 
 export async function GET(_request: NextRequest): Promise<NextResponse> {
   const token = (await cookies()).get('access_token')?.value

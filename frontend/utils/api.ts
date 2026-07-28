@@ -13,7 +13,7 @@ export type {
   MudarabahContribution, ZakatPayment, Sadaqah, HawlTracking, SadaqahJariyah,
 }
 
-const API = (process.env.DJANGO_API_URL ?? 'http://localhost:8000').replace('://0.0.0.0', '://127.0.0.1')
+const API = (process.env.DJANGO_API_URL ?? 'http://localhost:8003').replace('://0.0.0.0', '://127.0.0.1')
 const PAGE_SIZE = process.env.PAGE_SIZE ?? '10'
 
 async function authHeaders(): Promise<HeadersInit> {

@@ -2,6 +2,11 @@ const os = require('os');
 const path = require('path');
 const fs = require('fs');
 
+const FRONTEND_PORT = process.env.FRONTEND_PORT;
+const FRONTEND_HOST = process.env.FRONTEND_HOST;
+const BACKEND_PORT = process.env.BACKEND_PORT;
+const BACKEND_HOST = process.env.BACKEND_HOST;
+
 function findGunicorn() {
   const home = os.homedir();
   const isWin = process.platform === 'win32';
@@ -52,8 +57,8 @@ module.exports = {
       script: 'server.mjs',
       env: {
         NODE_ENV: 'production',
-        PORT: 3003,
-        HOST: '127.0.0.1',
+        PORT: FRONTEND_PORT,
+        HOST: FRONTEND_HOST,
       },
       instances: 1,
       exec_mode: 'fork',
@@ -67,8 +72,8 @@ module.exports = {
       // Uncomment for HTTPS:
       // env: {
       //   NODE_ENV: 'production',
-      //   PORT: 3003,
-      //   HOST: '127.0.0.1',
+      //   PORT: FRONTEND_PORT,
+      //   HOST: FRONTEND_HOST,
       //   USE_HTTPS: 'true',
       // },
     },
@@ -77,7 +82,7 @@ module.exports = {
       name: 'yaqeen-backend',
       cwd: './backend',
       script: findGunicorn(),
-      args: 'config.wsgi:application --bind 127.0.0.1:8003 --workers 3 --timeout 120',
+      args: `config.wsgi:application --bind ${BACKEND_HOST}:${BACKEND_PORT} --workers 3 --timeout 120`,
       interpreter: 'none',
       instances: 1,
       exec_mode: 'fork',

@@ -7,7 +7,7 @@ import { logger } from '@/utils/logger'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-const API = (process.env.DJANGO_API_URL ?? 'http://localhost:8000').replace('://0.0.0.0', '://127.0.0.1')
+const API = (process.env.DJANGO_API_URL ?? 'http://localhost:8003').replace('://0.0.0.0', '://127.0.0.1')
 
 export async function GET(request: NextRequest): Promise<Response> {
   const token = (await cookies()).get('access_token')?.value

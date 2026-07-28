@@ -15,7 +15,7 @@ pip install -r requirements.txt
 cp .env.example .env
 python manage.py migrate
 python manage.py seed
-python manage.py runserver
+python manage.py runserver 8003
 ```
 
 Runs at `http://127.0.0.1:8003`.
@@ -27,19 +27,21 @@ The backend runs under PM2 via `gunicorn` inside the `yaqeen` conda environment.
 ## Environment Variables
 
 ```
-SECRET_KEY=your-secret-key-here
+SECRET_KEY=django-insecure-changeme
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
 
 DB_NAME=yaqeen_db
 DB_USER=postgres
-DB_PASSWORD=your-db-password
+DB_PASSWORD=your-password
 DB_HOST=localhost
 DB_PORT=5432
 DB_CONN_MAX_AGE=60
 
 ACCESS_TOKEN_MINUTES=1440
 REFRESH_TOKEN_MINUTES=43200
+DJANGO_PORT=8003
+
 TRANSFER_FEE_PERCENT=1.5
 PAGE_SIZE=10
 PAGE_SIZE_MAX=50

@@ -3,8 +3,8 @@ import { createServer as createHttpsServer } from 'https';
 import { readFileSync, existsSync } from 'fs';
 import next from 'next';
 
-const PORT = process.env.PORT || 3000;
-const HOST = process.env.HOST || '0.0.0.0';
+const PORT = process.env.PORT;
+const HOST = process.env.HOST;
 const USE_HTTPS = process.env.USE_HTTPS === 'true';
 const dev = process.env.NODE_ENV !== 'production';
 
