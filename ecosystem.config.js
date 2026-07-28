@@ -17,8 +17,18 @@ function findGunicorn() {
   const isWin = process.platform === 'win32';
   const bin = isWin ? 'Scripts' + path.sep + 'gunicorn.exe' : path.join('bin', 'gunicorn');
 
+  if (process.env.CONDA_PREFIX) {
+    const candidate = path.join(process.env.CONDA_PREFIX, bin);
+    try { if (fs.existsSync(candidate)) return candidate; } catch {}
+    if (!isWin) {
+      try {
+        const g3 = candidate.replace(/\/gunicorn$/, '/gunicorn3');
+        if (fs.existsSync(g3)) return g3;
+      } catch {}
+    }
+  }
+
   const condaBases = [
-    process.env.CONDA_PREFIX,
     path.join(home, 'miniconda3'),
     path.join(home, 'anaconda3'),
     path.join(home, 'miniforge3'),
@@ -39,13 +49,11 @@ function findGunicorn() {
     'C:\\ProgramData\\miniforge3',
     path.join(home, 'AppData', 'Local', 'miniconda3'),
     path.join(home, 'AppData', 'Local', 'anaconda3'),
-  ].filter(Boolean);
+  ];
 
   for (const base of condaBases) {
     const candidate = path.join(base, 'envs', 'yaqeen', bin);
-    try {
-      if (fs.existsSync(candidate)) return candidate;
-    } catch {}
+    try { if (fs.existsSync(candidate)) return candidate; } catch {}
     if (!isWin) {
       try {
         const g3 = candidate.replace(/\/gunicorn$/, '/gunicorn3');
@@ -54,11 +62,26 @@ function findGunicorn() {
     }
   }
 
-  try {
-    const which = isWin ? 'where gunicorn' : 'which gunicorn';
-    const found = execSync(which, { encoding: 'utf8' }).trim().split('\n')[0];
-    if (found && fs.existsSync(found)) return found;
-  } catch {}
+  const whichCmds = isWin ? ['where gunicorn'] : ['which gunicorn', 'command -v gunicorn', 'type -p gunicorn'];
+  for (const cmd of whichCmds) {
+    try {
+      const found = execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }).trim().split('\n')[0];
+      if (found && fs.existsSync(found)) return found;
+    } catch {}
+  }
+
+  if (process.env.PATH) {
+    for (const dir of process.env.PATH.split(path.delimiter)) {
+      const candidate = path.join(dir, 'gunicorn');
+      try { if (fs.existsSync(candidate)) return candidate; } catch {}
+      if (!isWin) {
+        try {
+          const g3 = path.join(dir, 'gunicorn3');
+          if (fs.existsSync(g3)) return g3;
+        } catch {}
+      }
+    }
+  }
 
   throw new Error(
     'Could not find gunicorn in the yaqeen conda environment.\n' +
