@@ -18,7 +18,12 @@ if not SECRET_KEY:
         SECRET_KEY = "django-insecure-changeme"
     else:
         raise ImproperlyConfigured("SECRET_KEY must be set in production")
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
+if not ALLOWED_HOSTS or ALLOWED_HOSTS == [""]:
+    if DEBUG:
+        ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+    else:
+        raise ImproperlyConfigured("ALLOWED_HOSTS must be set in production")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
