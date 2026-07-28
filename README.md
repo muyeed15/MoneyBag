@@ -44,16 +44,7 @@ npm run build
 **Start with PM2**
 
 Both services are managed by `ecosystem.config.js` at the project root.
-Port and host are controlled via environment variables:
-
-```bash
-export FRONTEND_PORT=3003
-export FRONTEND_HOST=127.0.0.1
-export BACKEND_PORT=8003
-export BACKEND_HOST=127.0.0.1
-```
-
-Then:
+Ports and hosts are read automatically from `.env` files.
 
 ```bash
 mkdir -p logs

@@ -3,8 +3,25 @@ const path = require('path');
 const fs = require('fs');
 const { execSync } = require('child_process');
 
-const FRONTEND_PORT = process.env.FRONTEND_PORT;
-const FRONTEND_HOST = process.env.FRONTEND_HOST;
+function loadEnv(filePath) {
+  if (!fs.existsSync(filePath)) return;
+  const lines = fs.readFileSync(filePath, 'utf8').split('\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eq = trimmed.indexOf('=');
+    if (eq === -1) continue;
+    const key = trimmed.slice(0, eq).trim();
+    const val = trimmed.slice(eq + 1).trim();
+    if (!(key in process.env)) process.env[key] = val;
+  }
+}
+
+loadEnv(path.join(__dirname, 'backend', '.env'));
+loadEnv(path.join(__dirname, 'frontend', '.env'));
+
+const PORT = process.env.PORT;
+const HOST = process.env.HOST;
 const BACKEND_PORT = process.env.BACKEND_PORT;
 const BACKEND_HOST = process.env.BACKEND_HOST;
 
@@ -109,8 +126,8 @@ module.exports = {
       script: 'server.mjs',
       env: {
         NODE_ENV: 'production',
-        PORT: FRONTEND_PORT,
-        HOST: FRONTEND_HOST,
+        PORT: PORT,
+        HOST: HOST,
       },
       instances: 1,
       exec_mode: 'fork',
@@ -124,8 +141,8 @@ module.exports = {
       // Uncomment for HTTPS:
       // env: {
       //   NODE_ENV: 'production',
-      //   PORT: FRONTEND_PORT,
-      //   HOST: FRONTEND_HOST,
+      //   PORT: PORT,
+      //   HOST: HOST,
       //   USE_HTTPS: 'true',
       // },
     },
