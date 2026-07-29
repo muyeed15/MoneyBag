@@ -50,6 +50,9 @@ export type Notification = {
 export type Card = {
   id: number
   last_four: string
+  masked_number: string
+  cardholder_name: string
+  card_network: 'visa' | 'mastercard' | 'amex' | 'nexus'
   card_type: 'debit' | 'prepaid'
   expiry_month: number
   expiry_year: number
@@ -149,4 +152,286 @@ export type SadaqahJariyah = {
   next_due_date: string | null
   total_donated: string
   created_at: string
+}
+
+export type Operator = {
+  id: number
+  name: string
+  operator_code: string
+  logo: string
+  type: 'prepaid' | 'postpaid' | 'both'
+  is_active: boolean
+}
+
+export type DataPack = {
+  id: number
+  operator: number
+  operator_name: string
+  name: string
+  volume: string
+  validity_days: number
+  amount: string
+  is_active: boolean
+}
+
+export type RechargeTransaction = {
+  id: number
+  operator: number
+  operator_name: string
+  phone_number: string
+  amount: string
+  fee: string
+  recharge_type: 'prepaid' | 'postpaid' | 'data_pack'
+  reference: string
+  status: string
+  created_at: string
+}
+
+export type Biller = {
+  id: number
+  name: string
+  category: string
+  biller_code: string
+  logo: string
+  account_no_label: string
+  amount_no_label: string
+  is_active: boolean
+}
+
+export type BillPayment = {
+  id: number
+  biller: number
+  biller_name: string
+  biller_category: string
+  account_number: string
+  bill_number: string
+  amount: string
+  fee: string
+  bill_month: string
+  reference: string
+  status: string
+  created_at: string
+}
+
+export type Agent = {
+  id: number
+  full_name: string
+  phone: string
+  shop_name: string
+  district: string
+  thana: string
+  address: string
+  latitude: string
+  longitude: string
+  is_verified: boolean
+  status: string
+}
+
+export type AgentTransaction = {
+  id: number
+  user_phone: string
+  agent_name: string
+  amount: string
+  fee: string
+  commission: string
+  transaction_type: 'cash_in' | 'cash_out'
+  reference: string
+  status: string
+  created_at: string
+}
+
+export type Bank = {
+  id: number
+  name: string
+  bank_code: string
+  logo: string
+  is_islamic: boolean
+  is_active: boolean
+}
+
+export type BankAccount = {
+  id: number
+  bank: number
+  bank_name: string
+  account_number: string
+  masked_account: string
+  account_holder: string
+  branch: string
+  routing_number: string
+  is_primary: boolean
+  is_verified: boolean
+  created_at: string
+}
+
+export type BankTransaction = {
+  id: number
+  bank_account: number
+  bank_name: string
+  amount: string
+  fee: string
+  transaction_type: 'add_money' | 'withdraw'
+  reference: string
+  status: string
+  created_at: string
+}
+
+export type QardHasanProduct = {
+  id: number
+  name: string
+  min_amount: string
+  max_amount: string
+  tenure_days: number
+  service_fee: string
+  description: string
+  is_active: boolean
+}
+
+export type QardHasanApplication = {
+  id: number
+  loan_reference: string
+  product: number
+  product_name: string
+  amount: string
+  service_fee: string
+  amount_due: string
+  amount_paid: string
+  hibah_given: string
+  tenure_days: number
+  status: string
+  due_date: string | null
+  disbursed_at: string | null
+  created_at: string
+}
+
+export type RemittancePartner = {
+  id: number
+  name: string
+  country: string
+  currency: string
+  exchange_rate: string
+  logo: string
+  is_active: boolean
+}
+
+export type RemittanceTransaction = {
+  id: number
+  partner: number
+  partner_name: string
+  partner_country: string
+  sender_name: string
+  sender_country: string
+  amount_foreign: string
+  amount_bdt: string
+  exchange_rate: string
+  reference_number: string
+  status: string
+  created_at: string
+}
+
+export type TicketProvider = {
+  id: number
+  name: string
+  category: string
+  logo: string
+  is_active: boolean
+  trips: TicketTrip[]
+}
+
+export type TicketTrip = {
+  id: number
+  provider: number
+  name: string
+  origin: string
+  destination: string
+  departure_time: string
+  arrival_time: string
+  coach_class: string
+  price: string
+  is_active: boolean
+}
+
+export type TicketBooking = {
+  id: number
+  booking_reference: string
+  provider: number
+  provider_name: string
+  provider_category: string
+  journey_date: string
+  departure_time: string
+  origin: string
+  destination: string
+  trip_name: string
+  coach_class: string
+  coach: string
+  seat_number: string
+  passengers: number
+  amount: string
+  fee: string
+  status: string
+  created_at: string
+}
+
+export type MoneyRequest = {
+  id: number
+  requester: number
+  requester_phone: string
+  target: number
+  target_phone: string
+  amount: string
+  note: string
+  status: 'pending' | 'accepted' | 'declined' | 'expired'
+  created_at: string
+}
+
+export type AccountStatement = {
+  id: number
+  year: number
+  month: number
+  period: string
+  opening_balance: string
+  closing_balance: string
+  total_credits: string
+  total_debits: string
+  transaction_count: number
+  generated_at: string
+}
+
+export type SupportTicket = {
+  id: number
+  user_phone: string
+  subject: string
+  category: string
+  status: 'open' | 'in_progress' | 'resolved' | 'closed'
+  messages: TicketMessage[]
+  created_at: string
+  updated_at: string
+}
+
+export type TicketMessage = {
+  id: number
+  sender: number
+  sender_phone: string
+  message: string
+  is_staff_reply: boolean
+  created_at: string
+}
+
+export type Offer = {
+  id: number
+  title: string
+  description: string
+  points_required: number
+  cashback_amount: string
+  cashback_pct: string
+  category: string
+  valid_from: string
+  valid_until: string
+  is_active: boolean
+}
+
+export type Reward = {
+  id: number
+  user_phone: string
+  points: number
+  lifetime_points: number
 }

@@ -117,12 +117,13 @@ describe('getTxMeta', () => {
 
   const makeTx = (overrides: Partial<Transaction> = {}): Transaction => ({
     id: 1,
+    reference_id: 'ref-001',
     transaction_type: 'send',
     sender_phone: '01700000001',
     receiver_phone: '01700000002',
     amount: '500.00',
     fee: '0.00',
-    description: '',
+    note: '',
     status: 'completed',
     merchant_name: null,
     created_at: '2025-06-15T10:30:00Z',
