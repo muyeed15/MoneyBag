@@ -43,6 +43,17 @@ INSTALLED_APPS = [
     "notifications",
     "savings",
     "charity",
+    "recharge",
+    "billpay",
+    "agents",
+    "banking",
+    "loans",
+    "remittance",
+    "rewards",
+    "gateway",
+    "tickets",
+    "support",
+    "statements",
 ]
 
 MIDDLEWARE = [
