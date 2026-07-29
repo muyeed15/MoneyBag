@@ -20,6 +20,14 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_superuser", True)
         return self.create_user(phone, password, **extra_fields)
 
+    def create(self, **kwargs):
+        password = kwargs.pop("password", None)
+        user = super().create(**kwargs)
+        if password:
+            user.set_password(password)
+            user.save(update_fields=["password"])
+        return user
+
 
 class User(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = [
@@ -72,6 +80,86 @@ class Wallet(models.Model):
 
     def __str__(self):
         return f"{self.user.phone} - {self.balance}"
+
+
+class Nominee(models.Model):
+    RELATION_CHOICES = [
+        ("parent", "Parent"),
+        ("spouse", "Spouse"),
+        ("child", "Child"),
+        ("sibling", "Sibling"),
+        ("other", "Other"),
+    ]
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="nominees"
+    )
+    full_name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=15)
+    nid = models.CharField(max_length=20, blank=True)
+    relationship = models.CharField(max_length=10, choices=RELATION_CHOICES)
+    is_primary = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Nominee"
+        verbose_name_plural = "Nominees"
+        ordering = ["-is_primary", "created_at"]
+        unique_together = [["user", "nid"]]
+
+    def __str__(self):
+        return f"{self.full_name} ({self.get_relationship_display()})"
+
+
+class KYCVerification(models.Model):
+    DOC_TYPE_CHOICES = [
+        ("nid", "National ID"),
+        ("passport", "Passport"),
+        ("driving_license", "Driving License"),
+    ]
+
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("verified", "Verified"),
+        ("rejected", "Rejected"),
+    ]
+
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="kyc_verification"
+    )
+    document_type = models.CharField(max_length=20, choices=DOC_TYPE_CHOICES, default="nid")
+    document_number = models.CharField(max_length=30)
+    date_of_birth = models.DateField(null=True, blank=True)
+    address = models.TextField(blank=True)
+    face_image = models.URLField(blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
+    verified_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "KYC Verification"
+        verbose_name_plural = "KYC Verifications"
+
+    def __str__(self):
+        return f"KYC - {self.user.phone} ({self.status})"
+
+
+class OTPVerification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="otp_verifications")
+    otp = models.CharField(max_length=6)
+    purpose = models.CharField(max_length=20, default="2fa")
+    is_used = models.BooleanField(default=False)
+    expires_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "OTP Verification"
+        verbose_name_plural = "OTP Verifications"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"OTP for {self.user.phone} ({self.purpose})"
 
 
 class Foundation(models.Model):

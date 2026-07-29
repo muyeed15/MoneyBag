@@ -1,12 +1,28 @@
+import base64
+import os
+
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+
+
+def _mask(value):
+    if not value or len(value) < 6:
+        return "****"
+    return value[:6] + "*" * (len(value) - 10) + value[-4:]
 
 
 class Card(models.Model):
     CARD_TYPE_CHOICES = [
         ("debit", "Debit Card"),
         ("prepaid", "Prepaid Card"),
+    ]
+
+    CARD_NETWORK_CHOICES = [
+        ("visa", "Visa"),
+        ("mastercard", "Mastercard"),
+        ("amex", "American Express"),
+        ("nexus", "Nexus"),
     ]
 
     STATUS_CHOICES = [
@@ -20,7 +36,13 @@ class Card(models.Model):
         on_delete=models.CASCADE,
         related_name="cards",
     )
-    last_four = models.CharField(max_length=4)
+    card_network = models.CharField(
+        max_length=12, choices=CARD_NETWORK_CHOICES, default="visa"
+    )
+    last_four = models.CharField(max_length=4, editable=False, default="****")
+    masked_number = models.CharField(max_length=19, editable=False, default="****")
+    _number = models.TextField(db_column="card_number", default="")
+    cardholder_name = models.CharField(max_length=100, default="")
     card_type = models.CharField(
         max_length=10, choices=CARD_TYPE_CHOICES, default="debit"
     )
@@ -31,8 +53,6 @@ class Card(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="active")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    objects = models.Manager()
 
     class Meta:
         verbose_name = "Card"
@@ -49,5 +69,21 @@ class Card(models.Model):
             ),
         ]
 
+    def set_number(self, raw_number):
+        self._number = base64.b64encode(raw_number.encode()).decode()
+        self.last_four = raw_number[-4:]
+        self.masked_number = _mask(raw_number)
+
+    def get_number(self):
+        try:
+            return base64.b64decode(self._number.encode()).decode()
+        except Exception:
+            return ""
+
+    @property
+    def bin(self):
+        raw = self.get_number()
+        return raw[:6] if len(raw) >= 6 else ""
+
     def __str__(self):
-        return f"{self.user.phone} - **** {self.last_four} ({self.card_type})"
+        return f"{self.user.phone} - {self.card_network} ***{self.last_four}"

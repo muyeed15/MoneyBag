@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from accounts.models import User
-from transactions.models import Transaction
+from transactions.models import Transaction, MoneyRequest
 
 
 class TransactionSerializer(serializers.ModelSerializer):
@@ -48,4 +48,33 @@ class TransferSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 "No account found with this phone number."
             )
+        return value
+
+
+class MoneyRequestSerializer(serializers.ModelSerializer):
+    requester_phone = serializers.CharField(source="requester.phone", read_only=True)
+    target_phone = serializers.CharField(source="target.phone", read_only=True)
+
+    class Meta:
+        model = MoneyRequest
+        fields = [
+            "id", "requester", "requester_phone", "target", "target_phone",
+            "amount", "note", "status", "created_at",
+        ]
+        read_only_fields = ["status", "created_at"]
+
+
+class CreateMoneyRequestSerializer(serializers.Serializer):
+    phone = serializers.CharField(max_length=15)
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2)
+    note = serializers.CharField(required=False, allow_blank=True, default="")
+
+    def validate_amount(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Amount must be greater than zero.")
+        return value
+
+    def validate_phone(self, value):
+        if not User.objects.filter(phone=value).exists():
+            raise serializers.ValidationError("No account found with this phone number.")
         return value

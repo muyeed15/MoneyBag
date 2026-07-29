@@ -14,28 +14,14 @@ class CardListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        qs = (
-            Card.objects.filter(user=request.user)
-            .only(
-                "id",
-                "last_four",
-                "card_type",
-                "expiry_month",
-                "expiry_year",
-                "status",
-                "created_at",
-            )
-            .order_by("-created_at")
-        )
+        qs = Card.objects.filter(user=request.user).order_by("-created_at")
         p = paginate(qs, get_page(request), get_page_size(request))
-        return Response(
-            {
-                "count": p["count"],
-                "total_pages": p["total_pages"],
-                "page": p["page"],
-                "results": CardSerializer(p["queryset"], many=True).data,
-            }
-        )
+        return Response({
+            "count": p["count"],
+            "total_pages": p["total_pages"],
+            "page": p["page"],
+            "results": CardSerializer(p["queryset"], many=True).data,
+        })
 
     def post(self, request):
         serializer = CardSerializer(data=request.data)
@@ -61,9 +47,8 @@ class CardBlockView(APIView):
 
         Notification.objects.create(
             user=request.user,
-            message=f"Your card ending in {card.last_four} has been blocked.",
+            message=f"Your {card.card_network} card ending in {card.last_four} has been blocked.",
         )
-
         return Response(CardSerializer(card).data)
 
 
@@ -84,7 +69,6 @@ class CardUnblockView(APIView):
 
         Notification.objects.create(
             user=request.user,
-            message=f"Your card ending in {card.last_four} has been unblocked.",
+            message=f"Your {card.card_network} card ending in {card.last_four} has been unblocked.",
         )
-
         return Response(CardSerializer(card).data)

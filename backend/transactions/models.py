@@ -61,3 +61,40 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"{self.reference_id} - {self.transaction_type} - {self.status}"
+
+
+class MoneyRequest(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("accepted", "Accepted"),
+        ("declined", "Declined"),
+        ("expired", "Expired"),
+    ]
+
+    requester = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="sent_money_requests",
+    )
+    target = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="received_money_requests",
+    )
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    note = models.TextField(blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Money Request"
+        verbose_name_plural = "Money Requests"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["requester", "-created_at"]),
+            models.Index(fields=["target", "-created_at"]),
+        ]
+
+    def __str__(self):
+        return f"Req #{self.id} - {self.requester.phone} -> {self.target.phone} ৳{self.amount}"
