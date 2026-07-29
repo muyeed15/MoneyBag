@@ -232,3 +232,18 @@ python manage.py createsuperuser   # create admin user
 python manage.py migrate           # apply migrations
 python manage.py test              # run tests
 ```
+
+### Reset Database
+
+```bash
+# Wipe all data and re-seed from scratch
+python -c "
+import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+import django; django.setup()
+from django.db import connection
+with connection.cursor() as c:
+    c.execute('DROP SCHEMA public CASCADE; CREATE SCHEMA public;')
+"
+python manage.py migrate
+python manage.py seed
+```
