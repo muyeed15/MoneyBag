@@ -1,0 +1,35 @@
+from rest_framework import serializers
+
+from .models import Reward, PointsTransaction, Offer, UserOffer
+
+
+class RewardSerializer(serializers.ModelSerializer):
+    user_phone = serializers.CharField(source="user.phone", read_only=True)
+
+    class Meta:
+        model = Reward
+        fields = ["id", "user_phone", "points", "lifetime_points"]
+
+
+class PointsTransactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PointsTransaction
+        fields = ["id", "points", "transaction_type", "reason", "created_at"]
+
+
+class OfferSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Offer
+        fields = [
+            "id", "title", "description", "points_required",
+            "cashback_amount", "cashback_pct", "category",
+            "valid_from", "valid_until", "is_active",
+        ]
+
+
+class UserOfferSerializer(serializers.ModelSerializer):
+    offer = OfferSerializer(read_only=True)
+
+    class Meta:
+        model = UserOffer
+        fields = ["id", "offer", "is_claimed", "claimed_at", "created_at"]
