@@ -1,0 +1,85 @@
+import logging
+import uuid
+
+from django.db import transaction
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from common.pagination import get_page, get_page_size, paginate
+from common.utils import error_response, locked_deduct_wallet
+
+from .models import Biller, BillPayment
+from .serializers import BillerSerializer, PayBillSerializer, BillPaymentSerializer
+
+logger = logging.getLogger("billpay")
+
+
+class BillerListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        category = request.query_params.get("category")
+        qs = Biller.objects.filter(is_active=True)
+        if category:
+            qs = qs.filter(category=category)
+        return Response(BillerSerializer(qs, many=True).data)
+
+
+class PayBillView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @transaction.atomic
+    def post(self, request):
+        serializer = PayBillSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        biller_id = serializer.validated_data["biller_id"]
+        account_number = serializer.validated_data["account_number"]
+        amount = serializer.validated_data["amount"]
+
+        try:
+            biller = Biller.objects.get(id=biller_id, is_active=True)
+        except Biller.DoesNotExist:
+            return error_response("Biller not found or inactive.")
+
+        wallet = locked_deduct_wallet(request.user, amount)
+        if wallet is None:
+            return error_response("Insufficient balance.")
+
+        ref = "BILL" + uuid.uuid4().hex[:10].upper()
+        payment = BillPayment.objects.create(
+            user=request.user,
+            biller=biller,
+            account_number=account_number,
+            bill_number=serializer.validated_data.get("bill_number", ""),
+            amount=amount,
+            bill_month=serializer.validated_data.get("bill_month", ""),
+            reference=ref,
+            status="completed",
+        )
+
+        logger.info(
+            "BillPay: user=%s biller=%s account=%s amount=%s ref=%s",
+            request.user.phone, biller.name, account_number, amount, ref,
+        )
+        return Response(
+            BillPaymentSerializer(payment).data, status=status.HTTP_201_CREATED
+        )
+
+
+class BillHistoryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        qs = BillPayment.objects.filter(
+            user=request.user
+        ).select_related("biller").order_by("-created_at")
+        p = paginate(qs, get_page(request), get_page_size(request))
+        return Response({
+            "count": p["count"],
+            "total_pages": p["total_pages"],
+            "page": p["page"],
+            "results": BillPaymentSerializer(p["queryset"], many=True).data,
+        })
