@@ -30,7 +30,7 @@ export default async function SadaqahJariyahPage({
   return (
     <div>
       <PageHeader title="Sadaqah Jariyah" subtitle="Charity" showBack />
-      <div className="px-4 py-3 lg:px-6 lg:py-6 mx-auto">
+      <div className="px-4 py-5 lg:px-8 lg:py-8 mx-auto max-w-2xl">
 
       <div className="flex border-b border-sage-mid mb-6">
         {TABS.map((t) => (

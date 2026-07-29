@@ -1,11 +1,10 @@
 import Link from "next/link"
-import { CreditCard, Heart, Receipt, User, LogOut, QrCode } from "lucide-react"
+import { CreditCard, Heart, Receipt, User, LogOut } from "lucide-react"
 import { logoutAction } from "@/app/actions"
 import { PageHeader } from "@/components/ui/PageHeader"
 
 const ITEMS = [
   { href: "/profile", icon: User, label: "Profile", desc: "Account settings" },
-  { href: "/receive", icon: QrCode, label: "Receive", desc: "Show QR code to receive money" },
   { href: "/cards", icon: CreditCard, label: "Cards", desc: "Manage virtual cards" },
   { href: "/charity", icon: Heart, label: "Charity", desc: "Zakat, Sadaqah & Hawl" },
   { href: "/transactions", icon: Receipt, label: "History", desc: "View all transactions" },
@@ -14,8 +13,8 @@ const ITEMS = [
 export default function MorePage() {
   return (
     <div>
-      <PageHeader title="More Services" showBack />
-      <div className="px-4 py-3 lg:px-6 lg:py-6 mx-auto max-w-lg">
+      <PageHeader title="More Services" subtitle="Explore" showBack />
+      <div className="px-4 py-5 lg:px-8 lg:py-8 mx-auto max-w-2xl">
 
       <div className="space-y-2">
         {ITEMS.map(({ href, icon: Icon, label, desc }) => (

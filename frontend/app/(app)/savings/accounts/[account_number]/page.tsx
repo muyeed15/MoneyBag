@@ -26,7 +26,7 @@ export default async function SavingsAccountDetailPage({
   return (
     <div>
       <PageHeader title={account.account_number} subtitle="Account" showBack />
-      <div className="px-4 py-3 lg:px-6 lg:py-6 mx-auto">
+      <div className="px-4 py-5 lg:px-8 lg:py-8 mx-auto max-w-2xl">
 
       <div className="bg-white border border-sage-mid p-5 mb-6 rounded-xl">
         <div className="flex items-center justify-between mb-3">

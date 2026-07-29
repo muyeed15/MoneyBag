@@ -5,23 +5,26 @@ import Link from "next/link";
 import useSWR from "swr";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import {
-  ArrowUpRight, Store, CreditCard, Receipt, Landmark,
-  Heart, QrCode, User,
+  Send, Banknote, Store, CreditCard, Receipt, Landmark,
+  Heart, QrCode, Smartphone, Ticket, HandCoins, MessageCircle,
 } from "lucide-react";
 import type { Wallet, Transaction, PaginatedResponse } from "@/types";
 import { formatAmount } from "@/utils/helpers";
 import { TransactionCard } from "@/components/ui/TransactionCard";
 
-
 const ACTIONS = [
-  { label: "Send Money", icon: ArrowUpRight, href: "/send", bg: "bg-teal", text: "text-white" },
-  { label: "Receive", icon: QrCode, href: "/receive", bg: "bg-teal", text: "text-white" },
-  { label: "Pay Merchant", icon: Store, href: "/pay", bg: "bg-teal", text: "text-white" },
-  { label: "Savings", icon: Landmark, href: "/savings", bg: "bg-teal", text: "text-white" },
-  { label: "Charity", icon: Heart, href: "/charity", bg: "bg-teal", text: "text-white" },
-  { label: "My Cards", icon: CreditCard, href: "/cards", bg: "bg-teal", text: "text-white" },
-  { label: "Profile", icon: User, href: "/profile", bg: "bg-teal", text: "text-white" },
-  { label: "History", icon: Receipt, href: "/transactions", bg: "bg-teal", text: "text-white" },
+  { label: "Send", icon: Send, href: "/send" },
+  { label: "Receive", icon: QrCode, href: "/receive" },
+  { label: "Pay", icon: Store, href: "/pay" },
+  { label: "Cards", icon: CreditCard, href: "/cards" },
+  { label: "Cash Out", icon: Banknote, href: "/send" },
+  { label: "Pay Bills", icon: Receipt, href: "/billpay" },
+  { label: "Tickets", icon: Ticket, href: "/tickets" },
+  { label: "Recharge", icon: Smartphone, href: "/recharge" },
+  { label: "Savings", icon: Landmark, href: "/savings" },
+  { label: "Qard Hasan", icon: HandCoins, href: "/loans" },
+  { label: "Charity", icon: Heart, href: "/charity" },
+  { label: "Support", icon: MessageCircle, href: "/support" },
 ];
 
 type Props = {
@@ -64,82 +67,84 @@ export default function DashboardClient({
   const [listRef] = useAutoAnimate();
 
   return (
-    <div>
-      <div className="px-4 py-4 lg:px-6 lg:py-6 mx-auto space-y-5">
-        {/* Balance card */}
-        <div className="bg-teal text-white py-8 pl-5 pr-6 sm:py-10 sm:pl-8 sm:pr-10 relative overflow-hidden aspect-[3/1] sm:aspect-[5/1] rounded-xl">
-          {svgDataUri && (
-            <img src={svgDataUri} alt="" className="absolute top-0 left-0 w-full h-full object-cover object-top pointer-events-none" />
+    <div className="px-4 py-5 lg:px-8 lg:py-8 mx-auto max-w-2xl space-y-6">
+      {/* Balance card */}
+      <div className="bg-teal text-white py-10 pl-6 pr-6 sm:py-12 sm:pl-8 sm:pr-10 relative overflow-hidden rounded-2xl shadow-lg shadow-teal/20">
+        {svgDataUri && (
+          <img src={svgDataUri} alt="" className="absolute top-0 left-0 w-full h-full object-cover object-top pointer-events-none" />
+        )}
+        <div className="relative flex flex-col justify-center">
+          {fullName && (
+            <p className="text-white/80 text-sm font-medium mb-3">
+              Welcome back, <strong className="text-white">{fullName}</strong>
+            </p>
           )}
-          <div className="relative flex flex-col justify-center h-full">
-            {fullName && (
-              <p className="text-white/90 text-base sm:text-lg font-semibold mb-1">
-                Welcome, {fullName}
-              </p>
-            )}
-            <p className="text-white/80 text-xs font-medium tracking-wide mb-1">
-              Balance
-            </p>
-            <p className="text-4xl sm:text-5xl font-bold tracking-tight leading-none tabular-nums">
-              {formatAmount(wallet.balance)}
-            </p>
-          </div>
-        </div>
-
-        {/* Quick actions */}
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-navy-muted mb-3">
-            Services
+          <p className="text-white/60 text-[11px] font-semibold uppercase tracking-widest mb-1">
+            Balance
           </p>
-          <div ref={gridRef} className="grid grid-cols-4 gap-3">
-            {ACTIONS.map(({ label, icon: Icon, href, bg, text }) => (
-              <Link
-                key={label}
-                href={active ? href : "#"}
-                aria-disabled={!active}
-                className={`flex flex-col items-center justify-center gap-1.5 ${bg} ${text} px-2 py-4 rounded-xl h-full overflow-hidden ${!active ? "opacity-40 pointer-events-none" : ""}`}
-              >
-                <div className="relative">
-                  <Icon className="h-6 w-6 shrink-0" aria-hidden="true" />
-                </div>
-                <span className="text-[10px] font-semibold text-center whitespace-nowrap">{label}</span>
-              </Link>
-            ))}
-          </div>
+          <p className="text-4xl sm:text-5xl font-bold tracking-tight leading-none tabular-nums">
+            {formatAmount(wallet.balance)}
+          </p>
         </div>
+      </div>
 
-        {/* Recent Transactions */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-navy-muted">
-              Recent Transactions
-            </p>
+      {/* Service grid */}
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-navy-muted mb-3">
+          Services
+        </p>
+        <div ref={gridRef} className="grid grid-cols-4 gap-2.5 sm:gap-3">
+          {ACTIONS.map(({ label, icon: Icon, href }) => (
             <Link
-              href="/transactions"
-              className="text-xs font-semibold text-navy active:opacity-50 transition-opacity"
+              key={label}
+              href={active ? href : "#"}
+              aria-disabled={!active}
+              className={`flex flex-col items-center justify-center gap-1.5 bg-teal text-white px-1 py-4 rounded-2xl transition-all duration-150 active:scale-95 active:opacity-80 ${
+                !active ? "opacity-40 pointer-events-none" : "hover:shadow-md hover:shadow-teal/20"
+              }`}
             >
-              View All →
+              <Icon className="h-5 w-5 sm:h-6 sm:w-6 shrink-0" aria-hidden="true" />
+              <span className="text-[10px] sm:text-[11px] font-semibold text-center leading-tight">
+                {label}
+              </span>
             </Link>
-          </div>
-
-          <div ref={listRef} className="bg-white border border-sage-mid divide-y divide-sage-mid rounded-xl">
-            {recentTx.length === 0 ? (
-              <p className="text-sm text-navy-muted text-center py-10">
-                No transactions yet.
-              </p>
-            ) : (
-              recentTx.map((tx) => (
-                <TransactionCard
-                  key={tx.id}
-                  tx={tx}
-                  myPhone={myPhone}
-                  relativeTime
-                />
-              ))
-            )}
-          </div>
+          ))}
         </div>
       </div>
+
+      {/* Recent Transactions */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-navy-muted">
+            Recent Transactions
+          </p>
+          <Link
+            href="/transactions"
+            className="text-xs font-semibold text-teal active:opacity-50 transition-opacity"
+          >
+            View All
+          </Link>
+        </div>
+
+        <div ref={listRef} className="bg-white border border-sage-mid divide-y divide-sage-mid rounded-2xl overflow-hidden shadow-sm">
+          {recentTx.length === 0 ? (
+            <div className="text-center py-12">
+              <Receipt className="h-8 w-8 text-sage-mid mx-auto mb-3" strokeWidth={1.5} />
+              <p className="text-sm font-medium text-navy-muted">No transactions yet</p>
+              <p className="text-xs text-navy-muted mt-1">Your recent activity will appear here.</p>
+            </div>
+          ) : (
+            recentTx.map((tx) => (
+              <TransactionCard
+                key={tx.id}
+                tx={tx}
+                myPhone={myPhone}
+                relativeTime
+              />
+            ))
+          )}
+        </div>
       </div>
+    </div>
   );
 }

@@ -98,7 +98,7 @@ export function NotificationsClient({
         )}
       </PageHeader>
 
-      <div className="px-4 lg:px-8 py-6 mx-auto">
+      <div className="px-4 py-5 lg:px-8 lg:py-8 mx-auto max-w-2xl">
         {notifications.length === 0 ? (
           <div className="bg-white border border-sage-mid px-6 py-16 text-center rounded-xl">
             <Bell

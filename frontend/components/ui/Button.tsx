@@ -13,14 +13,14 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants: Record<Variant, string> = {
-  primary: "bg-teal text-white active:opacity-80",
-  secondary: "bg-white text-navy border border-sage-mid active:opacity-70",
-  ghost: "text-navy active:opacity-60",
-  destructive: "text-red-500 active:opacity-60",
+  primary: "bg-teal text-white hover:bg-teal/90 active:scale-[0.98]",
+  secondary: "bg-white text-navy border border-sage-mid hover:bg-sage/50 active:scale-[0.98]",
+  ghost: "text-navy hover:bg-sage/50 active:scale-[0.98]",
+  destructive: "text-red-500 hover:bg-red-50 active:scale-[0.98]",
 };
 
 const sizes: Record<Size, string> = {
-  sm: "h-8 px-4 text-xs",
+  sm: "h-9 px-4 text-xs",
   md: "h-10 px-5 text-sm",
   lg: "h-12 px-6 text-sm",
 };
@@ -37,7 +37,7 @@ export function Button({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center gap-2 font-semibold transition-opacity duration-100 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed select-none rounded-lg",
+        "inline-flex items-center justify-center gap-2 font-semibold transition-all duration-150 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed select-none rounded-xl",
         variants[variant],
         sizes[size],
         className,

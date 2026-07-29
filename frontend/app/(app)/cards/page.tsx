@@ -60,7 +60,7 @@ export default function CardsPage() {
         </button>
       </PageHeader>
 
-      <div className="px-4 lg:px-8 py-6 mx-auto space-y-5">
+      <div className="px-4 py-5 lg:px-8 lg:py-8 mx-auto max-w-2xl space-y-5">
         {showForm && (
           <form action={formAction} className="bg-white border border-sage-mid rounded-xl p-5">
             <p className="text-xs font-semibold uppercase tracking-widest text-navy-muted mb-4">

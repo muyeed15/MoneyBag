@@ -14,9 +14,9 @@ const SECTIONS = [
 export default function CharityPage() {
   return (
     <div>
-      <PageHeader title="Charity" showBack />
+      <PageHeader title="Charity" subtitle="Zakat & Sadaqah" showBack />
 
-      <div className="px-4 py-3 lg:px-6 lg:py-6 mx-auto grid gap-4 sm:grid-cols-2">
+      <div className="px-4 py-5 lg:px-8 lg:py-8 mx-auto max-w-2xl grid gap-4 sm:grid-cols-2">
         {SECTIONS.map((s) => {
           const Icon = s.icon
           return (

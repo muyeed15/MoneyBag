@@ -36,7 +36,7 @@ export default function CardDetailPage({
           <BackButton />
           <h1 className="text-navy font-bold text-lg">Card Details</h1>
         </div>
-        <div className="px-4 py-3 lg:px-6 lg:py-6 mx-auto max-w-lg">
+        <div className="px-4 py-5 lg:px-8 lg:py-8 mx-auto max-w-2xl">
           <div className="bg-white border border-sage-mid px-6 py-16 text-center rounded-xl">
             <CreditCard className="h-10 w-10 text-navy-muted mb-3" strokeWidth={1.5} />
             <p className="text-navy font-semibold">Card not found</p>
@@ -52,7 +52,7 @@ export default function CardDetailPage({
         <BackButton />
         <h1 className="text-navy font-bold text-lg">Card Details</h1>
       </div>
-      <div className="px-4 py-3 lg:px-6 lg:py-6 mx-auto max-w-lg space-y-6">
+      <div className="px-4 py-5 lg:px-8 lg:py-8 mx-auto max-w-2xl space-y-6">
         <div className="relative bg-gradient-to-br from-teal to-teal/80 text-white rounded-xl p-6 aspect-[1.586] flex flex-col justify-between shadow-lg overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full border-[6px] border-white" />

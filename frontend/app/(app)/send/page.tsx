@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowUpRight, Info, QrCode } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Send, Info, QrCode } from "lucide-react";
 import { transferAction } from "@/app/actions";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -17,10 +17,11 @@ const initialState = { error: null, success: false };
 export default function SendPage() {
   const [state, formAction, pending] = useActionState(transferAction, initialState);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const formRef = useRef<HTMLFormElement>(null);
   const submitRef = useRef<HTMLButtonElement>(null);
   const [showScanner, setShowScanner] = useState(false);
-  const [receiverPhone, setReceiverPhone] = useState("");
+  const [receiverPhone, setReceiverPhone] = useState(searchParams.get("phone") ?? "");
   const [confirmData, setConfirmData] = useState<{ phone: string; amount: string; note: string } | null>(null);
 
   const showSuccess = state.success && !!state.amount && !!state.receiver_phone;
@@ -59,14 +60,14 @@ export default function SendPage() {
       <PageTransition>
         <PageHeader title="Send Money" subtitle="Transfer" showBack />
 
-        <div className="px-4 lg:px-8 py-6 max-w-lg mx-auto">
+        <div className="px-4 py-5 lg:px-8 lg:py-8 max-w-2xl mx-auto">
           {state.error && (
-            <div className="border-l-4 border-red-500 bg-red-50 px-4 py-3 text-sm text-red-700 mb-5">
+            <div className="border-l-4 border-red-500 bg-red-50 px-4 py-3 text-sm text-red-700 rounded-r mb-5">
               {state.error}
             </div>
           )}
 
-          <form ref={formRef} action={formAction} className="bg-white border border-sage-mid rounded-xl p-5">
+          <form ref={formRef} action={formAction} className="bg-white border border-sage-mid rounded-2xl p-5 shadow-sm">
             <button ref={submitRef} type="submit" className="hidden" />
             <div className="text-navy-muted pb-4 flex gap-2 items-start">
               <Info className="h-4 w-4 mt-0.5 shrink-0 text-navy-muted" />
@@ -93,7 +94,7 @@ export default function SendPage() {
                   <button
                     type="button"
                     onClick={() => setShowScanner(true)}
-                    className="h-10 w-10 mb-0.5 flex items-center justify-center border border-sage-mid bg-white text-navy-muted active:opacity-60 shrink-0 rounded-lg"
+                    className="h-[42px] w-[42px] mb-0.5 flex items-center justify-center border border-sage-mid bg-white text-navy-muted hover:bg-sage active:scale-95 shrink-0 rounded-xl transition-all duration-150"
                     aria-label="Scan QR code"
                   >
                     <QrCode className="h-5 w-5" />
@@ -120,16 +121,16 @@ export default function SendPage() {
                   label="Note (Optional)"
                   name="note"
                   type="text"
-                  placeholder="e.g. House rent, groceries…"
+                  placeholder="e.g. House rent, groceries..."
                 />
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="flex-1 py-4 text-sm font-semibold text-white bg-red-500 rounded-xl active:opacity-80 transition-opacity"
+                className="flex-1 py-4 text-sm font-semibold text-navy bg-sage active:scale-[0.98] rounded-xl transition-all duration-150"
               >
                 Cancel
               </button>
@@ -147,17 +148,17 @@ export default function SendPage() {
       </PageTransition>
 
       {confirmData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-navy/60" onClick={() => setConfirmData(null)}>
-          <div className="bg-white w-full max-w-sm rounded-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-navy/60 backdrop-blur-sm" onClick={() => setConfirmData(null)}>
+          <div className="bg-white w-full max-w-sm rounded-2xl overflow-hidden shadow-xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 space-y-4">
               <div className="text-center">
                 <div className="mx-auto h-12 w-12 bg-teal/10 rounded-full flex items-center justify-center mb-3">
-                  <ArrowUpRight className="h-6 w-6 text-teal" />
+                  <Send className="h-6 w-6 text-teal" />
                 </div>
                 <p className="text-navy font-bold text-base">Confirm Transfer</p>
                 <p className="text-xs text-navy-muted mt-1">Are you sure you want to send?</p>
               </div>
-              <div className="bg-sage rounded-lg px-4 py-3 space-y-2">
+              <div className="bg-sage rounded-xl px-4 py-3 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-navy-muted">To</span>
                   <span className="text-navy font-semibold">{confirmData.phone}</span>
@@ -178,14 +179,14 @@ export default function SendPage() {
               <button
                 type="button"
                 onClick={() => setConfirmData(null)}
-                className="flex-1 py-4 text-sm font-semibold text-navy border-r border-sage-mid active:opacity-70 transition-opacity"
+                className="flex-1 py-4 text-sm font-semibold text-navy-muted border-r border-sage-mid hover:bg-sage active:opacity-70 transition-all duration-150"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={() => { setConfirmData(null); submitRef.current?.click(); }}
-                className="flex-1 py-4 text-sm font-semibold text-teal active:opacity-70 transition-opacity"
+                className="flex-1 py-4 text-sm font-semibold text-teal hover:bg-teal/5 active:opacity-70 transition-all duration-150"
               >
                 Send
               </button>

@@ -11,7 +11,7 @@ export default async function ZakatPayPage() {
   return (
     <div>
       <PageHeader title="Pay Zakat" subtitle="Charity" showBack />
-      <div className="px-4 py-3 lg:px-6 lg:py-6 mx-auto">
+      <div className="px-4 py-5 lg:px-8 lg:py-8 mx-auto max-w-2xl">
         <PayZakatForm foundations={foundationList} />
       </div>
     </div>

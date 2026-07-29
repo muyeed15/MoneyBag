@@ -13,7 +13,7 @@ export default async function SavingsPage() {
     <div>
       <PageHeader title="Mudarabah Plans" subtitle="Savings" showBack />
 
-      <div className="px-4 py-3 lg:px-6 lg:py-6 mx-auto space-y-6">
+      <div className="px-4 py-5 lg:px-8 lg:py-8 mx-auto max-w-2xl space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-navy font-semibold">Available Plans</h2>
           <Link href="/savings/accounts" className="text-navy text-sm font-medium">
