@@ -2,7 +2,7 @@
 
 Islamic digital wallet API. Django REST + JWT + PostgreSQL.
 
-**Islamic features:** Mudarabah savings, Zakat calculation & payment, Sadaqah giving.
+**Islamic features:** Mudarabah savings, Zakat calculation & payment, Sadaqah giving, Qard Hasan loans.
 
 > See the [project README](../README.md) for the full quick start and production deployment with PM2.
 
@@ -53,73 +53,176 @@ PAGE_SIZE_MAX=50
 
 ```
 config/          Django project settings, root URL config, WSGI/ASGI
-accounts/        User, Wallet, and Foundation models, views, serializers
-cards/           Card model, views, serializers
-transactions/    Transaction model, views, serializers
-merchants/       Merchant model, views, serializers
-notifications/   Notification model, views, serializers
-savings/         Mudarabah savings plans, accounts, contributions
-charity/         Zakat, Sadaqah, Hawl tracking, Sadaqah Jariyah
-common/          Shared utilities: pagination, middleware, seed command
+accounts/        User, Wallet, Foundation, Nominee, KYC, OTP
+cards/           Card (encrypted), block/unblock
+transactions/    Transaction, Money Request
+merchants/       Merchant profiles
+notifications/   Notification + SSE streaming
+savings/         Mudarabah plans, accounts, contributions
+charity/         Zakat, Sadaqah, Hawl, Sadaqah Jariyah
+common/          Pagination, middleware, seed command, utilities
+recharge/        Mobile top-up operators, data packs
+billpay/         Utility billers and payments (electricity, gas, water, etc.)
+agents/          Agent network for cash-in/cash-out (Wakalah)
+banking/         Islamic bank integration, add money, withdraw
+loans/           Qard Hasan interest-free loans
+remittance/      International money transfer (Hawala)
+rewards/         Points, cashback offers, user rewards
+gateway/         E-commerce payment API for merchants
+tickets/         Bus, train, airline, cinema, event bookings
+support/         Customer support ticket system
+statements/      Monthly account statements
 ```
 
-## Models
-
-| Model               | App            | Description |
-|---------------------|----------------|-------------|
-| `User`              | `accounts`     | Custom user with phone + NID |
-| `Wallet`            | `accounts`     | Balance, daily limit, status |
-| `Foundation`        | `accounts`     | Verified charitable organizations |
-| `Transaction`       | `transactions` | Send, payment, cash in/out records |
-| `Notification`      | `notifications`| Per-user messages |
-| `Card`              | `cards`        | Debit/prepaid cards |
-| `Merchant`          | `merchants`    | Business profiles |
-| `MudarabahPlan`     | `savings`      | Savings plan (duration, monthly amount, profit ratio) |
-| `MudarabahAccount`  | `savings`      | User enrollment in a Mudarabah plan |
-| `MudarabahContribution` | `savings` | Monthly contribution payments |
-| `ZakatPayment`      | `charity`      | Zakat payments with wealth snapshot |
-| `Sadaqah`           | `charity`      | Voluntary charity records |
-| `HawlTracking`      | `charity`      | Zakat eligibility (hawl / nisab) tracking |
-| `SadaqahJariyah`    | `charity`      | Recurring charity subscriptions |
-
-## API Endpoints
+## All API Endpoints
 
 All endpoints require `Authorization: Bearer <token>` unless noted.
 
-| Method     | URL                                              | Description |
-|------------|--------------------------------------------------|-------------|
-| POST       | `/api/token/`                                    | Obtain JWT (login) |
-| POST       | `/api/token/refresh/`                            | Refresh JWT |
-| GET        | `/api/me/`                                       | User profile |
-| GET        | `/api/wallet/`                                   | Wallet balance |
-| GET        | `/api/qr/`                                       | Generate QR code |
-| GET        | `/api/foundations/`                              | List verified foundations |
-| GET        | `/api/foundations/<pk>/`                         | Foundation detail |
-| POST       | `/api/transfer/`                                 | Send money |
-| GET        | `/api/merchants/`                                | List verified merchants |
-| POST       | `/api/pay/merchant/`                             | Pay a merchant |
-| GET, POST  | `/api/cards/`                                    | List / add cards |
-| PATCH      | `/api/cards/<pk>/block/`                         | Block card |
-| PATCH      | `/api/cards/<pk>/unblock/`                       | Unblock card |
-| GET        | `/api/transactions/`                             | Transaction history |
-| GET        | `/api/transactions/<pk>/`                        | Transaction detail |
-| GET        | `/api/notifications/`                            | Notification list |
-| GET        | `/api/notifications/stream/`                     | SSE notification stream |
-| POST       | `/api/notifications/read-all/`                   | Mark all read |
-| GET, PATCH | `/api/notifications/<pk>/`                       | Detail / mark read |
-| GET        | `/api/mudarabah/plans/`                          | List Mudarabah plans |
-| GET, POST  | `/api/mudarabah/accounts/`                       | List / open account |
-| GET        | `/api/mudarabah/accounts/<account_number>/`      | Account detail |
-| POST       | `/api/mudarabah/pay/`                            | Pay monthly contribution |
-| GET        | `/api/mudarabah/accounts/<account_number>/contributions/` | Contribution history |
-| POST       | `/api/zakat/calculate/`                          | Calculate zakat due |
-| POST       | `/api/zakat/pay/`                                | Pay zakat |
-| GET        | `/api/zakat/history/`                            | Zakat payment history |
-| GET, PATCH | `/api/hawl/`                                     | Hawl / nisab tracking |
-| POST       | `/api/sadaqah/`                                  | Give sadaqah |
-| GET        | `/api/sadaqah/history/`                          | Sadaqah history |
-| GET, POST  | `/api/sadaqah-jariyah/`                          | List / create recurring charity |
-| GET, PATCH | `/api/sadaqah-jariyah/<donation_id>/`            | Recurring charity detail |
+### Auth & Profile
+| Method | URL | Description |
+|--------|-----|-------------|
+| POST | `/api/token/` | Obtain JWT (login) |
+| POST | `/api/token/refresh/` | Refresh JWT |
+| GET | `/api/me/` | User profile |
+| GET | `/api/wallet/` | Wallet balance |
+| GET | `/api/qr/` | Generate QR code |
+
+### Money Transfer
+| Method | URL | Description |
+|--------|-----|-------------|
+| POST | `/api/transfer/` | Send money |
+| GET | `/api/transactions/` | Transaction history |
+| GET | `/api/transactions/<pk>/` | Transaction detail |
+| POST | `/api/money-requests/create/` | Request money |
+| GET | `/api/money-requests/` | Money requests |
+| POST | `/api/money-requests/<pk>/respond/` | Accept/decline request |
+
+### Payments
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | `/api/merchants/` | List verified merchants |
+| POST | `/api/pay/merchant/` | Pay a merchant |
+
+### Cards
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET, POST | `/api/cards/` | List / add cards |
+| PATCH | `/api/cards/<pk>/block/` | Block card |
+| PATCH | `/api/cards/<pk>/unblock/` | Unblock card |
+
+### Recharge
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | `/api/operators/` | List mobile operators |
+| GET | `/api/data-packs/` | List data packs |
+| POST | `/api/recharge/` | Recharge phone |
+| GET | `/api/recharges/` | Recharge history |
+
+### Bill Pay
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | `/api/billers/` | List billers |
+| POST | `/api/pay-bill/` | Pay utility bill |
+| GET | `/api/bills/` | Bill payment history |
+
+### Agents
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | `/api/agents/` | List agents |
+| GET | `/api/agents/<pk>/` | Agent detail |
+| POST | `/api/cash-in/` | Cash in through agent |
+| POST | `/api/cash-out/` | Cash out through agent |
+| GET | `/api/agent-transactions/` | Agent transaction history |
+
+### Banking
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | `/api/banks/` | List Islamic banks |
+| GET, POST | `/api/bank-accounts/` | List / add bank accounts |
+| DELETE | `/api/bank-accounts/<pk>/` | Remove bank account |
+| POST | `/api/add-money/` | Add money from bank |
+| POST | `/api/withdraw/` | Withdraw to bank |
+| GET | `/api/bank-transactions/` | Bank transaction history |
+
+### Qard Hasan Loans
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | `/api/qard-hasan-products/` | List loan products |
+| POST | `/api/apply-qard-hasan/` | Apply for loan |
+| GET | `/api/qard-hasan/` | My loans |
+| GET | `/api/qard-hasan/<pk>/` | Loan detail |
+| POST | `/api/qard-hasan/<pk>/repay/` | Repay loan |
+
+### Remittance
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | `/api/remittance-partners/` | List partners |
+| POST | `/api/receive-remittance/` | Receive remittance |
+| GET | `/api/remittances/` | Remittance history |
+
+### Savings (Mudarabah)
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | `/api/mudarabah/plans/` | List plans |
+| GET, POST | `/api/mudarabah/accounts/` | List / open account |
+| GET | `/api/mudarabah/accounts/<account_number>/` | Account detail |
+| POST | `/api/mudarabah/pay/` | Pay contribution |
+| GET | `/api/mudarabah/accounts/<account_number>/contributions/` | Contribution history |
+
+### Charity
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET, POST | `/api/zakat/` | Calculate / pay zakat |
+| GET | `/api/zakat/history/` | Zakat history |
+| GET, PUT | `/api/hawl/` | Hawl tracking |
+| POST | `/api/sadaqah/` | Give sadaqah |
+| GET | `/api/sadaqah/history/` | Sadaqah history |
+| GET, POST | `/api/sadaqah-jariyah/` | List / create recurring |
+| GET, PATCH | `/api/sadaqah-jariyah/<donation_id>/` | Detail / toggle |
+
+### Tickets
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | `/api/ticket-providers/` | List providers |
+| GET | `/api/ticket-trips/` | List trips/shows |
+| POST | `/api/book-ticket/` | Book ticket |
+| GET | `/api/tickets/` | Booking history |
+| POST | `/api/tickets/<pk>/cancel/` | Cancel booking |
+
+### Rewards & Offers
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | `/api/rewards/` | Reward points |
+| GET | `/api/points-history/` | Points history |
+| GET | `/api/offers/` | Active offers |
+| POST | `/api/offers/<pk>/claim/` | Claim offer |
+
+### Gateway
+| Method | URL | Description |
+|--------|-----|-------------|
+| POST | `/api/gateway/initiate/` | Initiate payment |
+| GET | `/api/gateway/<txn_id>/` | Payment status |
+| GET | `/api/gateway-transactions/` | Gateway history |
+| POST | `/api/gateway-webhook/` | Merchant webhook |
+
+### Support
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET, POST | `/api/support-tickets/` | List / create tickets |
+| GET | `/api/support-tickets/<pk>/` | Ticket detail |
+| POST | `/api/support-tickets/<pk>/reply/` | Reply to ticket |
+
+### Notifications & Statements
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | `/api/notifications/` | Notification list |
+| GET | `/api/notifications/stream/` | SSE stream |
+| POST | `/api/notifications/read-all/` | Mark all read |
+| GET, PATCH | `/api/notifications/<pk>/` | Detail / mark read |
+| GET | `/api/statements/` | Account statements |
+| POST | `/api/statements/generate/` | Generate statement |
+| GET | `/api/foundations/` | List foundations |
+| GET | `/api/foundations/<pk>/` | Foundation detail |
 
 ## Useful Commands
 
