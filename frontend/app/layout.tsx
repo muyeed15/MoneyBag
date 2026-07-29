@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Yaqeen",
-  description: "Sharia-compliant Islamic digital wallet",
+  description: "Islamic digital wallet",
   icons: {
     icon: "/logo.svg",
     apple: "/logo.svg",

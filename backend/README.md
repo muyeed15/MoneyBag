@@ -1,6 +1,6 @@
 # Yaqeen Backend
 
-Sharia-compliant Islamic digital wallet API. Django REST + JWT + PostgreSQL.
+Islamic digital wallet API. Django REST + JWT + PostgreSQL.
 
 **Islamic features:** Mudarabah savings, Zakat calculation & payment, Sadaqah giving.
 

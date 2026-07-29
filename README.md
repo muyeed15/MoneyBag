@@ -1,6 +1,6 @@
 # Yaqeen
 
-Sharia-compliant Islamic digital wallet. Django REST backend + Next.js frontend.
+Islamic digital wallet. Django REST backend + Next.js frontend.
 
 ## Quick Start
 

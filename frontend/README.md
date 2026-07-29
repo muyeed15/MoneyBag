@@ -1,6 +1,6 @@
 # Yaqeen Frontend
 
-Next.js web app for Yaqeen, a Sharia-compliant Islamic digital wallet.
+Next.js web app for Yaqeen, a Islamic digital wallet.
 
 > See the [project README](../README.md) for the full quick start and production deployment with PM2.
 
