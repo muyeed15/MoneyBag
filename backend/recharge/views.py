@@ -25,7 +25,11 @@ class OperatorListView(APIView):
 
     def get(self, request):
         operators = Operator.objects.filter(is_active=True)
-        return Response(OperatorSerializer(operators, many=True).data)
+        return Response(
+            OperatorSerializer(
+                operators, many=True, context={"request": request}
+            ).data
+        )
 
 
 class DataPackListView(APIView):

@@ -27,6 +27,7 @@ export async function applyQardHasanAction(
     const data = await res.json()
     if (!res.ok) return { ok: false, message: data.detail ?? 'Application failed.' }
     revalidatePath('/loans')
+    revalidatePath('/loans/my')
     revalidatePath('/dashboard')
     return { ok: true, message: `Qard Hasan of ৳${data.amount} received. Repay ৳${data.amount_due}. No interest.` }
   } catch {
@@ -56,6 +57,7 @@ export async function repayQardHasanAction(
     const data = await res.json()
     if (!res.ok) return { ok: false, message: data.detail ?? 'Repayment failed.' }
     revalidatePath('/loans')
+    revalidatePath('/loans/my')
     revalidatePath('/dashboard')
     if (data.hibah_given > 0) {
       return { ok: true, message: `Repaid ৳${formData.get('amount')} with ৳${data.hibah_given} hibah. JazakAllah Khair.` }

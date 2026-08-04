@@ -61,7 +61,7 @@ export default async function SadaqahJariyahPage({
                   <span className="text-navy font-medium text-sm">
                     {formatAmount(d.amount)} / {d.frequency}
                   </span>
-                  {d.cause && <p className="text-xs text-navy-muted">{d.cause}</p>}
+                  {d.cause_label && <p className="text-xs text-navy-muted">{d.cause_label}</p>}
                   {d.recipient_name && <p className="text-xs text-navy-muted">To: {d.recipient_name}</p>}
                   {d.next_due_date && (
                     <p className="text-xs text-navy-muted">Next: {formatDate(d.next_due_date)}</p>

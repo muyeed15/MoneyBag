@@ -1,6 +1,13 @@
 from django.contrib import admin
 
-from .models import TicketProvider, TicketBooking
+from .models import TicketCategory, TicketProvider, TicketBooking
+
+
+@admin.register(TicketCategory)
+class TicketCategoryAdmin(admin.ModelAdmin):
+    list_display = ["key", "label", "is_active"]
+    list_filter = ["is_active"]
+    search_fields = ["key", "label"]
 
 
 @admin.register(TicketProvider)

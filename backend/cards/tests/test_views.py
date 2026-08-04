@@ -39,18 +39,19 @@ class CardListCreateViewTest(TestCase):
 
     def test_create_card_success(self):
         res = self.client.post("/api/cards/", {
-            "last_four": "4321",
+            "card_number": "4242424242424321",
             "card_type": "debit",
             "expiry_month": 12,
             "expiry_year": 2030,
         })
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertEqual(res.data["last_four"], "4321")
+        self.assertEqual(res.data["card_network"], "visa")
         self.assertEqual(Card.objects.count(), 1)
 
-    def test_create_card_invalid_last_four(self):
+    def test_create_card_invalid_number(self):
         res = self.client.post("/api/cards/", {
-            "last_four": "abc",
+            "card_number": "abc",
             "card_type": "debit",
             "expiry_month": 12,
             "expiry_year": 2030,
@@ -59,7 +60,7 @@ class CardListCreateViewTest(TestCase):
 
     def test_create_card_expired_year(self):
         res = self.client.post("/api/cards/", {
-            "last_four": "1234",
+            "card_number": "4242424242424242",
             "card_type": "debit",
             "expiry_month": 12,
             "expiry_year": 2020,
@@ -73,16 +74,17 @@ class CardListCreateViewTest(TestCase):
 
     def test_create_card_defaults_to_debit(self):
         res = self.client.post("/api/cards/", {
-            "last_four": "1111",
+            "card_number": "5234567890123456",
             "expiry_month": 12,
             "expiry_year": 2030,
         })
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertEqual(res.data["card_type"], "debit")
+        self.assertEqual(res.data["card_network"], "mastercard")
 
     def test_create_card_invalid_expiry_month_zero(self):
         res = self.client.post("/api/cards/", {
-            "last_four": "1234",
+            "card_number": "4242424242424242",
             "card_type": "debit",
             "expiry_month": 0,
             "expiry_year": 2030,
@@ -91,7 +93,7 @@ class CardListCreateViewTest(TestCase):
 
     def test_create_card_invalid_expiry_month_thirteen(self):
         res = self.client.post("/api/cards/", {
-            "last_four": "1234",
+            "card_number": "4242424242424242",
             "card_type": "debit",
             "expiry_month": 13,
             "expiry_year": 2030,
@@ -103,7 +105,7 @@ class CardListCreateViewTest(TestCase):
         today = date.today()
         if today.month > 1:
             res = self.client.post("/api/cards/", {
-                "last_four": "1234",
+                "card_number": "4242424242424242",
                 "card_type": "debit",
                 "expiry_month": 1,
                 "expiry_year": today.year,
@@ -112,7 +114,7 @@ class CardListCreateViewTest(TestCase):
 
     def test_create_card_expiry_month_not_provided_defaults_debit(self):
         res = self.client.post("/api/cards/", {
-            "last_four": "1234",
+            "card_number": "4242424242424242",
             "expiry_month": 6,
             "expiry_year": 2030,
         })

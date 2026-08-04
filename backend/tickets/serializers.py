@@ -8,16 +8,32 @@ class TicketTripSerializer(serializers.ModelSerializer):
         model = TicketTrip
         fields = [
             "id", "provider", "name", "origin", "destination",
-            "departure_time", "arrival_time", "coach_class", "price", "is_active",
+            "departure_time", "arrival_time", "coach_class", "coaches",
+            "price", "is_active",
         ]
 
 
 class TicketProviderSerializer(serializers.ModelSerializer):
+    logo = serializers.SerializerMethodField()
+    category = serializers.SerializerMethodField()
+    category_label = serializers.SerializerMethodField()
     trips = TicketTripSerializer(many=True, read_only=True)
 
     class Meta:
         model = TicketProvider
-        fields = ["id", "name", "category", "logo", "is_active", "trips"]
+        fields = ["id", "name", "category", "category_label", "logo", "is_active", "trips"]
+
+    def get_logo(self, obj):
+        if not obj.logo:
+            return None
+        request = self.context.get("request")
+        return request.build_absolute_uri(obj.logo.url) if request else obj.logo.url
+
+    def get_category(self, obj):
+        return obj.category.key if obj.category_id else ""
+
+    def get_category_label(self, obj):
+        return obj.category.label if obj.category_id else ""
 
 
 class TicketBookingSerializer(serializers.ModelSerializer):

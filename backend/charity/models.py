@@ -45,8 +45,14 @@ class Sadaqah(models.Model):
         help_text="Foundation receiving this sadaqah"
     )
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    cause = models.CharField(max_length=100, blank=True, null=True,
-                              help_text="Optional cause or note (e.g., orphan support)")
+    cause = models.ForeignKey(
+        "accounts.CharityCause",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sadaqah_donations",
+        help_text="Optional cause this sadaqah supports",
+    )
     is_anonymous = models.BooleanField(default=False)
     given_at = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -102,8 +108,14 @@ class SadaqahJariyah(models.Model):
         help_text="Foundation receiving this sadaqah jariyah"
     )
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    cause = models.CharField(max_length=100, blank=True, null=True,
-                              help_text="Recurring cause (e.g., water well, education fund)")
+    cause = models.ForeignKey(
+        "accounts.CharityCause",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sadaqah_jariyah_donations",
+        help_text="Recurring cause (e.g., water well, education fund)",
+    )
     frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES, default="monthly")
     is_active = models.BooleanField(default=True)
     start_date = models.DateField(default=timezone.localdate)

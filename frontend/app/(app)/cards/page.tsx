@@ -26,10 +26,14 @@ export default function CardsPage() {
   );
   useEffect(() => {
     if (state.success) {
-      setShowForm(false);
       mutate();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.success]);
+
+  if (state.success && showForm) {
+    setShowForm(false);
+  }
 
   return (
     <PageTransition>
@@ -76,13 +80,13 @@ export default function CardsPage() {
             <div>
               <div className="py-4">
                 <Input
-                  label="Last 4 Digits"
-                  name="last_four"
+                  label="Card Number"
+                  name="card_number"
                   type="text"
                   inputMode="numeric"
-                  maxLength={4}
+                  maxLength={19}
                   required
-                  placeholder="e.g. 4242"
+                  placeholder="e.g. 4234 5678 9012 3456"
                 />
               </div>
               <div className="py-4">

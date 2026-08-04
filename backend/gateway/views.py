@@ -1,21 +1,16 @@
-import hashlib
-import hmac
-import json
 import logging
 from decimal import Decimal
 
-from django.conf import settings
 from django.db import transaction
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import Wallet
 from common.utils import credit_wallet, error_response, locked_deduct_wallet
 
 from .models import PaymentGateway, GatewayTransaction
-from .serializers import PaymentGatewaySerializer, GatewayTransactionSerializer
+from .serializers import GatewayTransactionSerializer
 
 logger = logging.getLogger("gateway")
 
@@ -107,7 +102,7 @@ class GatewayWebhookView(APIView):
             return error_response("Missing API key.", 401)
 
         try:
-            gateway = PaymentGateway.objects.get(api_key=api_key, is_active=True)
+            PaymentGateway.objects.get(api_key=api_key, is_active=True)
         except PaymentGateway.DoesNotExist:
             return error_response("Invalid API key.", 401)
 

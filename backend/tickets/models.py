@@ -4,19 +4,29 @@ from django.conf import settings
 from django.db import models
 
 
-class TicketProvider(models.Model):
-    CATEGORY_CHOICES = [
-        ("bus", "Bus"),
-        ("train", "Train"),
-        ("airline", "Airline"),
-        ("cinema", "Cinema"),
-        ("event", "Event"),
-        ("ferry", "Ferry"),
-    ]
+class TicketCategory(models.Model):
+    key = models.CharField(max_length=10, unique=True)
+    label = models.CharField(max_length=50)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        verbose_name = "Ticket Category"
+        verbose_name_plural = "Ticket Categories"
+        ordering = ["label"]
+
+    def __str__(self):
+        return self.label
+
+
+class TicketProvider(models.Model):
     name = models.CharField(max_length=150)
-    category = models.CharField(max_length=10, choices=CATEGORY_CHOICES)
-    logo = models.URLField(blank=True)
+    category = models.ForeignKey(
+        TicketCategory,
+        on_delete=models.PROTECT,
+        related_name="providers",
+    )
+    logo = models.FileField(upload_to="tickets/", blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -26,7 +36,7 @@ class TicketProvider(models.Model):
         ordering = ["category", "name"]
 
     def __str__(self):
-        return f"{self.name} ({self.get_category_display()})"
+        return f"{self.name} ({self.category.label if self.category_id else ''})"
 
 
 class TicketBooking(models.Model):
@@ -87,6 +97,10 @@ class TicketTrip(models.Model):
     departure_time = models.CharField(max_length=10, blank=True, help_text="e.g. 08:00 AM")
     arrival_time = models.CharField(max_length=10, blank=True)
     coach_class = models.CharField(max_length=50, blank=True)
+    coaches = models.JSONField(
+        default=list, blank=True,
+        help_text="Coach designations for trains, e.g. [\"ক\", \"খ\", \"গ\"]",
+    )
     price = models.DecimalField(max_digits=10, decimal_places=2)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

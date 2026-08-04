@@ -2,17 +2,30 @@ from django.conf import settings
 from django.db import models
 
 
-class Operator(models.Model):
-    TYPE_CHOICES = [
-        ("prepaid", "Prepaid"),
-        ("postpaid", "Postpaid"),
-        ("both", "Both"),
-    ]
+class OperatorType(models.Model):
+    key = models.CharField(max_length=10, unique=True)
+    label = models.CharField(max_length=50)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        verbose_name = "Operator Type"
+        verbose_name_plural = "Operator Types"
+        ordering = ["label"]
+
+    def __str__(self):
+        return self.label
+
+
+class Operator(models.Model):
     name = models.CharField(max_length=100)
     operator_code = models.CharField(max_length=10, unique=True)
-    logo = models.URLField(blank=True)
-    type = models.CharField(max_length=10, choices=TYPE_CHOICES, default="prepaid")
+    logo = models.FileField(upload_to="logos/", blank=True)
+    type = models.ForeignKey(
+        OperatorType,
+        on_delete=models.PROTECT,
+        related_name="operators",
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

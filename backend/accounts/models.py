@@ -162,24 +162,35 @@ class OTPVerification(models.Model):
         return f"OTP for {self.user.phone} ({self.purpose})"
 
 
-class Foundation(models.Model):
-    CAUSE_CHOICES = [
-        ("education", "Education"),
-        ("health", "Health"),
-        ("poverty", "Poverty Alleviation"),
-        ("orphan", "Orphan Support"),
-        ("masjid", "Masjid Development"),
-        ("water", "Water & Sanitation"),
-        ("emergency", "Emergency Relief"),
-        ("general", "General"),
-    ]
+class CharityCause(models.Model):
+    key = models.CharField(max_length=20, unique=True)
+    label = models.CharField(max_length=50)
+    icon = models.CharField(max_length=30, default="Heart")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        verbose_name = "Charity Cause"
+        verbose_name_plural = "Charity Causes"
+        ordering = ["label"]
+
+    def __str__(self):
+        return self.label
+
+
+class Foundation(models.Model):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="foundation_profile"
     )
     organization_name = models.CharField(max_length=200)
     registration_number = models.CharField(max_length=50, unique=True)
-    cause = models.CharField(max_length=20, choices=CAUSE_CHOICES)
+    cause = models.ForeignKey(
+        CharityCause,
+        on_delete=models.PROTECT,
+        related_name="foundations",
+        help_text="Charity cause this foundation supports",
+    )
+    logo = models.FileField(upload_to="foundations/", blank=True)
     description = models.TextField(blank=True)
     website = models.URLField(blank=True)
     contact_email = models.EmailField(blank=True)

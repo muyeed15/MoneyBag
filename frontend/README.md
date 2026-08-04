@@ -12,7 +12,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Runs at `http://localhost:3003` by default. Requires the Django backend at `http://127.0.0.1:8003`.
+Runs at `http://127.0.0.1:3003` by default. Requires the Django backend at `http://127.0.0.1:8003`. `npm run dev` reads the port and host from `.env` (`PORT` / `HOST`) via the `dev.mjs` wrapper — nothing is hardcoded.
 
 ## Production
 
@@ -58,9 +58,9 @@ PAGE_SIZE_MAX=50
 
 Logs are written to `frontend/logs/` on the Next.js server (never in the browser console):
 
-| File        | Contents                                               |
-| ----------- | ------------------------------------------------------ |
-| `error.log` | All errors (rotates at 10 MB)                          |
+| File        | Contents                                                  |
+| ----------- | --------------------------------------------------------- |
+| `error.log` | All errors (rotates at 10 MB)                             |
 | `app.log`   | All app-level logs (info, warn, debug) (rotates at 10 MB) |
 
 ## Stack
@@ -71,31 +71,31 @@ Logs are written to `frontend/logs/` on the Next.js server (never in the browser
 
 ## Pages
 
-| Route                              | Description                                                    |
-|------------------------------------|----------------------------------------------------------------|
-| `/`                                | Landing / welcome page                                         |
-| `/login`                           | Sign in                                                        |
-| `/dashboard`                       | Balance, quick actions, recent transactions, live SSE updates  |
-| `/send`                            | Send money to another user by phone number                     |
-| `/receive`                         | Display QR code for receiving money                            |
-| `/pay`                             | Browse verified merchants and pay by selecting one             |
-| `/cards`                           | List debit/prepaid cards                                       |
-| `/cards/[id]`                      | Card detail, block, unblock                                    |
-| `/transactions`                    | Full paginated transaction history                             |
-| `/notifications`                   | Paginated notification list with per-item and bulk mark-read   |
-| `/profile`                         | User info, wallet summary, card count                          |
-| `/more`                            | Additional navigation / overflow menu                          |
-| `/savings`                         | Mudarabah savings (DPS) overview                               |
-| `/savings/accounts`                | List savings accounts                                          |
-| `/savings/accounts/[number]`       | Savings account detail and contribution history                |
-| `/charity`                         | Charity hub                                                    |
-| `/charity/sadaqah`                 | Give voluntary charity                                         |
-| `/charity/sadaqah-jariyah`         | Set up recurring charity                                       |
-| `/charity/hawl`                    | Zakat eligibility (hawl / nisab) tracking                      |
-| `/charity/zakat`                   | Zakat overview                                                 |
-| `/charity/zakat/calculate`         | Zakat calculation form                                         |
-| `/charity/zakat/pay`               | Pay zakat                                                      |
-| `/charity/zakat/history`           | Zakat payment history                                          |
+| Route                        | Description                                                   |
+| ---------------------------- | ------------------------------------------------------------- |
+| `/`                          | Landing / welcome page                                        |
+| `/login`                     | Sign in                                                       |
+| `/dashboard`                 | Balance, quick actions, recent transactions, live SSE updates |
+| `/send`                      | Send money to another user by phone number                    |
+| `/receive`                   | Display QR code for receiving money                           |
+| `/pay`                       | Browse verified merchants and pay by selecting one            |
+| `/cards`                     | List debit/prepaid cards                                      |
+| `/cards/[id]`                | Card detail, block, unblock                                   |
+| `/transactions`              | Full paginated transaction history                            |
+| `/notifications`             | Paginated notification list with per-item and bulk mark-read  |
+| `/profile`                   | User info, wallet summary, card count                         |
+| `/more`                      | Additional navigation / overflow menu                         |
+| `/savings`                   | Mudarabah savings (DPS) overview                              |
+| `/savings/accounts`          | List savings accounts                                         |
+| `/savings/accounts/[number]` | Savings account detail and contribution history               |
+| `/charity`                   | Charity hub                                                   |
+| `/charity/sadaqah`           | Give voluntary charity                                        |
+| `/charity/sadaqah-jariyah`   | Set up recurring charity                                      |
+| `/charity/hawl`              | Zakat eligibility (hawl / nisab) tracking                     |
+| `/charity/zakat`             | Zakat overview                                                |
+| `/charity/zakat/calculate`   | Zakat calculation form                                        |
+| `/charity/zakat/pay`         | Pay zakat                                                     |
+| `/charity/zakat/history`     | Zakat payment history                                         |
 
 ## Architecture Notes
 

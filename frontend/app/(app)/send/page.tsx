@@ -10,12 +10,13 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { SuccessModal } from "@/components/ui/SuccessModal";
 import { QRScanner } from "@/components/ui/QRScanner";
+import { usePhoneLookup } from "@/hooks/usePhoneLookup";
 import { formatAmount } from "@/utils/helpers";
 
 const initialState = { error: null, success: false };
 
 export default function SendPage() {
-  const [state, formAction, pending] = useActionState(transferAction, initialState);
+  const [state, formAction] = useActionState(transferAction, initialState);
   const router = useRouter();
   const searchParams = useSearchParams();
   const formRef = useRef<HTMLFormElement>(null);
@@ -23,6 +24,7 @@ export default function SendPage() {
   const [showScanner, setShowScanner] = useState(false);
   const [receiverPhone, setReceiverPhone] = useState(searchParams.get("phone") ?? "");
   const [confirmData, setConfirmData] = useState<{ phone: string; amount: string; note: string } | null>(null);
+  const { lookup: recipient } = usePhoneLookup(receiverPhone);
 
   const showSuccess = state.success && !!state.amount && !!state.receiver_phone;
 
@@ -161,7 +163,9 @@ export default function SendPage() {
               <div className="bg-sage rounded-xl px-4 py-3 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-navy-muted">To</span>
-                  <span className="text-navy font-semibold">{confirmData.phone}</span>
+                  <span className="text-navy font-semibold">
+                    {recipient?.full_name ?? confirmData.phone}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-navy-muted">Amount</span>

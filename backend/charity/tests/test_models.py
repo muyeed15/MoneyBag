@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.test import TestCase
 
 from charity.models import HawlTracking, Sadaqah, SadaqahJariyah, ZakatPayment
-from common.tests.helpers import make_user
+from common.tests.helpers import make_cause, make_user
 
 
 class ZakatPaymentModelTest(TestCase):
@@ -69,7 +69,7 @@ class SadaqahJariyahModelTest(TestCase):
         self.user = make_user("01700000001", "1111111111")
         self.sj = SadaqahJariyah.objects.create(
             user=self.user, amount=Decimal("100.00"),
-            cause="water well",
+            cause=make_cause("water"),
         )
 
     def test_str(self):

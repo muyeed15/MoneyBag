@@ -7,12 +7,23 @@ from rest_framework.views import APIView
 
 from common.utils import error_response, user_objects_or_error
 
-from .models import SupportTicket, TicketMessage
+from .models import SupportCategory, SupportTicket, TicketMessage
 from .serializers import (
     SupportTicketSerializer, CreateTicketSerializer, TicketReplySerializer,
 )
 
 logger = logging.getLogger("support")
+
+
+class SupportCategoryListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        categories = [
+            {"key": c.key, "label": c.label}
+            for c in SupportCategory.objects.filter(is_active=True)
+        ]
+        return Response(categories)
 
 
 class TicketListCreateView(APIView):
@@ -21,17 +32,23 @@ class TicketListCreateView(APIView):
     def get(self, request):
         tickets = SupportTicket.objects.filter(
             user=request.user
-        ).prefetch_related("messages").order_by("-created_at")
+        ).select_related("category").prefetch_related("messages").order_by("-created_at")
         return Response(SupportTicketSerializer(tickets, many=True).data)
 
     def post(self, request):
         serializer = CreateTicketSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        category_key = serializer.validated_data.get("category", "")
+        category = (
+            SupportCategory.objects.filter(key=category_key).first()
+            if category_key else None
+        )
+
         ticket = SupportTicket.objects.create(
             user=request.user,
             subject=serializer.validated_data["subject"],
-            category=serializer.validated_data.get("category", "general"),
+            category=category,
         )
 
         TicketMessage.objects.create(

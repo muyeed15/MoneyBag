@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node dev.mjs",
     "dev:https": "next dev --experimental-https",
     "build": "next build",
     "start": "NODE_ENV=production node server.mjs",
@@ -34,6 +34,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "jsdom": "^29.1.1",
+    "knip": "^6.31.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.9"

@@ -1,6 +1,14 @@
 from django.contrib import admin
 
+from accounts.models import CharityCause
 from .models import HawlTracking, Sadaqah, SadaqahJariyah, ZakatPayment
+
+
+@admin.register(CharityCause)
+class CharityCauseAdmin(admin.ModelAdmin):
+    list_display = ["key", "label", "icon", "is_active"]
+    list_filter = ["is_active"]
+    search_fields = ["key", "label"]
 
 
 @admin.register(ZakatPayment)

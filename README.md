@@ -14,7 +14,7 @@ pip install -r requirements.txt
 cp .env.example .env
 python manage.py migrate
 python manage.py seed
-python manage.py runserver 8003
+python manage.py runserver
 ```
 
 **Frontend**
@@ -26,11 +26,13 @@ cp .env.example .env
 npm run dev
 ```
 
-| Service     | URL                                |
-|-------------|------------------------------------|
-| Backend API | `http://127.0.0.1:8003`            |
-| Admin panel | `http://127.0.0.1:8003/admin/`     |
-| Frontend    | `http://localhost:3003`            |
+| Service     | URL                            |
+| ----------- | ------------------------------ |
+| Backend API | `http://127.0.0.1:8003`        |
+| Admin panel | `http://127.0.0.1:8003/admin/` |
+| Frontend    | `http://127.0.0.1:3003`        |
+
+Ports and hosts are read from each service's `.env` file — the backend runs on `8003` and the frontend on `3003` by default. No URLs or ports are hardcoded in the code.
 
 ## Production
 
@@ -60,10 +62,10 @@ pm2 start ecosystem.config.js --only yaqeen-backend
 pm2 start ecosystem.config.js --only yaqeen-frontend
 ```
 
-| Service         | URL                             | Port |
-|-----------------|---------------------------------|------|
-| Backend API     | `http://127.0.0.1:8003`           | 8003 |
-| Frontend        | `http://127.0.0.1:3003`           | 3003 |
+| Service     | URL                     | Port |
+| ----------- | ----------------------- | ---- |
+| Backend API | `http://127.0.0.1:8003` | 8003 |
+| Frontend    | `http://127.0.0.1:3003` | 3003 |
 
 ## Further Reading
 

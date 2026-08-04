@@ -4,9 +4,25 @@ from .models import Operator, DataPack, RechargeTransaction
 
 
 class OperatorSerializer(serializers.ModelSerializer):
+    logo = serializers.SerializerMethodField()
+    type = serializers.SerializerMethodField()
+    type_label = serializers.SerializerMethodField()
+
     class Meta:
         model = Operator
-        fields = ["id", "name", "operator_code", "logo", "type", "is_active"]
+        fields = ["id", "name", "operator_code", "logo", "type", "type_label", "is_active"]
+
+    def get_logo(self, obj):
+        if not obj.logo:
+            return None
+        request = self.context.get("request")
+        return request.build_absolute_uri(obj.logo.url) if request else obj.logo.url
+
+    def get_type(self, obj):
+        return obj.type.key if obj.type_id else ""
+
+    def get_type_label(self, obj):
+        return obj.type.label if obj.type_id else ""
 
 
 class DataPackSerializer(serializers.ModelSerializer):

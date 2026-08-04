@@ -1,24 +1,28 @@
+import os
 import random
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from decimal import Decimal
+from pathlib import Path
 
 from django.conf import settings
+from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from accounts.models import Foundation, User, Nominee
+from accounts.models import CharityCause, Foundation, User, Nominee
 from agents.models import Agent, AgentTransaction
 from banking.models import Bank, BankAccount, BankTransaction
-from billpay.models import Biller, BillPayment
+from billpay.models import Biller, BillerCategory, BillPayment
 from cards.models import Card
 from charity.models import HawlTracking, Sadaqah, SadaqahJariyah, ZakatPayment
 from loans.models import QardHasanProduct, QardHasanApplication
-from merchants.models import Merchant
+from merchants.models import Merchant, MerchantCategory
 from notifications.models import Notification
-from recharge.models import Operator, DataPack, RechargeTransaction
+from recharge.models import Operator, OperatorType, DataPack, RechargeTransaction
 from remittance.models import RemittancePartner, RemittanceTransaction
 from savings.models import MudarabahAccount, MudarabahContribution, MudarabahPlan
-from tickets.models import TicketProvider, TicketBooking, TicketTrip
+from support.models import SupportCategory
+from tickets.models import TicketCategory, TicketProvider, TicketBooking, TicketTrip
 from transactions.models import Transaction
 
 PASSWORD = "12345678"
@@ -68,6 +72,29 @@ BD_FOUNDATIONS = [
     ("Uttaran", "water", "NGO-0010"),
 ]
 
+CHARITY_CAUSES = [
+    ("education", "Education", "GraduationCap"),
+    ("health", "Health", "HeartPulse"),
+    ("poverty", "Poverty Alleviation", "HandCoins"),
+    ("orphan", "Orphan Support", "Users"),
+    ("masjid", "Masjid Development", "Landmark"),
+    ("water", "Water & Sanitation", "Droplets"),
+    ("emergency", "Emergency Relief", "LifeBuoy"),
+    ("general", "General", "Heart"),
+]
+
+SUPPORT_CATEGORIES = [
+    ("general", "General"),
+    ("transaction", "Transaction"),
+    ("account", "Account"),
+    ("card", "Card"),
+    ("recharge", "Recharge"),
+    ("bill", "Bill"),
+    ("loan", "Loan"),
+    ("ticket", "Ticket"),
+    ("other", "Other"),
+]
+
 BD_OPERATORS = [
     ("Grameenphone", "gp", "prepaid"),
     ("Banglalink", "bl", "prepaid"),
@@ -77,16 +104,17 @@ BD_OPERATORS = [
 ]
 
 BD_BILLERS = [
-    ("DESCO Electricity", "electricity", "ELEC-001"),
+    ("DESCO", "electricity", "ELEC-001"),
     ("DPDC", "electricity", "ELEC-002"),
-    ("REB", "electricity", "ELEC-003"),
     ("Titas Gas", "gas", "GAS-001"),
     ("Dhaka WASA", "water", "WTR-001"),
     ("BTCL Internet", "internet", "INT-001"),
-    ("Link3 Fiber", "internet", "INT-002"),
+    ("DOT Internet", "internet", "INT-002"),
     ("Akash DTH", "tv", "TV-001"),
-    ("Islami Insurance Takaful", "takaful", "INS-001"),
-    ("BUET", "education", "EDU-001"),
+    ("IUB", "education", "EDU-001"),
+    ("NSU", "education", "EDU-002"),
+    ("AIUB", "education", "EDU-003"),
+    ("DIU", "education", "EDU-004"),
 ]
 
 BD_BANKS = [
@@ -124,6 +152,8 @@ TICKET_PROVIDERS = [
     ("BIWTC Ferry", "ferry"), ("Green Line Waterways", "ferry"),
 ]
 
+TRAIN_COACHES = ["ক", "খ", "গ", "ঘ", "ঙ", "চ", "ছ", "জ", "ঝ", "ঞ"]
+
 
 class Command(BaseCommand):
     help = "Seed the database with realistic Bangladeshi fintech data"
@@ -138,7 +168,7 @@ class Command(BaseCommand):
         users = self._seed_users()
 
         self.stdout.write("Seeding team...")
-        team_users = self._seed_team()
+        self._seed_team()
 
         self.stdout.write("Seeding superuser...")
         self._seed_superuser()
@@ -147,21 +177,26 @@ class Command(BaseCommand):
         self._seed_nominees(users)
 
         self.stdout.write("Seeding merchants...")
+        self._seed_merchant_categories()
         merchants = self._seed_merchants(users)
 
         self.stdout.write("Seeding foundations...")
+        self._seed_charity_causes()
         foundations = self._seed_foundations()
+        self._seed_support_categories()
 
         self.stdout.write("Seeding cards...")
         self._seed_cards(users)
 
         self.stdout.write("Seeding operators...")
+        self._seed_operator_types()
         operators = self._seed_operators()
 
         self.stdout.write("Seeding data packs...")
         self._seed_data_packs(operators)
 
         self.stdout.write("Seeding billers...")
+        self._seed_biller_categories()
         billers = self._seed_billers()
 
         self.stdout.write("Seeding banks...")
@@ -180,7 +215,10 @@ class Command(BaseCommand):
         remit_partners = self._seed_remittance_partners()
 
         self.stdout.write("Seeding ticket providers...")
+        self._seed_ticket_categories()
         ticket_providers = self._seed_ticket_providers()
+
+        self._seed_icons()
 
         self.stdout.write("Seeding Mudarabah plans...")
         plans = self._seed_mudarabah_plans()
@@ -233,10 +271,20 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("\nSeeding complete."))
         self._print_summary(users, merchants, foundations)
 
+    def _clear_media(self):
+        media_root = Path(settings.MEDIA_ROOT)
+        if media_root.exists():
+            for p in media_root.rglob("*"):
+                if p.is_file():
+                    p.unlink()
+        media_root.mkdir(parents=True, exist_ok=True)
+
     def _clear(self):
+        self._clear_media()
         TicketBooking.objects.all().delete()
         TicketTrip.objects.all().delete()
         TicketProvider.objects.all().delete()
+        TicketCategory.objects.all().delete()
         RemittanceTransaction.objects.all().delete()
         RemittancePartner.objects.all().delete()
         QardHasanApplication.objects.all().delete()
@@ -246,11 +294,13 @@ class Command(BaseCommand):
         Bank.objects.all().delete()
         BillPayment.objects.all().delete()
         Biller.objects.all().delete()
+        BillerCategory.objects.all().delete()
         AgentTransaction.objects.all().delete()
         Agent.objects.all().delete()
         RechargeTransaction.objects.all().delete()
         DataPack.objects.all().delete()
         Operator.objects.all().delete()
+        OperatorType.objects.all().delete()
         Nominee.objects.all().delete()
         SadaqahJariyah.objects.all().delete()
         HawlTracking.objects.all().delete()
@@ -263,7 +313,9 @@ class Command(BaseCommand):
         Transaction.objects.all().delete()
         Card.objects.all().delete()
         Merchant.objects.all().delete()
+        MerchantCategory.objects.all().delete()
         Foundation.objects.all().delete()
+        CharityCause.objects.all().delete()
         team_phones = [phone for _, phone in TEAM]
         User.objects.filter(is_superuser=False).exclude(phone__in=team_phones).delete()
 
@@ -364,9 +416,89 @@ class Command(BaseCommand):
             count += 1
         self.stdout.write(f"  + {count} nominees")
 
+    def _seed_charity_causes(self):
+        for key, label, icon in CHARITY_CAUSES:
+            CharityCause.objects.update_or_create(
+                key=key, defaults={"label": label, "icon": icon, "is_active": True},
+            )
+        self.stdout.write(f"  + {len(CHARITY_CAUSES)} charity causes")
+
+    def _seed_support_categories(self):
+        for key, label in SUPPORT_CATEGORIES:
+            SupportCategory.objects.update_or_create(
+                key=key, defaults={"label": label, "is_active": True},
+            )
+        self.stdout.write(f"  + {len(SUPPORT_CATEGORIES)} support categories")
+
+    def _seed_icons(self):
+        icons_dir = Path(settings.BASE_DIR).parent / "extra" / "icons"
+        if not icons_dir.exists():
+            self.stdout.write("  ! extra/icons not found, skipping icons")
+            return
+
+        for sub in ["logos", "billers", "tickets"]:
+            folder = Path(settings.MEDIA_ROOT) / sub
+            if folder.exists():
+                for p in folder.iterdir():
+                    if p.is_file():
+                        p.unlink()
+
+        count = 0
+
+        def save_icon(obj, field_name, source_path):
+            nonlocal count
+            with open(source_path, "rb") as fh:
+                content = fh.read()
+            getattr(obj, field_name).save(
+                os.path.basename(source_path), ContentFile(content), save=True
+            )
+            count += 1
+
+        for code in ["gp", "bl", "robi", "airtel", "teletalk"]:
+            src = icons_dir / "operators" / f"{code}.svg"
+            if src.exists():
+                operator = Operator.objects.filter(operator_code=code).first()
+                if operator:
+                    save_icon(operator, "logo", src)
+
+        biller_map = {
+            "education/iub.svg": "IUB",
+            "education/diu.svg": "DIU",
+            "education/nsu.svg": "NSU",
+            "education/aiub.svg": "AIUB",
+            "tv/akash_dth.svg": "Akash DTH",
+            "internet/btcl.svg": "BTCL Internet",
+            "internet/dot_internet.svg": "DOT Internet",
+            "utility/titas.svg": "Titas Gas",
+            "utility/wasa.svg": "Dhaka WASA",
+            "utility/dpdc.svg": "DPDC",
+            "utility/desco.svg": "DESCO",
+        }
+        for rel, name in biller_map.items():
+            src = icons_dir / rel
+            if src.exists():
+                biller = Biller.objects.filter(name=name).first()
+                if biller:
+                    save_icon(biller, "logo", src)
+
+        provider_map = {
+            "train/br.svg": "Bangladesh Railway",
+            "airline/us_bangla.svg": "US-Bangla Airlines",
+            "airline/biman.svg": "Biman Bangladesh",
+        }
+        for rel, name in provider_map.items():
+            src = icons_dir / rel
+            if src.exists():
+                provider = TicketProvider.objects.filter(name=name).first()
+                if provider:
+                    save_icon(provider, "logo", src)
+
+        self.stdout.write(f"  + {count} icons imported")
+
     def _seed_foundations(self):
         foundations = []
-        for name, cause, reg_no in BD_FOUNDATIONS:
+        for name, cause_key, reg_no in BD_FOUNDATIONS:
+            cause = CharityCause.objects.get(key=cause_key)
             phone = "013" + str(random.randint(10000000, 99999999))
             user = User.objects.create_user(
                 phone=phone, password=PASSWORD, full_name=name,
@@ -375,7 +507,7 @@ class Command(BaseCommand):
             foundation = Foundation.objects.create(
                 user=user, organization_name=name,
                 registration_number=reg_no, cause=cause,
-                description=f"Verified {cause} organization in Bangladesh.",
+                description=f"Verified {cause_key} organization in Bangladesh.",
                 is_verified=True,
             )
             user.wallet.balance = Decimal(str(random.randint(50000, 500000)))
@@ -384,12 +516,31 @@ class Command(BaseCommand):
         self.stdout.write(f"  + {len(foundations)} foundations")
         return foundations
 
+    def _seed_merchant_categories(self):
+        keys = {category for _, category in BD_MERCHANTS}
+        labels = {
+            "retail": "Retail",
+            "food": "Food & Beverage",
+            "transport": "Transport",
+            "utility": "Utility",
+            "health": "Health & Pharmacy",
+            "education": "Education",
+            "entertainment": "Entertainment",
+            "other": "Other",
+        }
+        for key in sorted(keys):
+            MerchantCategory.objects.update_or_create(
+                key=key, defaults={"label": labels.get(key, key.title())},
+            )
+        self.stdout.write(f"  + {len(keys)} merchant categories")
+
     def _seed_merchants(self, users):
         merchant_users = random.sample(users, min(len(BD_MERCHANTS), len(users)))
         merchants = []
         for user, (biz_name, category) in zip(merchant_users, BD_MERCHANTS):
             merchant = Merchant.objects.create(
-                user=user, business_name=biz_name, category=category,
+                user=user, business_name=biz_name,
+                category=MerchantCategory.objects.get(key=category),
                 is_verified=random.choices([True, False], weights=[75, 25])[0],
             )
             merchants.append(merchant)
@@ -417,10 +568,21 @@ class Command(BaseCommand):
                 card_count += 1
         self.stdout.write(f"  + {card_count} cards")
 
+    def _seed_operator_types(self):
+        labels = {"prepaid": "Prepaid", "postpaid": "Postpaid", "both": "Both"}
+        for key, label in labels.items():
+            OperatorType.objects.update_or_create(
+                key=key, defaults={"label": label, "is_active": True},
+            )
+        self.stdout.write(f"  + {len(labels)} operator types")
+
     def _seed_operators(self):
         operators = []
         for name, code, op_type in BD_OPERATORS:
-            op = Operator.objects.create(name=name, operator_code=code, type=op_type)
+            op = Operator.objects.create(
+                name=name, operator_code=code,
+                type=OperatorType.objects.get(key=op_type),
+            )
             operators.append(op)
         self.stdout.write(f"  + {len(operators)} operators")
         return operators
@@ -442,10 +604,30 @@ class Command(BaseCommand):
                 count += 1
         self.stdout.write(f"  + {count} data packs")
 
+    def _seed_biller_categories(self):
+        keys = {category for _, category, _ in BD_BILLERS}
+        labels = {
+            "electricity": "Electricity",
+            "gas": "Gas",
+            "water": "Water",
+            "internet": "Internet",
+            "tv": "Television / DTH",
+            "education": "Education",
+            "microfinance": "Microfinance",
+        }
+        for key in sorted(keys):
+            BillerCategory.objects.update_or_create(
+                key=key, defaults={"label": labels.get(key, key.title())},
+            )
+        self.stdout.write(f"  + {len(keys)} biller categories")
+
     def _seed_billers(self):
         billers = []
         for name, category, code in BD_BILLERS:
-            b = Biller.objects.create(name=name, category=category, biller_code=code)
+            b = Biller.objects.create(
+                name=name, category=BillerCategory.objects.get(key=category),
+                biller_code=code,
+            )
             billers.append(b)
         self.stdout.write(f"  + {len(billers)} billers")
         return billers
@@ -526,6 +708,22 @@ class Command(BaseCommand):
         self.stdout.write(f"  + {len(partners)} remittance partners")
         return partners
 
+    def _seed_ticket_categories(self):
+        keys = {category for _, category in TICKET_PROVIDERS}
+        labels = {
+            "bus": "Bus",
+            "train": "Train",
+            "airline": "Airline",
+            "cinema": "Cinema",
+            "event": "Event",
+            "ferry": "Ferry",
+        }
+        for key in sorted(keys):
+            TicketCategory.objects.update_or_create(
+                key=key, defaults={"label": labels.get(key, key.title())},
+            )
+        self.stdout.write(f"  + {len(keys)} ticket categories")
+
     def _seed_ticket_providers(self):
         providers = []
         trip_data = {
@@ -557,13 +755,16 @@ class Command(BaseCommand):
         }
 
         for name, cat in TICKET_PROVIDERS:
-            p = TicketProvider.objects.create(name=name, category=cat)
+            p = TicketProvider.objects.create(
+                name=name, category=TicketCategory.objects.get(key=cat),
+            )
             for trip in trip_data.get(cat, []):
                 TicketTrip.objects.create(
                     provider=p,
                     name=trip[0], origin=trip[1], destination=trip[2],
                     departure_time=trip[3], arrival_time=trip[4],
                     coach_class=trip[5], price=trip[6],
+                    coaches=TRAIN_COACHES if cat == "train" else [],
                 )
             providers.append(p)
         self.stdout.write(f"  + {len(providers)} ticket providers with trips")
@@ -573,7 +774,6 @@ class Command(BaseCommand):
         plans_data = [
             ("6-Month Mudarabah", 6, Decimal("1000"), Decimal("30.00")),
             ("1-Year Mudarabah", 12, Decimal("1000"), Decimal("40.00")),
-            ("1-Year Premium Mudarabah", 12, Decimal("5000"), Decimal("45.00")),
             ("2-Year Mudarabah", 24, Decimal("2000"), Decimal("50.00")),
             ("3-Year Mudarabah", 36, Decimal("1500"), Decimal("55.00")),
             ("5-Year Mudarabah", 60, Decimal("1000"), Decimal("60.00")),
@@ -872,9 +1072,7 @@ class Command(BaseCommand):
         self.stdout.write(f"  + {count} zakat payments")
 
     def _seed_sadaqah(self, users, foundations):
-        causes = ["Masjid renovation fund", "Orphan support", "Flood relief",
-                   "Iftaar for the poor", "Water well project", "Quran distribution",
-                   "Food bank", "Medical assistance"]
+        causes = list(CharityCause.objects.all())
         donations = [Sadaqah(
             user=random.choice(users),
             recipient=random.choice(foundations).user,
@@ -922,7 +1120,7 @@ class Command(BaseCommand):
         self.stdout.write(f"  + {count} Hawl tracking records")
 
     def _seed_sadaqah_jariyah(self, users, foundations):
-        causes = ["Water well", "Education fund", "Masjid construction", "Orphan care"]
+        causes = list(CharityCause.objects.all())
         count = 0
         for user in random.sample(users, min(5, len(users))):
             foundation = random.choice(foundations)

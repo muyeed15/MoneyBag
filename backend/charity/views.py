@@ -18,6 +18,7 @@ from common.utils import (
     user_objects_or_error,
 )
 
+from accounts.models import CharityCause
 from .models import HawlTracking, Sadaqah, SadaqahJariyah, ZakatPayment
 from .serializers import (
     CalculateZakatSerializer,
@@ -121,11 +122,14 @@ class GiveSadaqah(APIView):
 
         credit_wallet(foundation.user, amount)
 
+        cause_key = serializer.validated_data.get("cause", "")
+        cause = CharityCause.objects.filter(key=cause_key).first() if cause_key else None
+
         donation = Sadaqah.objects.create(
             user=request.user,
             recipient=foundation.user,
             amount=amount,
-            cause=serializer.validated_data.get("cause", ""),
+            cause=cause,
             is_anonymous=serializer.validated_data.get("is_anonymous", False),
         )
         return Response(SadaqahSerializer(donation).data, status=status.HTTP_201_CREATED)
@@ -206,11 +210,14 @@ class SadaqahJariyahListCreate(APIView):
 
         credit_wallet(foundation.user, amount)
 
+        cause_key = serializer.validated_data.get("cause", "")
+        cause = CharityCause.objects.filter(key=cause_key).first() if cause_key else None
+
         donation = SadaqahJariyah.objects.create(
             user=request.user,
             recipient=foundation.user,
             amount=amount,
-            cause=serializer.validated_data.get("cause", ""),
+            cause=cause,
             frequency=serializer.validated_data.get("frequency", "monthly"),
             total_donated=amount,
         )

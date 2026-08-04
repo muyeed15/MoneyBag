@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from charity.models import HawlTracking, Sadaqah, SadaqahJariyah, ZakatPayment
-from common.tests.helpers import make_user, make_wallet
+from common.tests.helpers import make_cause, make_user, make_wallet
 
 
 class CalculateZakatTest(TestCase):
@@ -73,7 +73,7 @@ class PayZakatTest(TestCase):
         from accounts.models import Foundation
         self.foundation = Foundation.objects.create(
             user=self.foundation_user, organization_name="Zakat Fund",
-            registration_number="REG-001", cause="poverty", is_verified=True,
+            registration_number="REG-001", cause=make_cause("poverty"), is_verified=True,
         )
         make_wallet(self.foundation_user, "0.00")
         self.client.force_authenticate(user=self.user)
@@ -116,7 +116,7 @@ class PayZakatTest(TestCase):
         from accounts.models import Foundation
         Foundation.objects.create(
             user=unverified_user, organization_name="Fake",
-            registration_number="REG-002", cause="general", is_verified=False,
+            registration_number="REG-002", cause=make_cause("general"), is_verified=False,
         )
         res = self.client.post("/api/zakat/pay/", {
             "amount": "100.00",
@@ -150,7 +150,7 @@ class GiveSadaqahTest(TestCase):
         from accounts.models import Foundation
         Foundation.objects.create(
             user=self.foundation_user, organization_name="Sadaqah Fund",
-            registration_number="REG-001", cause="education", is_verified=True,
+            registration_number="REG-001", cause=make_cause("education"), is_verified=True,
         )
         make_wallet(self.foundation_user, "0.00")
         self.client.force_authenticate(user=self.user)
@@ -179,7 +179,15 @@ class GiveSadaqahTest(TestCase):
             "recipient_id": self.foundation_user.pk,
         })
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(res.data.get("cause", ""), "")
+        self.assertIsNone(res.data.get("cause"))
+
+    def test_give_sadaqah_invalid_cause(self):
+        res = self.client.post("/api/sadaqah/", {
+            "amount": "50.00",
+            "recipient_id": self.foundation_user.pk,
+            "cause": "not_a_real_cause",
+        })
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_give_sadaqah_exact_balance(self):
         wallet = self.user.wallet
@@ -277,7 +285,7 @@ class SadaqahJariyahListCreateTest(TestCase):
         from accounts.models import Foundation
         Foundation.objects.create(
             user=self.foundation_user, organization_name="Jariyah Fund",
-            registration_number="REG-001", cause="water", is_verified=True,
+            registration_number="REG-001", cause=make_cause("water"), is_verified=True,
         )
         make_wallet(self.foundation_user, "0.00")
         self.client.force_authenticate(user=self.user)
@@ -291,11 +299,13 @@ class SadaqahJariyahListCreateTest(TestCase):
         res = self.client.post("/api/sadaqah-jariyah/", {
             "amount": "200.00",
             "recipient_id": self.foundation_user.pk,
-            "cause": "water well",
+            "cause": "water",
         })
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertEqual(SadaqahJariyah.objects.count(), 1)
         self.assertEqual(res.data["total_donated"], "200.00")
+        self.assertEqual(res.data["cause"], "water")
+        self.assertEqual(res.data["cause_label"], "Water")
 
     def test_create_insufficient_balance(self):
         res = self.client.post("/api/sadaqah-jariyah/", {
@@ -332,7 +342,7 @@ class SadaqahJariyahDetailTest(TestCase):
         self.client.default_format = "json"
         self.user = make_user("01700000001", "1111111111")
         self.sj = SadaqahJariyah.objects.create(
-            user=self.user, amount=Decimal("100.00"), cause="well",
+            user=self.user, amount=Decimal("100.00"), cause=make_cause("well"),
         )
         self.client.force_authenticate(user=self.user)
 

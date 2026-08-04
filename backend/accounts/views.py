@@ -1,17 +1,19 @@
 import io
 
 import qrcode
+from django.db.models import Count
 from django.http import HttpResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import Foundation, Wallet
+from accounts.models import CharityCause, Foundation, User, Wallet
 from accounts.serializers import (
     FoundationSerializer,
     UserSerializer,
     WalletSerializer,
 )
+from agents.models import Agent
 from common.utils import error_response
 
 
@@ -55,13 +57,80 @@ class QRCodeView(APIView):
         )
 
 
+class PhoneLookupView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, phone):
+        try:
+            user = User.objects.get(phone=phone, is_active=True)
+        except User.DoesNotExist:
+            try:
+                agent = Agent.objects.get(
+                    phone=phone, is_verified=True, status="active"
+                )
+            except Agent.DoesNotExist:
+                return error_response("No account found with this phone number.", 404)
+            return Response(
+                {
+                    "phone": agent.phone,
+                    "full_name": agent.full_name,
+                    "name": agent.shop_name,
+                    "type": "agent",
+                    "is_verified_merchant": False,
+                }
+            )
+
+        merchant = getattr(user, "merchant_profile", None)
+        is_verified_merchant = bool(merchant and merchant.is_verified)
+        return Response(
+            {
+                "phone": user.phone,
+                "full_name": user.full_name,
+                "name": merchant.business_name
+                if is_verified_merchant
+                else user.full_name,
+                "type": "merchant" if is_verified_merchant else "user",
+                "is_verified_merchant": is_verified_merchant,
+            }
+        )
+
+
 class FoundationListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        foundations = Foundation.objects.filter(is_verified=True).select_related("user")
-        serializer = FoundationSerializer(foundations, many=True)
+        cause = request.query_params.get("cause")
+        foundations = Foundation.objects.filter(
+            is_verified=True
+        ).select_related("user", "cause")
+        if cause:
+            foundations = foundations.filter(cause__key=cause)
+        serializer = FoundationSerializer(
+            foundations, many=True, context={"request": request}
+        )
         return Response(serializer.data)
+
+
+class FoundationCauseListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        counts = (
+            Foundation.objects.filter(is_verified=True)
+            .values("cause__key")
+            .annotate(count=Count("id"))
+        )
+        counts_by_cause = {c["cause__key"]: c["count"] for c in counts}
+        causes = [
+            {
+                "key": cause.key,
+                "label": cause.label,
+                "icon": cause.icon,
+                "count": counts_by_cause.get(cause.key, 0),
+            }
+            for cause in CharityCause.objects.filter(is_active=True)
+        ]
+        return Response(causes)
 
 
 class FoundationDetailView(APIView):
@@ -69,7 +138,13 @@ class FoundationDetailView(APIView):
 
     def get(self, request, pk):
         try:
-            foundation = Foundation.objects.select_related("user").get(pk=pk, is_verified=True)
+            foundation = Foundation.objects.select_related(
+                "user", "cause"
+            ).get(pk=pk, is_verified=True)
         except Foundation.DoesNotExist:
             return error_response("Foundation not found.", 404)
-        return Response(FoundationSerializer(foundation).data)
+        return Response(
+            FoundationSerializer(
+                foundation, context={"request": request}
+            ).data
+        )

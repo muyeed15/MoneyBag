@@ -2,6 +2,7 @@ import logging
 from decimal import Decimal
 
 from django.db import transaction
+from django.db.models import Count
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -10,7 +11,7 @@ from rest_framework.views import APIView
 from common.pagination import get_page, get_page_size, paginate
 from common.utils import credit_wallet, error_response, locked_deduct_wallet
 
-from .models import TicketProvider, TicketBooking, TicketTrip
+from .models import TicketCategory, TicketProvider, TicketBooking, TicketTrip
 from .serializers import (
     TicketProviderSerializer, TicketBookingSerializer, BookTicketSerializer, TicketTripSerializer,
 )
@@ -18,15 +19,40 @@ from .serializers import (
 logger = logging.getLogger("tickets")
 
 
+class TicketCategoryListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        counts = (
+            TicketProvider.objects.filter(is_active=True)
+            .values("category__key")
+            .annotate(count=Count("id"))
+        )
+        counts_by_category = {c["category__key"]: c["count"] for c in counts}
+        categories = [
+            {
+                "key": category.key,
+                "label": category.label,
+                "count": counts_by_category.get(category.key, 0),
+            }
+            for category in TicketCategory.objects.filter(is_active=True)
+        ]
+        return Response(categories)
+
+
 class TicketProviderListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         category = request.query_params.get("category")
-        qs = TicketProvider.objects.filter(is_active=True).prefetch_related("trips")
+        qs = TicketProvider.objects.filter(
+            is_active=True
+        ).select_related("category").prefetch_related("trips")
         if category:
-            qs = qs.filter(category=category)
-        return Response(TicketProviderSerializer(qs, many=True).data)
+            qs = qs.filter(category__key=category)
+        return Response(
+            TicketProviderSerializer(qs, many=True, context={"request": request}).data
+        )
 
 
 class TicketTripsView(APIView):
@@ -63,7 +89,7 @@ class BookTicketView(APIView):
         trip_id = serializer.validated_data.get("trip_id")
         if trip_id:
             try:
-                trip = TicketTrip.objects.get(id=trip_id, provider=provider)
+                TicketTrip.objects.get(id=trip_id, provider=provider)
             except TicketTrip.DoesNotExist:
                 return error_response("Trip not found.")
 

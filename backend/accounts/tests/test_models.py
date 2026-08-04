@@ -2,7 +2,8 @@ from decimal import Decimal
 
 from django.test import TestCase
 
-from accounts.models import Foundation, User, Wallet
+from accounts.models import CharityCause, Foundation, User, Wallet
+from common.tests.helpers import make_cause
 
 
 def make_user(phone, nid, full_name="Test User", password="testpass123"):
@@ -61,7 +62,7 @@ class FoundationModelTest(TestCase):
             user=self.user,
             organization_name="Helping Hands",
             registration_number="REG-001",
-            cause="education",
+            cause=make_cause("education"),
             contact_email="help@example.com",
             contact_phone="01700000002",
         )
@@ -78,12 +79,12 @@ class FoundationModelTest(TestCase):
                 user=make_user("01700000003", "3333333333"),
                 organization_name="Another",
                 registration_number="REG-001",
-                cause="health",
+                cause=make_cause("health"),
             )
 
     def test_cause_choices(self):
-        valid_causes = [c[0] for c in Foundation.CAUSE_CHOICES]
-        self.assertIn(self.foundation.cause, valid_causes)
+        valid_causes = list(CharityCause.objects.values_list("key", flat=True))
+        self.assertIn(self.foundation.cause.key, valid_causes)
 
     def test_ordering(self):
         user2 = make_user("01700000002", "2222222222")
@@ -91,30 +92,35 @@ class FoundationModelTest(TestCase):
             user=user2,
             organization_name="A Fund",
             registration_number="REG-002",
-            cause="health",
+            cause=make_cause("health"),
         )
         qs = Foundation.objects.all()
         self.assertEqual(qs.first(), f2)
 
     def test_all_cause_choices_valid(self):
-        for i, (cause_key, _) in enumerate(Foundation.CAUSE_CHOICES):
+        for i, (key, label, icon) in enumerate(
+            [("education", "Education", "GraduationCap"),
+             ("health", "Health", "HeartPulse"),
+             ("masjid", "Masjid Development", "Landmark")]
+        ):
+            cause = make_cause(key, label, icon)
             phone = f"0170000{i+1:0>2}99"
             nid = str(1000000000 + i)
             reg = f"REG-C{i}"
             f = Foundation.objects.create(
                 user=make_user(phone, nid),
-                organization_name=f"Fund {cause_key}",
+                organization_name=f"Fund {key}",
                 registration_number=reg,
-                cause=cause_key,
+                cause=cause,
             )
-            self.assertEqual(f.cause, cause_key)
+            self.assertEqual(f.cause.key, key)
 
     def test_minimal_foundation(self):
         f = Foundation.objects.create(
             user=make_user("0170000099", "9999999999"),
             organization_name="Minimal",
             registration_number="REG-MIN",
-            cause="general",
+            cause=make_cause("general"),
         )
         self.assertEqual(f.website, "")
         self.assertEqual(f.contact_email, "")

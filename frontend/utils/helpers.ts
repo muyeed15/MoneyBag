@@ -26,6 +26,16 @@ export function formatDate(dateStr: string): string {
   })
 }
 
+export function formatDuration(months: number): string {
+  if (months <= 0) return '0 months'
+  const years = Math.floor(months / 12)
+  const rem = months % 12
+  if (years === 0) return `${rem} month${rem === 1 ? '' : 's'}`
+  const yearPart = `${years} year${years === 1 ? '' : 's'}`
+  if (rem === 0) return yearPart
+  return `${yearPart} ${rem} month${rem === 1 ? '' : 's'}`
+}
+
 export function formatRelativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
   const minutes = Math.floor(diff / 60000)

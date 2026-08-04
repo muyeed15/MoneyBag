@@ -22,7 +22,7 @@ class MudarabahPlan(models.Model):
     class Meta:
         verbose_name = "Mudarabah Plan"
         verbose_name_plural = "Mudarabah Plans"
-        ordering = ["monthly_amount"]
+        ordering = ["duration_months", "monthly_amount"]
 
     def __str__(self):
         return f"{self.name} - ৳{self.monthly_amount}/mo x {self.duration_months}m"

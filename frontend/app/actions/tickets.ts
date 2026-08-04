@@ -15,9 +15,15 @@ export async function bookTicketAction(
 
   const body = JSON.stringify({
     provider_id: Number(formData.get('provider_id')),
+    trip_id: formData.get('trip_id') ? Number(formData.get('trip_id')) : undefined,
     journey_date: formData.get('journey_date'),
     origin: formData.get('origin'),
     destination: formData.get('destination'),
+    departure_time: formData.get('departure_time'),
+    trip_name: formData.get('trip_name'),
+    coach_class: formData.get('coach_class'),
+    coach: formData.get('coach'),
+    seat_number: formData.get('seat_number'),
     passengers: Number(formData.get('passengers')) || 1,
     amount: Number(formData.get('amount')),
   })

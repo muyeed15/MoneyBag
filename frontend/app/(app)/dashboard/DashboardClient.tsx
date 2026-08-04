@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { useAutoAnimate } from "@formkit/auto-animate/react";

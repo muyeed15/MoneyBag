@@ -1,19 +1,21 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import type {
-  User, Wallet, Transaction, Notification, Card, Merchant,
+  User, Wallet, Transaction, Notification, Card,
   PaginatedResponse, Foundation, MudarabahPlan, MudarabahAccount,
   MudarabahContribution, ZakatPayment, Sadaqah, HawlTracking, SadaqahJariyah,
+  QardHasanProduct,
 } from '@/types'
 import { logger } from './logger'
+import { API } from './config'
 
 export type {
-  User, Wallet, Transaction, Notification, Card, Merchant,
+  User, Wallet, Transaction, Notification, Card,
   PaginatedResponse, Foundation, MudarabahPlan, MudarabahAccount,
   MudarabahContribution, ZakatPayment, Sadaqah, HawlTracking, SadaqahJariyah,
+  QardHasanProduct,
 }
 
-const API = (process.env.DJANGO_API_URL ?? 'http://localhost:8003').replace('://0.0.0.0', '://127.0.0.1')
 const PAGE_SIZE = process.env.PAGE_SIZE ?? '10'
 
 async function authHeaders(): Promise<HeadersInit> {
@@ -47,9 +49,9 @@ export const getWallet          = () => serverFetch<Wallet>('/api/wallet/', 'wal
 export const getTransactions    = (page = 1) => serverFetch<PaginatedResponse<Transaction>>('/api/transactions/', 'transactions', page)
 export const getNotifications   = (page = 1) => serverFetch<PaginatedResponse<Notification>>('/api/notifications/', 'notifications', page)
 export const getCards           = (page = 1) => serverFetch<PaginatedResponse<Card>>('/api/cards/', 'cards', page)
-export const getMerchants       = (page = 1) => serverFetch<PaginatedResponse<Merchant>>('/api/merchants/', 'merchants', page)
 export const getFoundations     = () => serverFetch<Foundation[]>('/api/foundations/', 'foundations')
 export const getMudarabahPlans  = () => serverFetch<MudarabahPlan[]>('/api/mudarabah/plans/', 'mudarabah plans')
+export const getQardHasanProducts = () => serverFetch<QardHasanProduct[]>('/api/qard-hasan-products/', 'qard hasan products')
 export const getMudarabahAccounts = (page = 1) => serverFetch<MudarabahAccount[]>('/api/mudarabah/accounts/', 'mudarabah accounts', page)
 export const getMudarabahAccount = (accountNumber: string) => serverFetch<MudarabahAccount>(`/api/mudarabah/accounts/${accountNumber}/`, 'mudarabah account')
 export const getMudarabahContributions = (accountNumber: string) => serverFetch<MudarabahContribution[]>(`/api/mudarabah/accounts/${accountNumber}/contributions/`, 'contributions')

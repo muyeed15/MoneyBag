@@ -2,7 +2,6 @@ import logging
 
 from django.db import transaction
 from django.utils import timezone
-from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,7 +12,7 @@ from common.utils import error_response
 from .models import Reward, PointsTransaction, Offer, UserOffer
 from .serializers import (
     RewardSerializer, PointsTransactionSerializer,
-    OfferSerializer, UserOfferSerializer,
+    OfferSerializer,
 )
 
 logger = logging.getLogger("rewards")

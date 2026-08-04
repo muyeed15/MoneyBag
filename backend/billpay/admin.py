@@ -1,6 +1,13 @@
 from django.contrib import admin
 
-from .models import Biller, BillPayment
+from .models import Biller, BillerCategory, BillPayment
+
+
+@admin.register(BillerCategory)
+class BillerCategoryAdmin(admin.ModelAdmin):
+    list_display = ["key", "label", "is_active"]
+    list_filter = ["is_active"]
+    search_fields = ["key", "label"]
 
 
 @admin.register(Biller)

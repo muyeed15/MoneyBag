@@ -1,7 +1,6 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { API, token } from './_shared'
 
@@ -10,6 +9,7 @@ export async function createMudarabahAccountAction(_prev: unknown, formData: For
   if (!t) redirect('/login')
 
   const planId = formData.get('plan_id')
+  let accountNumber = ''
   try {
     const res = await fetch(`${API}/api/mudarabah/accounts/`, {
       method: 'POST',
@@ -19,11 +19,12 @@ export async function createMudarabahAccountAction(_prev: unknown, formData: For
     if (res.status === 401) redirect('/login')
     const data = await res.json()
     if (!res.ok) return { error: data.detail ?? 'Failed to create account' }
-    revalidatePath('/savings')
-    return { success: true, account_number: data.account_number }
+    accountNumber = data.account_number
   } catch {
     return { error: 'Could not reach server.' }
   }
+  revalidatePath('/savings')
+  redirect(`/savings/accounts/${accountNumber}`)
 }
 
 export async function payContributionAction(_prev: unknown, formData: FormData) {

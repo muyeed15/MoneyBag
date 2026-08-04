@@ -27,8 +27,11 @@ class MerchantListView(APIView):
 
     def get(self, request):
         qs = (
-            Merchant.verified.select_related("user")
-            .only("id", "business_name", "category", "is_verified", "user__phone")
+            Merchant.verified.select_related("user", "category")
+            .only(
+                "id", "business_name", "category", "is_verified",
+                "user__phone", "category__key", "category__label",
+            )
             .order_by("business_name")
         )
         p = paginate(qs, get_page(request), get_page_size(request))

@@ -1,9 +1,8 @@
 from django.test import TestCase
-from rest_framework import serializers
 
-from accounts.models import Foundation, User
+from accounts.models import Foundation
 from accounts.serializers import FoundationSerializer, UserSerializer, WalletSerializer
-from common.tests.helpers import make_user, make_wallet
+from common.tests.helpers import make_cause, make_merchant_category, make_user, make_wallet
 
 
 class UserSerializerTest(TestCase):
@@ -28,7 +27,10 @@ class UserSerializerTest(TestCase):
 
     def test_merchant_profile_true(self):
         from merchants.models import Merchant
-        Merchant.objects.create(user=self.user, business_name="Shop")
+        Merchant.objects.create(
+            user=self.user, business_name="Shop",
+            category=make_merchant_category(),
+        )
         serializer = UserSerializer(self.user)
         self.assertTrue(serializer.data["has_merchant_profile"])
 
@@ -59,17 +61,21 @@ class FoundationSerializerTest(TestCase):
             user=self.user,
             organization_name="Good Cause",
             registration_number="REG-001",
-            cause="education",
+            cause=make_cause("education"),
         )
 
     def test_serializer_contains_expected_fields(self):
         serializer = FoundationSerializer(self.foundation)
         expected = {
-            "id", "organization_name", "cause", "description",
-            "website", "contact_email", "contact_phone", "is_verified",
-            "phone", "user_id", "created_at",
+            "id", "organization_name", "cause", "cause_label", "cause_icon",
+            "logo", "description", "website", "contact_email",
+            "contact_phone", "is_verified", "phone", "user_id", "created_at",
         }
         self.assertEqual(set(serializer.data.keys()), expected)
+
+    def test_logo_none_without_request(self):
+        serializer = FoundationSerializer(self.foundation)
+        self.assertIsNone(serializer.data["logo"])
 
     def test_phone_source(self):
         serializer = FoundationSerializer(self.foundation)

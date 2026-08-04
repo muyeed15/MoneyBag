@@ -1,72 +1,102 @@
-import Link from "next/link"
-import { getSadaqahHistory, getFoundations } from "@/utils/api"
-import { formatAmount, formatDate } from "@/utils/helpers"
-import { PageHeader } from "@/components/ui/PageHeader"
-import { GiveSadaqahForm } from "./GiveSadaqahForm"
+"use client";
 
-export const dynamic = "force-dynamic"
+import { useRouter } from "next/navigation";
+import useSWR from "swr";
+import {
+  GraduationCap,
+  HeartPulse,
+  HandCoins,
+  Users,
+  Landmark,
+  Droplets,
+  LifeBuoy,
+  Heart,
+  History,
+  ChevronRight,
+  type LucideIcon,
+} from "lucide-react";
+import type { FoundationCategory } from "@/types";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { PageTransition } from "@/components/ui/PageTransition";
 
-export default async function SadaqahPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ tab?: string }>
-}) {
-  const { tab } = await searchParams
-  const activeTab = tab === "history" ? "history" : "give"
+const CAUSE_ICONS: Record<string, LucideIcon> = {
+  GraduationCap,
+  HeartPulse,
+  HandCoins,
+  Users,
+  Landmark,
+  Droplets,
+  LifeBuoy,
+  Heart,
+};
 
-  const [sadaqahList, foundations] = await Promise.all([
-    activeTab === "history" ? getSadaqahHistory().catch(() => []) : [],
-    activeTab === "give" ? getFoundations().catch(() => []) : [],
-  ])
-
-  const list = Array.isArray(sadaqahList) ? sadaqahList : []
-
-  const TABS = [
-    { key: "give", label: "Give" },
-    { key: "history", label: "History" },
-  ] as const
+export default function SadaqahPage() {
+  const router = useRouter();
+  const { data } = useSWR<FoundationCategory[]>("/api/foundation-causes");
+  const categories = data ?? [];
 
   return (
-    <div>
-      <PageHeader title="Sadaqah" subtitle="Charity" showBack />
+    <PageTransition>
+      <div className="flex items-center justify-between">
+        <PageHeader title="Give Sadaqah" subtitle="Charity" showBack />
+      </div>
+
       <div className="px-4 py-5 lg:px-8 lg:py-8 mx-auto max-w-2xl">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-navy-muted mb-3">
+          Select Cause
+        </p>
 
-      <div className="flex border-b border-sage-mid mb-6">
-        {TABS.map((t) => (
-          <Link
-            key={t.key}
-            href={`/charity/sadaqah?tab=${t.key}`}
-            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
-              activeTab === t.key
-                ? "border-navy text-navy"
-                : "border-transparent text-navy-muted"
-            }`}
-          >
-            {t.label}
-          </Link>
-        ))}
-      </div>
+        {categories.length === 0 ? (
+          <div className="bg-white border border-sage-mid px-6 py-16 text-center rounded-2xl shadow-sm">
+            <Heart className="h-10 w-10 text-sage-mid mx-auto mb-3" strokeWidth={1.5} />
+            <p className="text-navy font-semibold">No charity causes available</p>
+            <p className="text-sm text-navy-muted mt-1">Please try again later.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-3">
+            {categories.map((cat) => {
+              const Icon = CAUSE_ICONS[cat.icon] ?? Heart;
+              return (
+                <button
+                  key={cat.key}
+                  type="button"
+                  onClick={() => router.push(`/charity/sadaqah/${cat.key}`)}
+                  className="flex flex-col items-center gap-2 bg-white border border-sage-mid rounded-2xl p-5 hover:border-teal hover:shadow-sm active:scale-95 transition-all duration-150"
+                >
+                  <div className="h-12 w-12 bg-teal rounded-2xl flex items-center justify-center">
+                    <Icon className="h-6 w-6 text-white" />
+                  </div>
+                  <span className="text-xs font-semibold text-navy text-center">
+                    {cat.label}
+                  </span>
+                  <span className="text-[10px] text-navy-muted">
+                    {cat.count} {cat.count === 1 ? "foundation" : "foundations"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
-      {activeTab === "give" && <GiveSadaqahForm foundations={foundations} />}
-      {activeTab === "history" && (
-        <div className="bg-white border border-sage-mid divide-y divide-sage-mid rounded-xl">
-          {list.length === 0 ? (
-            <div className="px-5 py-8 text-center text-navy-muted text-sm">No sadaqah donations yet.</div>
-          ) : (
-            list.map((d) => (
-              <div key={d.id} className="flex items-center justify-between px-5 py-3">
-                <div>
-                  <span className="text-navy font-medium text-sm">{formatAmount(d.amount)}</span>
-                  {d.cause && <p className="text-xs text-navy-muted">{d.cause}</p>}
-                  {d.recipient_name && <p className="text-xs text-navy-muted">To: {d.recipient_name}</p>}
-                </div>
-                <span className="text-xs text-navy-muted">{formatDate(d.given_at)}</span>
-              </div>
-            ))
-          )}
-        </div>
-      )}
+        <button
+          type="button"
+          onClick={() => router.push("/charity/sadaqah/history")}
+          className="w-full flex items-center gap-3 bg-white border border-sage-mid rounded-2xl p-5 mt-6 hover:border-teal hover:shadow-sm active:scale-[0.99] transition-all duration-150"
+        >
+          <div className="h-12 w-12 bg-teal rounded-2xl flex items-center justify-center shrink-0">
+            <History className="h-6 w-6 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-navy">
+              My Donation History
+            </p>
+            <p className="text-xs text-navy-muted">
+              View your past sadaqah donations
+            </p>
+          </div>
+          <ChevronRight className="h-5 w-5 text-navy-muted shrink-0" />
+        </button>
       </div>
-    </div>
-  )
+    </PageTransition>
+  );
 }

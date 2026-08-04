@@ -7,14 +7,13 @@ import { ReactNode, useState, useEffect, useCallback, useRef } from "react";
 import {
   Home, Receipt, Bell, User,
   CreditCard, ShoppingCart, Landmark, Heart, LayoutGrid, QrCode,
-  Smartphone, Zap, Building2, Send,
+  Smartphone, Zap, Building2, Send, Ticket,
 } from "lucide-react";
 import useSWR from "swr";
 import { TOAST_DURATION_MS } from "@/utils/swr";
 import { useSSE } from "@/hooks/useSSE";
 import { ToastStack, type Toast } from "@/components/ui/Toast";
 import type {
-  User as UserType,
   Notification,
   PaginatedResponse,
 } from "@/types";
@@ -26,6 +25,7 @@ const NAV = [
   { href: "/pay", icon: ShoppingCart, label: "Pay" },
   { href: "/recharge", icon: Smartphone, label: "Recharge" },
   { href: "/billpay", icon: Zap, label: "Pay Bills" },
+  { href: "/tickets", icon: Ticket, label: "Tickets" },
   { href: "/savings", icon: Landmark, label: "Savings" },
   { href: "/charity", icon: Heart, label: "Charity" },
   { href: "/cards", icon: CreditCard, label: "Cards" },
@@ -44,12 +44,10 @@ const MOBILE_NAV = [
 ] as const;
 
 export function AppShell({
-  user,
   unreadCount: initialUnread,
   initialLastId,
   children,
 }: {
-  user: UserType;
   unreadCount: number;
   initialLastId: number;
   children: ReactNode;

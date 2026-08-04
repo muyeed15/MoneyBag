@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatAmount, formatDate, formatRelativeTime, getInitials, cn, STATUS_VARIANT, getTxMeta } from '../helpers'
+import { formatAmount, formatDate, formatDuration, formatRelativeTime, getInitials, cn, STATUS_VARIANT, getTxMeta } from '../helpers'
 import type { Transaction } from '@/types'
 
 describe('formatAmount', () => {
@@ -33,6 +33,27 @@ describe('formatDate', () => {
   it('formats another date', () => {
     const result = formatDate('2024-01-01T00:00:00Z')
     expect(result).toBe('01 Jan 2024')
+  })
+})
+
+describe('formatDuration', () => {
+  it('formats months', () => {
+    expect(formatDuration(6)).toBe('6 months')
+    expect(formatDuration(1)).toBe('1 month')
+  })
+
+  it('formats whole years', () => {
+    expect(formatDuration(12)).toBe('1 year')
+    expect(formatDuration(24)).toBe('2 years')
+  })
+
+  it('formats years and months', () => {
+    expect(formatDuration(18)).toBe('1 year 6 months')
+    expect(formatDuration(30)).toBe('2 years 6 months')
+  })
+
+  it('handles zero', () => {
+    expect(formatDuration(0)).toBe('0 months')
   })
 })
 

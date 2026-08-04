@@ -1,6 +1,13 @@
 from django.contrib import admin
 
-from .models import SupportTicket, TicketMessage
+from .models import SupportCategory, SupportTicket, TicketMessage
+
+
+@admin.register(SupportCategory)
+class SupportCategoryAdmin(admin.ModelAdmin):
+    list_display = ["key", "label", "is_active"]
+    list_filter = ["is_active"]
+    search_fields = ["key", "label"]
 
 
 class TicketMessageInline(admin.TabularInline):

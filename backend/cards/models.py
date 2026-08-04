@@ -1,5 +1,4 @@
 import base64
-import os
 
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -73,17 +72,6 @@ class Card(models.Model):
         self._number = base64.b64encode(raw_number.encode()).decode()
         self.last_four = raw_number[-4:]
         self.masked_number = _mask(raw_number)
-
-    def get_number(self):
-        try:
-            return base64.b64decode(self._number.encode()).decode()
-        except Exception:
-            return ""
-
-    @property
-    def bin(self):
-        raw = self.get_number()
-        return raw[:6] if len(raw) >= 6 else ""
 
     def __str__(self):
         return f"{self.user.phone} - {self.card_network} ***{self.last_four}"

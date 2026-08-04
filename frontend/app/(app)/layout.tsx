@@ -9,14 +9,14 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [user, notifData] = await Promise.all([
+  const [, notifData] = await Promise.all([
     getMe(),
     getNotifications(1),
   ]);
   const unreadCount = notifData.results.filter((n) => !n.is_read).length;
   const initialLastId = notifData.results[0]?.id ?? 0;
   return (
-    <AppShell user={user} unreadCount={unreadCount} initialLastId={initialLastId}>
+    <AppShell unreadCount={unreadCount} initialLastId={initialLastId}>
       {children}
     </AppShell>
   );

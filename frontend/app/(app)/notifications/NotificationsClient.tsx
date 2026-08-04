@@ -1,7 +1,6 @@
 "use client";
 
 import { useTransition, useState } from "react";
-import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { Bell } from "lucide-react";
 import { formatDate } from "@/utils/helpers";
@@ -16,7 +15,6 @@ export function NotificationsClient({
 }: {
   initialData: PaginatedResponse<Notification>;
 }) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [page, setPage] = useState(1);
 

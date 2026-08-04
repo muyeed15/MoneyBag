@@ -37,12 +37,31 @@ class WalletSerializer(serializers.ModelSerializer):
 class FoundationSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(source="user.phone", read_only=True)
     user_id = serializers.IntegerField(source="user.id", read_only=True)
+    logo = serializers.SerializerMethodField()
+    cause = serializers.SerializerMethodField()
+    cause_label = serializers.SerializerMethodField()
+    cause_icon = serializers.SerializerMethodField()
 
     class Meta:
         model = Foundation
         fields = [
-            "id", "organization_name", "cause", "description",
-            "website", "contact_email", "contact_phone", "is_verified",
-            "phone", "user_id", "created_at",
+            "id", "organization_name", "cause", "cause_label", "cause_icon",
+            "logo", "description", "website", "contact_email",
+            "contact_phone", "is_verified", "phone", "user_id", "created_at",
         ]
         read_only_fields = ["is_verified", "created_at"]
+
+    def get_logo(self, obj):
+        if not obj.logo:
+            return None
+        request = self.context.get("request")
+        return request.build_absolute_uri(obj.logo.url) if request else obj.logo.url
+
+    def get_cause(self, obj):
+        return obj.cause.key if obj.cause_id else ""
+
+    def get_cause_label(self, obj):
+        return obj.cause.label if obj.cause_id else ""
+
+    def get_cause_icon(self, obj):
+        return obj.cause.icon if obj.cause_id else "Heart"

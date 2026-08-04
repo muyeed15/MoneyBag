@@ -4,7 +4,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from common.tests.helpers import make_user, make_wallet
+from common.tests.helpers import make_merchant_category, make_user, make_wallet
 from merchants.models import Merchant
 from notifications.models import Notification
 from transactions.models import Transaction
@@ -20,11 +20,13 @@ class MerchantListViewTest(TestCase):
     def test_list_only_verified_merchants(self):
         m_user1 = make_user("01700000002", "2222222222")
         Merchant.objects.create(
-            user=m_user1, business_name="Verified Shop", is_verified=True,
+            user=m_user1, business_name="Verified Shop",
+            category=make_merchant_category(), is_verified=True,
         )
         m_user2 = make_user("01700000003", "3333333333")
         Merchant.objects.create(
-            user=m_user2, business_name="Unverified Shop", is_verified=False,
+            user=m_user2, business_name="Unverified Shop",
+            category=make_merchant_category(), is_verified=False,
         )
         res = self.client.get("/api/merchants/")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
@@ -46,13 +48,14 @@ class MerchantPayViewTest(TestCase):
         self.merchant_user = make_user("01700000002", "2222222222")
         self.merchant_wallet = make_wallet(self.merchant_user, "0.00")
         self.merchant = Merchant.objects.create(
-            user=self.merchant_user, business_name="Shop", is_verified=True,
+            user=self.merchant_user, business_name="Shop",
+            category=make_merchant_category(), is_verified=True,
         )
         self.client.force_authenticate(user=self.payer)
 
     def test_successful_payment(self):
         res = self.client.post("/api/pay/merchant/", {
-            "merchant_id": self.merchant.pk, "amount": "100.00",
+            "merchant_phone": self.merchant_user.phone, "amount": "100.00",
         })
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.merchant_wallet.refresh_from_db()
@@ -60,34 +63,36 @@ class MerchantPayViewTest(TestCase):
 
     def test_payer_balance_deducted_with_fee(self):
         self.client.post("/api/pay/merchant/", {
-            "merchant_id": self.merchant.pk, "amount": "100.00",
+            "merchant_phone": self.merchant_user.phone, "amount": "100.00",
         })
         wallet = self.payer.wallet
         wallet.refresh_from_db()
         self.assertEqual(wallet.balance, Decimal("898.50"))
 
     def test_cannot_pay_own_merchant(self):
-        own_merchant = Merchant.objects.create(
-            user=self.payer, business_name="My Shop", is_verified=True,
+        Merchant.objects.create(
+            user=self.payer, business_name="My Shop",
+            category=make_merchant_category(), is_verified=True,
         )
         res = self.client.post("/api/pay/merchant/", {
-            "merchant_id": own_merchant.pk, "amount": "100.00",
+            "merchant_phone": self.payer.phone, "amount": "100.00",
         })
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_insufficient_balance(self):
         res = self.client.post("/api/pay/merchant/", {
-            "merchant_id": self.merchant.pk, "amount": "99999.00",
+            "merchant_phone": self.merchant_user.phone, "amount": "99999.00",
         })
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_unverified_merchant_rejected(self):
-        unverified_merchant = Merchant.objects.create(
+        Merchant.objects.create(
             user=make_user("01700000003", "3333333333"),
-            business_name="Not Verified", is_verified=False,
+            business_name="Not Verified",
+            category=make_merchant_category(), is_verified=False,
         )
         res = self.client.post("/api/pay/merchant/", {
-            "merchant_id": unverified_merchant.pk, "amount": "100.00",
+            "merchant_phone": "01700000003", "amount": "100.00",
         })
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -96,26 +101,26 @@ class MerchantPayViewTest(TestCase):
         wallet.status = "frozen"
         wallet.save()
         res = self.client.post("/api/pay/merchant/", {
-            "merchant_id": self.merchant.pk, "amount": "100.00",
+            "merchant_phone": self.merchant_user.phone, "amount": "100.00",
         })
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_zero_amount_rejected(self):
         res = self.client.post("/api/pay/merchant/", {
-            "merchant_id": self.merchant.pk, "amount": "0.00",
+            "merchant_phone": self.merchant_user.phone, "amount": "0.00",
         })
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_notifications_created(self):
         self.client.post("/api/pay/merchant/", {
-            "merchant_id": self.merchant.pk, "amount": "100.00",
+            "merchant_phone": self.merchant_user.phone, "amount": "100.00",
         })
         self.assertEqual(Notification.objects.filter(user=self.payer).count(), 1)
         self.assertEqual(Notification.objects.filter(user=self.merchant_user).count(), 1)
 
     def test_transaction_record_created(self):
         self.client.post("/api/pay/merchant/", {
-            "merchant_id": self.merchant.pk, "amount": "100.00",
+            "merchant_phone": self.merchant_user.phone, "amount": "100.00",
         })
         self.assertEqual(Transaction.objects.count(), 1)
         tx = Transaction.objects.first()
@@ -124,7 +129,7 @@ class MerchantPayViewTest(TestCase):
 
     def test_pay_with_note(self):
         res = self.client.post("/api/pay/merchant/", {
-            "merchant_id": self.merchant.pk, "amount": "50.00",
+            "merchant_phone": self.merchant_user.phone, "amount": "50.00",
             "note": "Thanks for the service",
         })
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
@@ -133,16 +138,16 @@ class MerchantPayViewTest(TestCase):
 
     def test_pay_exact_balance(self):
         res = self.client.post("/api/pay/merchant/", {
-            "merchant_id": self.merchant.pk, "amount": "985.22",
+            "merchant_phone": self.merchant_user.phone, "amount": "985.22",
         })
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         wallet = self.payer.wallet
         wallet.refresh_from_db()
         self.assertAlmostEqual(float(wallet.balance), 0.0, places=2)
 
-    def test_invalid_merchant_id(self):
+    def test_invalid_merchant_phone(self):
         res = self.client.post("/api/pay/merchant/", {
-            "merchant_id": 99999, "amount": "100.00",
+            "merchant_phone": "01700000099", "amount": "100.00",
         })
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -150,6 +155,6 @@ class MerchantPayViewTest(TestCase):
         self.merchant_wallet.status = "frozen"
         self.merchant_wallet.save()
         res = self.client.post("/api/pay/merchant/", {
-            "merchant_id": self.merchant.pk, "amount": "100.00",
+            "merchant_phone": self.merchant_user.phone, "amount": "100.00",
         })
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)

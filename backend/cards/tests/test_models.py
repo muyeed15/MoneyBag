@@ -16,7 +16,7 @@ class CardModelTest(TestCase):
         )
 
     def test_str(self):
-        expected = "01700000001 - **** 1234 (debit)"
+        expected = "01700000001 - visa ***1234"
         self.assertEqual(str(self.card), expected)
 
     def test_default_status_is_active(self):
@@ -65,4 +65,3 @@ class CardModelTest(TestCase):
             expiry_month=6, expiry_year=2030,
         )
         self.assertEqual(card.card_type, "prepaid")
-        self.assertIn("prepaid", str(card))

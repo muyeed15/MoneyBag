@@ -2,6 +2,21 @@ from django.conf import settings
 from django.db import models
 
 
+class SupportCategory(models.Model):
+    key = models.CharField(max_length=30, unique=True)
+    label = models.CharField(max_length=50)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Support Category"
+        verbose_name_plural = "Support Categories"
+        ordering = ["label"]
+
+    def __str__(self):
+        return self.label
+
+
 class SupportTicket(models.Model):
     STATUS_CHOICES = [
         ("open", "Open"),
@@ -16,10 +31,12 @@ class SupportTicket(models.Model):
         related_name="support_tickets",
     )
     subject = models.CharField(max_length=200)
-    category = models.CharField(
-        max_length=30,
-        default="general",
-        help_text="e.g., transaction, account, card, recharge, bill, general",
+    category = models.ForeignKey(
+        SupportCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tickets",
     )
     status = models.CharField(max_length=12, choices=STATUS_CHOICES, default="open")
     created_at = models.DateTimeField(auto_now_add=True)

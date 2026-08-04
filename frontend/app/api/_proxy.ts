@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { logger } from '@/utils/logger'
+import { API } from '@/utils/config'
 
-const API = (process.env.DJANGO_API_URL ?? 'http://localhost:8003').replace('://0.0.0.0', '://127.0.0.1')
 const PAGE_SIZE = process.env.PAGE_SIZE ?? '10'
 
 export function proxyList(backendPath: string) {

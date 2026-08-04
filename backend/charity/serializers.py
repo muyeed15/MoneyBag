@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from rest_framework import serializers
 
+from accounts.models import CharityCause
 from .models import HawlTracking, Sadaqah, SadaqahJariyah, ZakatPayment
 
 
@@ -28,18 +29,31 @@ class PayZakatSerializer(serializers.Serializer):
 
 class SadaqahSerializer(serializers.ModelSerializer):
     recipient_name = serializers.CharField(source="recipient.foundation_profile.organization_name", read_only=True, allow_null=True)
+    cause = serializers.SerializerMethodField()
+    cause_label = serializers.SerializerMethodField()
 
     class Meta:
         model = Sadaqah
-        fields = ["id", "amount", "cause", "is_anonymous", "recipient", "recipient_name", "given_at"]
+        fields = ["id", "amount", "cause", "cause_label", "is_anonymous", "recipient", "recipient_name", "given_at"]
         read_only_fields = ["given_at"]
+
+    def get_cause(self, obj):
+        return obj.cause.key if obj.cause_id else None
+
+    def get_cause_label(self, obj):
+        return obj.cause.label if obj.cause_id else None
 
 
 class GiveSadaqahSerializer(serializers.Serializer):
     amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=Decimal("1"))
     recipient_id = serializers.IntegerField(help_text="Foundation user ID receiving this sadaqah")
-    cause = serializers.CharField(required=False, allow_blank=True, max_length=100)
+    cause = serializers.CharField(required=False, allow_blank=True, max_length=20)
     is_anonymous = serializers.BooleanField(default=False)
+
+    def validate_cause(self, value):
+        if value and not CharityCause.objects.filter(key=value).exists():
+            raise serializers.ValidationError("Invalid cause.")
+        return value
 
 
 class HawlTrackingSerializer(serializers.ModelSerializer):
@@ -55,19 +69,32 @@ class UpdateHawlSerializer(serializers.Serializer):
 
 class SadaqahJariyahSerializer(serializers.ModelSerializer):
     recipient_name = serializers.CharField(source="recipient.foundation_profile.organization_name", read_only=True, allow_null=True)
+    cause = serializers.SerializerMethodField()
+    cause_label = serializers.SerializerMethodField()
 
     class Meta:
         model = SadaqahJariyah
         fields = [
-            "id", "amount", "cause", "frequency", "is_active",
+            "id", "amount", "cause", "cause_label", "frequency", "is_active",
             "recipient", "recipient_name",
             "start_date", "next_due_date", "total_donated", "created_at",
         ]
         read_only_fields = ["total_donated", "created_at", "next_due_date"]
 
+    def get_cause(self, obj):
+        return obj.cause.key if obj.cause_id else None
+
+    def get_cause_label(self, obj):
+        return obj.cause.label if obj.cause_id else None
+
 
 class CreateSadaqahJariyahSerializer(serializers.Serializer):
     amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=Decimal("1"))
     recipient_id = serializers.IntegerField(help_text="Foundation user ID receiving this sadaqah jariyah")
-    cause = serializers.CharField(required=False, allow_blank=True, max_length=100)
+    cause = serializers.CharField(required=False, allow_blank=True, max_length=20)
     frequency = serializers.ChoiceField(choices=["monthly"], default="monthly")
+
+    def validate_cause(self, value):
+        if value and not CharityCause.objects.filter(key=value).exists():
+            raise serializers.ValidationError("Invalid cause.")
+        return value

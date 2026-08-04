@@ -5,6 +5,14 @@ export type PaginatedResponse<T> = {
   results: T[]
 }
 
+export type PhoneLookup = {
+  phone: string
+  name: string
+  full_name: string
+  type: 'merchant' | 'user' | 'agent'
+  is_verified_merchant: boolean
+}
+
 export type User = {
   id: number
   phone: string
@@ -60,18 +68,20 @@ export type Card = {
   created_at: string
 }
 
-export type Merchant = {
-  id: number
-  business_name: string
-  category: string
-  is_verified: boolean
-  phone: string
+export type FoundationCategory = {
+  key: string
+  label: string
+  icon: string
+  count: number
 }
 
 export type Foundation = {
   id: number
   organization_name: string
   cause: string
+  cause_label: string
+  cause_icon: string
+  logo: string | null
   description: string
   website: string
   contact_email: string
@@ -127,6 +137,7 @@ export type Sadaqah = {
   id: number
   amount: string
   cause: string | null
+  cause_label: string | null
   is_anonymous: boolean
   recipient: number | null
   recipient_name: string | null
@@ -144,6 +155,7 @@ export type SadaqahJariyah = {
   id: number
   amount: string
   cause: string | null
+  cause_label: string | null
   frequency: 'monthly'
   is_active: boolean
   recipient: number | null
@@ -158,7 +170,7 @@ export type Operator = {
   id: number
   name: string
   operator_code: string
-  logo: string
+  logo: string | null
   type: 'prepaid' | 'postpaid' | 'both'
   is_active: boolean
 }
@@ -174,43 +186,22 @@ export type DataPack = {
   is_active: boolean
 }
 
-export type RechargeTransaction = {
-  id: number
-  operator: number
-  operator_name: string
-  phone_number: string
-  amount: string
-  fee: string
-  recharge_type: 'prepaid' | 'postpaid' | 'data_pack'
-  reference: string
-  status: string
-  created_at: string
+export type BillerCategory = {
+  key: string
+  label: string
+  count: number
 }
 
 export type Biller = {
   id: number
   name: string
   category: string
+  category_label: string
   biller_code: string
-  logo: string
+  logo: string | null
   account_no_label: string
   amount_no_label: string
   is_active: boolean
-}
-
-export type BillPayment = {
-  id: number
-  biller: number
-  biller_name: string
-  biller_category: string
-  account_number: string
-  bill_number: string
-  amount: string
-  fee: string
-  bill_month: string
-  reference: string
-  status: string
-  created_at: string
 }
 
 export type Agent = {
@@ -225,54 +216,6 @@ export type Agent = {
   longitude: string
   is_verified: boolean
   status: string
-}
-
-export type AgentTransaction = {
-  id: number
-  user_phone: string
-  agent_name: string
-  amount: string
-  fee: string
-  commission: string
-  transaction_type: 'cash_in' | 'cash_out'
-  reference: string
-  status: string
-  created_at: string
-}
-
-export type Bank = {
-  id: number
-  name: string
-  bank_code: string
-  logo: string
-  is_islamic: boolean
-  is_active: boolean
-}
-
-export type BankAccount = {
-  id: number
-  bank: number
-  bank_name: string
-  account_number: string
-  masked_account: string
-  account_holder: string
-  branch: string
-  routing_number: string
-  is_primary: boolean
-  is_verified: boolean
-  created_at: string
-}
-
-export type BankTransaction = {
-  id: number
-  bank_account: number
-  bank_name: string
-  amount: string
-  fee: string
-  transaction_type: 'add_money' | 'withdraw'
-  reference: string
-  status: string
-  created_at: string
 }
 
 export type QardHasanProduct = {
@@ -303,51 +246,32 @@ export type QardHasanApplication = {
   created_at: string
 }
 
-export type RemittancePartner = {
-  id: number
-  name: string
-  country: string
-  currency: string
-  exchange_rate: string
-  logo: string
-  is_active: boolean
-}
-
-export type RemittanceTransaction = {
-  id: number
-  partner: number
-  partner_name: string
-  partner_country: string
-  sender_name: string
-  sender_country: string
-  amount_foreign: string
-  amount_bdt: string
-  exchange_rate: string
-  reference_number: string
-  status: string
-  created_at: string
+export type TicketCategory = {
+  key: string
+  label: string
+  count: number
 }
 
 export type TicketProvider = {
   id: number
   name: string
   category: string
-  logo: string
+  category_label: string
+  logo: string | null
   is_active: boolean
-  trips: TicketTrip[]
-}
-
-export type TicketTrip = {
-  id: number
-  provider: number
-  name: string
-  origin: string
-  destination: string
-  departure_time: string
-  arrival_time: string
-  coach_class: string
-  price: string
-  is_active: boolean
+  trips: {
+    id: number
+    provider: number
+    name: string
+    origin: string
+    destination: string
+    departure_time: string
+    arrival_time: string
+    coach_class: string
+    coaches: string[]
+    price: string
+    is_active: boolean
+  }[]
 }
 
 export type TicketBooking = {
@@ -371,29 +295,9 @@ export type TicketBooking = {
   created_at: string
 }
 
-export type MoneyRequest = {
-  id: number
-  requester: number
-  requester_phone: string
-  target: number
-  target_phone: string
-  amount: string
-  note: string
-  status: 'pending' | 'accepted' | 'declined' | 'expired'
-  created_at: string
-}
-
-export type AccountStatement = {
-  id: number
-  year: number
-  month: number
-  period: string
-  opening_balance: string
-  closing_balance: string
-  total_credits: string
-  total_debits: string
-  transaction_count: number
-  generated_at: string
+export type SupportCategory = {
+  key: string
+  label: string
 }
 
 export type SupportTicket = {
@@ -401,37 +305,16 @@ export type SupportTicket = {
   user_phone: string
   subject: string
   category: string
+  category_label: string
   status: 'open' | 'in_progress' | 'resolved' | 'closed'
-  messages: TicketMessage[]
+  messages: {
+    id: number
+    sender: number
+    sender_phone: string
+    message: string
+    is_staff_reply: boolean
+    created_at: string
+  }[]
   created_at: string
   updated_at: string
-}
-
-export type TicketMessage = {
-  id: number
-  sender: number
-  sender_phone: string
-  message: string
-  is_staff_reply: boolean
-  created_at: string
-}
-
-export type Offer = {
-  id: number
-  title: string
-  description: string
-  points_required: number
-  cashback_amount: string
-  cashback_pct: string
-  category: string
-  valid_from: string
-  valid_until: string
-  is_active: boolean
-}
-
-export type Reward = {
-  id: number
-  user_phone: string
-  points: number
-  lifetime_points: number
 }

@@ -7,10 +7,19 @@ from cards.models import Card
 CARD_NETWORKS = {"visa": "4", "mastercard": "5", "amex": "3", "nexus": "6"}
 
 
+def _detect_network(digits):
+    for network, prefix in CARD_NETWORKS.items():
+        if digits.startswith(prefix):
+            return network
+    return ""
+
+
 class CardSerializer(serializers.ModelSerializer):
     card_number = serializers.CharField(write_only=True, max_length=19)
-    cardholder_name = serializers.CharField(max_length=100)
-    card_network = serializers.ChoiceField(choices=Card.CARD_NETWORK_CHOICES)
+    cardholder_name = serializers.CharField(
+        required=False, allow_blank=True, max_length=100
+    )
+    card_network = serializers.CharField(required=False, max_length=12)
 
     class Meta:
         model = Card
@@ -30,9 +39,11 @@ class CardSerializer(serializers.ModelSerializer):
         return digits
 
     def validate_card_network(self, value):
-        prefix = self.initial_data.get("card_number", "").replace(" ", "")[:1]
+        if not value:
+            return value
+        digits = self.initial_data.get("card_number", "").replace(" ", "")
         expected = CARD_NETWORKS.get(value, "")
-        if expected and prefix != expected:
+        if expected and digits[:1] != expected:
             raise serializers.ValidationError(
                 f"Card number does not match {value} network."
             )
@@ -54,6 +65,8 @@ class CardSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         raw_number = validated_data.pop("card_number")
+        network = validated_data.pop("card_network", "") or _detect_network(raw_number)
+        validated_data["card_network"] = network
         card = Card(**validated_data)
         card.set_number(raw_number)
         card.save()

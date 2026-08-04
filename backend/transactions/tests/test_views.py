@@ -4,7 +4,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from common.tests.helpers import make_user, make_wallet
+from common.tests.helpers import make_user
 from transactions.models import Transaction
 
 

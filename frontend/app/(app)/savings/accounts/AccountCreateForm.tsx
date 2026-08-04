@@ -1,18 +1,13 @@
 "use client"
 
 import { useActionState } from "react"
-import { useRouter } from "next/navigation"
 import { createMudarabahAccountAction } from "@/app/actions"
 import { Button } from "@/components/ui/Button"
+import { formatDuration } from "@/utils/helpers"
 import type { MudarabahPlan } from "@/types"
 
 export function AccountCreateForm({ plans }: { plans: MudarabahPlan[] }) {
-  const router = useRouter()
   const [state, action, pending] = useActionState(createMudarabahAccountAction, null)
-
-  if (state?.success && state.account_number) {
-    router.push(`/savings/accounts/${state.account_number}`)
-  }
 
   return (
     <form action={action} className="bg-white border border-sage-mid p-5 rounded-xl">
@@ -30,7 +25,7 @@ export function AccountCreateForm({ plans }: { plans: MudarabahPlan[] }) {
         <option value="">Select a plan</option>
         {plans.map((p) => (
           <option key={p.id} value={p.id}>
-            {p.name} &mdash; ৳{p.monthly_amount}/mo x {p.duration_months}m
+            {p.name} &mdash; ৳{p.monthly_amount}/mo &middot; {formatDuration(p.duration_months)}
           </option>
         ))}
       </select>

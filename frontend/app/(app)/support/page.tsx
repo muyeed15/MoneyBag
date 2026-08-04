@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import useSWR from "swr";
 import { Info } from "lucide-react";
 import { createTicketAction, sendMessageAction } from "@/app/actions";
-import type { SupportTicket } from "@/types";
+import type { SupportCategory, SupportTicket } from "@/types";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -16,18 +16,17 @@ const BADGE_COLORS: Record<string, string> = {
   open: "bg-yellow-100 text-yellow-700", in_progress: "bg-blue-100 text-blue-700",
   resolved: "bg-green-100 text-green-700", closed: "bg-gray-100 text-gray-700",
 };
-const CATEGORY_OPTIONS = [
-  { value: "general", label: "General" }, { value: "transaction", label: "Transaction" },
-  { value: "account", label: "Account" }, { value: "card", label: "Card" },
-  { value: "recharge", label: "Recharge" }, { value: "bill", label: "Bill" },
-];
 
 export default function SupportPage() {
   const [tab, setTab] = useState<"new" | "list">("new");
   const [tState, tAction, tPending] = useActionState(createTicketAction, initTicket);
   const [, mAction, mPending] = useActionState(sendMessageAction, initMsg);
   const { data: tickets } = useSWR<SupportTicket[]>("/api/support-tickets");
+  const { data: categoryData } = useSWR<SupportCategory[]>(
+    "/api/support-categories",
+  );
   const ticketList = tickets ?? [];
+  const categories = categoryData ?? [];
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   if (tState.ok && tab !== "list") setTab("list");
 
@@ -56,7 +55,8 @@ export default function SupportPage() {
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-widest text-navy-muted mb-2">Category</p>
               <select name="category" className="w-full border border-sage-mid px-3.5 py-3 text-sm text-navy bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-teal/10 focus:border-teal transition-all duration-150">
-                {CATEGORY_OPTIONS.map((c) => (<option key={c.value} value={c.value}>{c.label}</option>))}
+                <option value="">Select category</option>
+                {categories.map((c) => (<option key={c.key} value={c.key}>{c.label}</option>))}
               </select>
             </div>
             <div>
@@ -86,7 +86,7 @@ export default function SupportPage() {
                             <p className="text-sm font-semibold text-navy">#{ticket.id} {ticket.subject}</p>
                             <span className={`text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded shrink-0 ${BADGE_COLORS[ticket.status] ?? "bg-gray-100 text-gray-700"}`}>{ticket.status.replace("_", " ")}</span>
                           </div>
-                          <p className="text-xs text-navy-muted mt-1">{ticket.category} &middot; {ticket.created_at}</p>
+                          <p className="text-xs text-navy-muted mt-1">{ticket.category_label || ticket.category} &middot; {ticket.created_at}</p>
                         </div>
                       </div>
                     </button>

@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import Wallet
+from accounts.models import User, Wallet
 from common.pagination import get_page, get_page_size, paginate
 from common.utils import daily_spent, error_response
 from notifications.models import Notification
@@ -252,7 +252,7 @@ class RespondMoneyRequestView(APIView):
             sender_wallet.save(update_fields=["balance"])
             receiver_wallet.save(update_fields=["balance"])
 
-            tx = Transaction.objects.create(
+            Transaction.objects.create(
                 sender=request.user,
                 receiver=money_req.requester,
                 amount=money_req.amount,

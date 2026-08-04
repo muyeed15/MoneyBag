@@ -2,6 +2,7 @@ import logging
 import uuid
 
 from django.db import transaction
+from django.db.models import Count
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -10,10 +11,31 @@ from rest_framework.views import APIView
 from common.pagination import get_page, get_page_size, paginate
 from common.utils import error_response, locked_deduct_wallet
 
-from .models import Biller, BillPayment
+from .models import Biller, BillerCategory, BillPayment
 from .serializers import BillerSerializer, PayBillSerializer, BillPaymentSerializer
 
 logger = logging.getLogger("billpay")
+
+
+class BillerCategoryListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        counts = (
+            Biller.objects.filter(is_active=True)
+            .values("category__key")
+            .annotate(count=Count("id"))
+        )
+        counts_by_category = {c["category__key"]: c["count"] for c in counts}
+        categories = [
+            {
+                "key": category.key,
+                "label": category.label,
+                "count": counts_by_category.get(category.key, 0),
+            }
+            for category in BillerCategory.objects.filter(is_active=True)
+        ]
+        return Response(categories)
 
 
 class BillerListView(APIView):
@@ -21,10 +43,12 @@ class BillerListView(APIView):
 
     def get(self, request):
         category = request.query_params.get("category")
-        qs = Biller.objects.filter(is_active=True)
+        qs = Biller.objects.filter(is_active=True).select_related("category")
         if category:
-            qs = qs.filter(category=category)
-        return Response(BillerSerializer(qs, many=True).data)
+            qs = qs.filter(category__key=category)
+        return Response(
+            BillerSerializer(qs, many=True, context={"request": request}).data
+        )
 
 
 class PayBillView(APIView):

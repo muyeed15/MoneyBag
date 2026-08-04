@@ -2,22 +2,30 @@ from django.conf import settings
 from django.db import models
 
 
-class Biller(models.Model):
-    CATEGORY_CHOICES = [
-        ("electricity", "Electricity"),
-        ("gas", "Gas"),
-        ("water", "Water"),
-        ("internet", "Internet"),
-        ("tv", "Television / DTH"),
-        ("education", "Education"),
-        ("takaful", "Takaful (Islamic Insurance)"),
-        ("microfinance", "Microfinance"),
-    ]
+class BillerCategory(models.Model):
+    key = models.CharField(max_length=15, unique=True)
+    label = models.CharField(max_length=50)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        verbose_name = "Biller Category"
+        verbose_name_plural = "Biller Categories"
+        ordering = ["label"]
+
+    def __str__(self):
+        return self.label
+
+
+class Biller(models.Model):
     name = models.CharField(max_length=150)
-    category = models.CharField(max_length=15, choices=CATEGORY_CHOICES)
+    category = models.ForeignKey(
+        BillerCategory,
+        on_delete=models.PROTECT,
+        related_name="billers",
+    )
     biller_code = models.CharField(max_length=20, unique=True)
-    logo = models.URLField(blank=True)
+    logo = models.FileField(upload_to="billers/", blank=True)
     account_no_label = models.CharField(max_length=50, default="Account Number")
     amount_no_label = models.CharField(max_length=50, default="Bill Number")
     is_active = models.BooleanField(default=True)
@@ -29,7 +37,7 @@ class Biller(models.Model):
         ordering = ["category", "name"]
 
     def __str__(self):
-        return f"{self.name} ({self.get_category_display()})"
+        return f"{self.name} ({self.category.label if self.category_id else ''})"
 
 
 class BillPayment(models.Model):

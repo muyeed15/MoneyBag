@@ -1,8 +1,9 @@
 import Link from "next/link"
 import { getMudarabahPlans } from "@/utils/api"
-import { formatAmount } from "@/utils/helpers"
+import { formatAmount, formatDuration } from "@/utils/helpers"
 import { Landmark } from "lucide-react"
 import { PageHeader } from "@/components/ui/PageHeader"
+import { StartSavingForm } from "./StartSavingForm"
 
 export const dynamic = "force-dynamic"
 
@@ -33,22 +34,14 @@ export default async function SavingsPage() {
                 <div className="p-5">
                   <h3 className="text-navy font-bold text-base">{plan.name}</h3>
                   <p className="text-navy-muted text-sm mt-1">
-                    {plan.duration_months} months &middot; {formatAmount(plan.monthly_amount)}/mo
+                    {formatDuration(plan.duration_months)} &middot; {formatAmount(plan.monthly_amount)}/mo
                   </p>
                   <p className="text-navy text-xs mt-1">
                     Profit ratio: {plan.profit_ratio}%
                   </p>
                 </div>
                 <div className="border-t border-sage-mid px-5 py-3">
-                  <form action="/savings/accounts" method="POST" className="inline">
-                    <input type="hidden" name="plan_id" value={plan.id} />
-                    <button
-                      type="submit"
-                      className="bg-teal text-white text-sm font-semibold px-4 py-2 w-full rounded-lg"
-                    >
-                      Start Saving
-                    </button>
-                  </form>
+                  <StartSavingForm planId={plan.id} />
                 </div>
               </div>
             ))}

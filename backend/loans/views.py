@@ -14,7 +14,7 @@ from common.utils import credit_wallet, error_response, locked_deduct_wallet, us
 from .models import QardHasanProduct, QardHasanApplication, QardHasanRepayment
 from .serializers import (
     QardHasanProductSerializer, QardHasanApplicationSerializer,
-    ApplyQardHasanSerializer, QardHasanRepaymentSerializer, RepayQardHasanSerializer,
+    ApplyQardHasanSerializer, RepayQardHasanSerializer,
 )
 
 logger = logging.getLogger("loans")
