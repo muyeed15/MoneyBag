@@ -15,8 +15,7 @@ class OperatorSerializer(serializers.ModelSerializer):
     def get_logo(self, obj):
         if not obj.logo:
             return None
-        request = self.context.get("request")
-        return request.build_absolute_uri(obj.logo.url) if request else obj.logo.url
+        return obj.logo.url
 
     def get_type(self, obj):
         return obj.type.key if obj.type_id else ""

@@ -1,8 +1,8 @@
 from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib import admin
 from django.shortcuts import redirect
 from django.urls import include, path
+from django.views.static import serve as media_serve
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
@@ -28,7 +28,5 @@ urlpatterns = [
     path("api/", include("tickets.urls")),
     path("api/", include("support.urls")),
     path("api/", include("statements.urls")),
+    path("media/<path:path>", media_serve, {"document_root": settings.MEDIA_ROOT}),
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

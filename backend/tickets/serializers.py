@@ -26,8 +26,7 @@ class TicketProviderSerializer(serializers.ModelSerializer):
     def get_logo(self, obj):
         if not obj.logo:
             return None
-        request = self.context.get("request")
-        return request.build_absolute_uri(obj.logo.url) if request else obj.logo.url
+        return obj.logo.url
 
     def get_category(self, obj):
         return obj.category.key if obj.category_id else ""
