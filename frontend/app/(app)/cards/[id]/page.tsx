@@ -6,6 +6,7 @@ import { CreditCard, Snowflake } from "lucide-react";
 import { blockCardAction, unblockCardAction } from "@/app/actions";
 import { BackButton } from "@/components/ui/BackButton";
 import type { Card, User, PaginatedResponse } from "@/types";
+import Image from "next/image";
 
 export default function CardDetailPage({
   params,
@@ -71,7 +72,7 @@ export default function CardDetailPage({
                 </div>
               </div>
             </div>
-            <img src="/logo.svg" alt="" className="w-10 h-10" />
+            <Image src="/logo.svg" alt="" width={40} height={40} />
           </div>
           <div className="relative space-y-4">
             <p className="text-xl sm:text-2xl font-bold tracking-[0.25em] tabular-nums">
