@@ -7,14 +7,17 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import CharityCause, Foundation, User, Wallet
+from accounts.models import CharityCause, Foundation, KYCVerification, Nominee, User, Wallet
 from accounts.serializers import (
     FoundationSerializer,
+    KYCVerificationSerializer,
+    NomineeSerializer,
     UserSerializer,
     WalletSerializer,
 )
 from agents.models import Agent
 from common.utils import error_response
+from rest_framework import status
 
 
 class MeView(APIView):
@@ -33,6 +36,49 @@ class WalletDetailView(APIView):
         except Wallet.DoesNotExist:
             return error_response("Wallet not found.", 404)
         return Response(WalletSerializer(wallet).data)
+
+
+class NomineeListCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(NomineeSerializer(Nominee.objects.filter(user=request.user), many=True).data)
+
+    def post(self, request):
+        serializer = NomineeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        if serializer.validated_data.get("is_primary"):
+            Nominee.objects.filter(user=request.user, is_primary=True).update(is_primary=False)
+        nominee = serializer.save(user=request.user)
+        return Response(NomineeSerializer(nominee).data, status=status.HTTP_201_CREATED)
+
+
+class NomineeDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        deleted, _ = Nominee.objects.filter(pk=pk, user=request.user).delete()
+        if not deleted:
+            return error_response("Nominee not found.", 404)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class KYCVerificationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            kyc = KYCVerification.objects.get(user=request.user)
+        except KYCVerification.DoesNotExist:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(KYCVerificationSerializer(kyc).data)
+
+    def put(self, request):
+        kyc = KYCVerification.objects.filter(user=request.user).first()
+        serializer = KYCVerificationSerializer(kyc, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        saved = serializer.save(user=request.user, status="pending", verified_at=None)
+        return Response(KYCVerificationSerializer(saved).data, status=status.HTTP_200_OK if kyc else status.HTTP_201_CREATED)
 
 
 class QRCodeView(APIView):
