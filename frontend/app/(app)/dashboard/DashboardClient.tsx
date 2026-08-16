@@ -2,27 +2,40 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import useSWR from "swr";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import {
-  Send, Banknote, Store, CreditCard, Receipt, Landmark,
+  Send, Banknote, Store, CreditCard, Receipt, Landmark, Vault,
   Heart, QrCode, Smartphone, Ticket, HandCoins, MessageCircle,
+  CircleDollarSign, Globe2, Gift,
 } from "lucide-react";
 import type { Wallet, Transaction, PaginatedResponse } from "@/types";
 import { formatAmount } from "@/utils/helpers";
 import { TransactionCard } from "@/components/ui/TransactionCard";
 
 const ACTIONS = [
+  // Peer-to-peer money
   { label: "Send", icon: Send, href: "/send" },
   { label: "Receive", icon: QrCode, href: "/receive" },
+  { label: "Requests", icon: CircleDollarSign, href: "/money-requests" },
+  { label: "Cash Out", icon: Banknote, href: "/send" },
+
+  // Everyday payments
   { label: "Pay", icon: Store, href: "/pay" },
   { label: "Cards", icon: CreditCard, href: "/cards" },
-  { label: "Cash Out", icon: Banknote, href: "/send" },
   { label: "Pay Bills", icon: Receipt, href: "/billpay" },
-  { label: "Tickets", icon: Ticket, href: "/tickets" },
   { label: "Recharge", icon: Smartphone, href: "/recharge" },
-  { label: "Savings", icon: Landmark, href: "/savings" },
+
+  // Financial products
+  { label: "Banking", icon: Landmark, href: "/banking" },
+  { label: "Savings", icon: Vault, href: "/savings" },
   { label: "Qard Hasan", icon: HandCoins, href: "/loans" },
+  { label: "Remittance", icon: Globe2, href: "/remittance" },
+
+  // Additional services
+  { label: "Tickets", icon: Ticket, href: "/tickets" },
+  { label: "Rewards", icon: Gift, href: "/rewards" },
   { label: "Charity", icon: Heart, href: "/charity" },
   { label: "Support", icon: MessageCircle, href: "/support" },
 ];
@@ -71,7 +84,7 @@ export default function DashboardClient({
       {/* Balance card */}
       <div className="bg-teal text-white py-10 pl-6 pr-6 sm:py-12 sm:pl-8 sm:pr-10 relative overflow-hidden rounded-2xl shadow-lg shadow-teal/20">
         {svgDataUri && (
-          <img src={svgDataUri} alt="" className="absolute top-0 left-0 w-full h-full object-cover object-top pointer-events-none" />
+          <Image src={svgDataUri} alt="" fill unoptimized className="object-cover object-top pointer-events-none" />
         )}
         <div className="relative flex flex-col justify-center">
           {fullName && (
