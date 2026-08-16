@@ -1,23 +1,34 @@
 # Yaqeen
 
-Islamic digital wallet. Django REST backend + Next.js frontend.
+Yaqeen is an Islamic digital wallet built with Django REST Framework, PostgreSQL, Next.js, and React. It supports wallet transfers, merchant payments, Mudarabah savings, Zakat and Sadaqah, Qard Hasan financing, Islamic banking, remittance, bills, recharge, tickets, rewards, and account services.
 
-## Quick Start
+## Requirements
 
-**Backend**
+- Python 3.12+
+- PostgreSQL
+- Node.js 20+
+- npm
+- PM2 and Gunicorn for the documented production setup
+
+## Local Setup
+
+Both services require their own `.env` file. Configuration has no code-level fallbacks; a missing file or required value stops startup.
+
+### Backend
 
 ```bash
 cd backend
-conda create -n yaqeen python=3.12.13
+conda create -n yaqeen python=3.12
 conda activate yaqeen
 pip install -r requirements.txt
 cp .env.example .env
+# Update DB_PASSWORD and any local connection values.
 python manage.py migrate
 python manage.py seed
 python manage.py runserver
 ```
 
-**Frontend**
+### Frontend
 
 ```bash
 cd frontend
@@ -26,48 +37,77 @@ cp .env.example .env
 npm run dev
 ```
 
-| Service     | URL                            |
-| ----------- | ------------------------------ |
-| Backend API | `http://127.0.0.1:8003`        |
-| Admin panel | `http://127.0.0.1:8003/admin/` |
-| Frontend    | `http://127.0.0.1:3003`        |
+With the example environment values, the services are available at:
 
-Ports and hosts are read from each service's `.env` file — the backend runs on `8003` and the frontend on `3003` by default. No URLs or ports are hardcoded in the code.
+| Service | Address |
+| --- | --- |
+| Backend API | `http://127.0.0.1:8003` |
+| Django admin | `http://127.0.0.1:8003/admin/` |
+| Frontend | `http://127.0.0.1:3003` |
 
-## Production
+The frontend `DJANGO_API_URL` must point to the backend, and JWT lifetime values must match across both environment files.
 
-**Build frontend**
+## Architecture
+
+```text
+Browser
+  → Next.js pages, route handlers, and server actions
+  → Django REST API with JWT authentication
+  → PostgreSQL
+```
+
+- JWTs are kept in HTTP-only cookies by Next.js and are not exposed to browser JavaScript.
+- Next.js route handlers proxy browser reads to Django; server actions handle mutations.
+- Financial mutations use database transactions and wallet row locks.
+- Dashboard notifications arrive through an SSE stream proxied by Next.js.
+- Both APIs enforce authenticated, user-scoped access except the JWT endpoints.
+
+## Validation
 
 ```bash
+# Backend
+cd backend
+python manage.py check
+python manage.py makemigrations --check --dry-run
+python manage.py test
+
+# Frontend
 cd frontend
+npm run lint
+npm test
+npx tsc --noEmit
 npm run build
 ```
 
-**Start with PM2**
+## Production
 
-Both services are managed by `ecosystem.config.js` at the project root.
-Ports and hosts are read automatically from `.env` files.
+Set production values in both required `.env` files. In particular, use a strong backend `SECRET_KEY`, set `DEBUG=False`, configure allowed hosts/origins, and use HTTPS values appropriate for the deployment.
 
 ```bash
+cd frontend
+npm ci
+npm run build
+
+cd ..
 mkdir -p logs
 pm2 start ecosystem.config.js
 pm2 save
-pm2 startup   # auto-start on server reboot
+pm2 startup
 ```
 
-Manage individually:
+The PM2 configuration starts:
+
+- `yaqeen-backend`: Gunicorn with three workers
+- `yaqeen-frontend`: the production Next.js custom server
+
+Manage a service individually with:
 
 ```bash
 pm2 start ecosystem.config.js --only yaqeen-backend
 pm2 start ecosystem.config.js --only yaqeen-frontend
 ```
 
-| Service     | URL                     | Port |
-| ----------- | ----------------------- | ---- |
-| Backend API | `http://127.0.0.1:8003` | 8003 |
-| Frontend    | `http://127.0.0.1:3003` | 3003 |
+## Documentation
 
-## Further Reading
-
-- [Backend docs](backend/README.md) - API endpoints, models, project structure
-- [Frontend docs](frontend/README.md) - pages, architecture, logging
+- [Backend API and model documentation](backend/README.md)
+- [Frontend routes and architecture](frontend/README.md)
