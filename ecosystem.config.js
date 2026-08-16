@@ -4,7 +4,9 @@ const fs = require('fs');
 const { execSync } = require('child_process');
 
 function loadEnv(filePath) {
-  if (!fs.existsSync(filePath)) return;
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Required environment file not found: ${filePath}`);
+  }
   const lines = fs.readFileSync(filePath, 'utf8').split('\n');
   for (const line of lines) {
     const trimmed = line.trim();
@@ -17,13 +19,21 @@ function loadEnv(filePath) {
   }
 }
 
+function requiredEnv(name) {
+  const value = process.env[name];
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new Error(`${name} must be set in a service .env file`);
+  }
+  return value.trim();
+}
+
 loadEnv(path.join(__dirname, 'backend', '.env'));
 loadEnv(path.join(__dirname, 'frontend', '.env'));
 
-const PORT = process.env.PORT;
-const HOST = process.env.HOST;
-const BACKEND_PORT = process.env.BACKEND_PORT;
-const BACKEND_HOST = process.env.BACKEND_HOST;
+const PORT = requiredEnv('PORT');
+const HOST = requiredEnv('HOST');
+const BACKEND_PORT = requiredEnv('BACKEND_PORT');
+const BACKEND_HOST = requiredEnv('BACKEND_HOST');
 
 function findGunicorn() {
   if (process.env.GUNICORN_PATH && fs.existsSync(process.env.GUNICORN_PATH)) {
