@@ -1,8 +1,15 @@
 # Yaqeen Frontend
 
-Next.js web app for Yaqeen, a Islamic digital wallet.
+Next.js web application for the Yaqeen Islamic digital wallet.
 
-> See the [project README](../README.md) for the full quick start and production deployment with PM2.
+## Stack
+
+- Next.js 16 and React 19
+- TypeScript
+- Tailwind CSS 4
+- SWR for client revalidation
+- Vitest and Testing Library
+- Knip for unused-code and dependency analysis
 
 ## Setup
 
@@ -12,100 +19,133 @@ cp .env.example .env
 npm run dev
 ```
 
-Runs at `http://127.0.0.1:3003` by default. Requires the Django backend at `http://127.0.0.1:8003`. `npm run dev` reads the port and host from `.env` (`PORT` / `HOST`) via the `dev.mjs` wrapper — nothing is hardcoded.
+The `.env` file and all required values are mandatory. The development and production wrappers fail immediately when configuration is missing. `DJANGO_API_URL` must resolve to a running Yaqeen backend.
 
-## Production
+## Environment
 
-Build and start with PM2:
-
-```bash
-npm run build
-pm2 start ../ecosystem.config.js --only yaqeen-frontend
-```
-
-The PM2 config (`ecosystem.config.js` at the project root) starts `server.mjs` with `NODE_ENV=production`.
-
-### Running with HTTPS
-
-For local development:
-
-```bash
-npm run dev:https         # development with HTTPS
-```
-
-For production, uncomment the `USE_HTTPS: 'true'` block in `ecosystem.config.js` and ensure certificates exist in `certificates/`.
-
-## Environment Variables
-
-```
+```env
 PORT=3003
 HOST=127.0.0.1
-HOSTNAME=127.0.0.1
+USE_HTTPS=false
 
 DJANGO_API_URL=http://127.0.0.1:8003
 ACCESS_TOKEN_MINUTES=1440
 REFRESH_TOKEN_MINUTES=43200
-NEXT_PUBLIC_SWR_REFRESH_INTERVAL=30000
 NEXT_PUBLIC_TOAST_DURATION_MS=6000
 NEXT_PUBLIC_LOG_LEVEL=info
 PAGE_SIZE=10
-PAGE_SIZE_MAX=50
 ```
 
-`ACCESS_TOKEN_MINUTES` and `REFRESH_TOKEN_MINUTES` must match the backend `.env` values.
+`ACCESS_TOKEN_MINUTES` and `REFRESH_TOKEN_MINUTES` must match the backend. `NEXT_PUBLIC_LOG_LEVEL` accepts `debug`, `info`, `warn`, or `error`.
+
+## Commands
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the configured development server |
+| `npm run dev:https` | Start Next.js development mode with a local HTTPS certificate |
+| `npm run build` | Create and validate the production bundle |
+| `npm start` | Start the built custom production server |
+| `npm run lint` | Run ESLint |
+| `npm test` | Run Vitest once |
+| `npm run test:watch` | Run Vitest in watch mode |
+
+Run `npm run build` before `npm start`.
+
+## Production and HTTPS
+
+```bash
+npm ci
+npm run build
+npm start
+```
+
+PM2 can start the frontend through the root `ecosystem.config.js`. To enable HTTPS in the custom production server, set `USE_HTTPS=true` in `frontend/.env` and provide:
+
+- `certificates/localhost-key.pem`
+- `certificates/localhost.pem`
+
+In a public deployment, TLS termination at a reverse proxy is generally preferable.
+
+## Application Routes
+
+| Route | Description |
+| --- | --- |
+| `/` | Landing page |
+| `/login` | Sign in |
+| `/dashboard` | Balance, service grid, recent activity, and live notifications |
+| `/send` | Send money by phone or scanned QR code |
+| `/receive` | Display the user's wallet QR code |
+| `/money-requests` | Create, accept, and decline money requests |
+| `/pay` | Browse and pay verified merchants |
+| `/cards` | Add and list wallet cards |
+| `/cards/[id]` | View, block, or unblock a card |
+| `/recharge` | Select a mobile operator |
+| `/recharge/[id]` | Purchase airtime or a data pack |
+| `/billpay` | Browse bill categories |
+| `/billpay/[category]` | Browse billers in a category |
+| `/billpay/[category]/[billerId]` | Pay a bill |
+| `/agents` | Browse verified wallet agents |
+| `/banking` | Link Islamic bank accounts, add money, withdraw, and view history |
+| `/savings` | Browse Mudarabah plans |
+| `/savings/accounts` | Open and list savings accounts |
+| `/savings/accounts/[account_number]` | View an account and pay contributions |
+| `/loans` | Browse Qard Hasan products |
+| `/loans/apply/[id]` | Apply for Qard Hasan financing |
+| `/loans/my` | View and repay financing |
+| `/remittance` | Receive international remittance and view history |
+| `/tickets` | Browse ticket categories and booking history |
+| `/tickets/[category]` | Browse providers |
+| `/tickets/[category]/[providerId]` | Select a trip, date, coach, and seats |
+| `/charity` | Charity hub |
+| `/charity/zakat` | Calculate Zakat |
+| `/charity/zakat/pay` | Pay Zakat to a verified foundation |
+| `/charity/zakat/history` | View Zakat payment history |
+| `/charity/sadaqah` | Browse Sadaqah causes |
+| `/charity/sadaqah/[cause]` | Browse foundations by cause |
+| `/charity/sadaqah/[cause]/[foundationId]` | Give Sadaqah |
+| `/charity/sadaqah/history` | View Sadaqah history |
+| `/charity/sadaqah-jariyah` | Manage recurring charity |
+| `/charity/hawl` | Track Nisab and Hawl eligibility |
+| `/rewards` | View points, history, and redeem offers |
+| `/statements` | Generate and review monthly statements |
+| `/transactions` | Paginated wallet transaction history |
+| `/notifications` | Notification history and read controls |
+| `/support` | Create support tickets and reply to conversations |
+| `/account` | Submit KYC and manage nominees |
+| `/profile` | User, wallet, verification, and card summary |
+| `/more` | Mobile overflow navigation |
+
+## Architecture
+
+- The root protected layout fetches the authenticated profile and initial notifications.
+- Server Components fetch initial data directly from Django using the access token cookie.
+- Route handlers provide same-origin browser read APIs and attach JWT authorization server-side.
+- Server actions perform authenticated mutations and revalidate affected routes.
+- SWR refreshes client data on focus/reconnect and after mutations.
+- The dashboard keeps an SSE connection through `/api/notifications/stream` and refreshes wallet, transaction, and notification caches when events arrive.
+- Access and refresh tokens are stored in secure, same-site, HTTP-only cookies.
+- List requests send the configured page size; Django enforces its configured maximum.
 
 ## Logging
 
-Logs are written to `frontend/logs/` on the Next.js server (never in the browser console):
+Server-side logs are written under `frontend/logs/` and rotate at 10 MB:
 
-| File        | Contents                                                  |
-| ----------- | --------------------------------------------------------- |
-| `error.log` | All errors (rotates at 10 MB)                             |
-| `app.log`   | All app-level logs (info, warn, debug) (rotates at 10 MB) |
+| File | Content |
+| --- | --- |
+| `error.log` | Error-level entries |
+| `app.log` | Debug, info, and warning entries |
 
-## Stack
+Browser logging uses the configured public log level but does not write server log files.
 
-- Next.js 16 · React 19 · TypeScript
-- Tailwind CSS v4
-- SWR for data fetching and optimistic updates
+## Quality Checks
 
-## Pages
+```bash
+npm run lint
+npm test
+npx tsc --noEmit
+npx knip --no-progress
+npm run build
+```
 
-| Route                        | Description                                                   |
-| ---------------------------- | ------------------------------------------------------------- |
-| `/`                          | Landing / welcome page                                        |
-| `/login`                     | Sign in                                                       |
-| `/dashboard`                 | Balance, quick actions, recent transactions, live SSE updates |
-| `/send`                      | Send money to another user by phone number                    |
-| `/receive`                   | Display QR code for receiving money                           |
-| `/pay`                       | Browse verified merchants and pay by selecting one            |
-| `/cards`                     | List debit/prepaid cards                                      |
-| `/cards/[id]`                | Card detail, block, unblock                                   |
-| `/transactions`              | Full paginated transaction history                            |
-| `/notifications`             | Paginated notification list with per-item and bulk mark-read  |
-| `/profile`                   | User info, wallet summary, card count                         |
-| `/more`                      | Additional navigation / overflow menu                         |
-| `/savings`                   | Mudarabah savings (DPS) overview                              |
-| `/savings/accounts`          | List savings accounts                                         |
-| `/savings/accounts/[number]` | Savings account detail and contribution history               |
-| `/charity`                   | Charity hub                                                   |
-| `/charity/sadaqah`           | Give voluntary charity                                        |
-| `/charity/sadaqah-jariyah`   | Set up recurring charity                                      |
-| `/charity/hawl`              | Zakat eligibility (hawl / nisab) tracking                     |
-| `/charity/zakat`             | Zakat overview                                                |
-| `/charity/zakat/calculate`   | Zakat calculation form                                        |
-| `/charity/zakat/pay`         | Pay zakat                                                     |
-| `/charity/zakat/history`     | Zakat payment history                                         |
-| `/banking`                   | Link Islamic bank accounts, add money, withdraw, and history  |
-| `/money-requests`            | Create, accept, and decline wallet money requests             |
-| `/remittance`                | Receive international remittance and view history             |
-| `/rewards`                   | Reward balance, points history, and offer redemption          |
-| `/statements`                | Generate and review monthly account statements                |
-| `/account`                   | KYC submission and nominee management                         |
-
-## Architecture Notes
-
-- JWT tokens are stored in httpOnly cookies; Next.js Route Handlers act as a proxy to the Django API so tokens are never exposed to the browser.
-- Server Components fetch initial data at request time; the dashboard revalidates via a persistent SSE connection proxied through a Next.js Route Handler. Other pages revalidate on focus/reconnect via SWR.
-- Server Actions handle mutations (transfer, pay, add card, block card, unblock card, mark notifications read).
-- All list endpoints are server-side paginated. The frontend sends `page` and `page_size` on every request; the backend enforces a hard maximum of rows per page.
+See the [project README](../README.md) for backend setup and PM2 deployment.
