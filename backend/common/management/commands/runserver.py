@@ -1,5 +1,6 @@
 import os
 
+from django.core.exceptions import ImproperlyConfigured
 from django.core.management.commands.runserver import Command as BaseCommand
 
 
@@ -8,9 +9,12 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if not options.get("addrport"):
-            port = os.environ.get(
-                "DJANGO_PORT", os.environ.get("BACKEND_PORT", "8003")
-            )
-            host = os.environ.get("BACKEND_HOST", "127.0.0.1")
+            try:
+                port = os.environ["DJANGO_PORT"]
+                host = os.environ["BACKEND_HOST"]
+            except KeyError as error:
+                raise ImproperlyConfigured(
+                    f"{error.args[0]} must be set in backend/.env"
+                ) from error
             options["addrport"] = f"{host}:{port}"
         return super().handle(*args, **options)
