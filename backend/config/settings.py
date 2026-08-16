@@ -2,28 +2,32 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
-from django.core.exceptions import ImproperlyConfigured
-
-load_dotenv(Path(__file__).resolve().parent.parent / ".env")
-
 BASE_DIR = Path(__file__).resolve().parent.parent
+ENV_FILE = BASE_DIR / ".env"
+if not ENV_FILE.is_file():
+    raise ImproperlyConfigured(f"Required environment file not found: {ENV_FILE}")
+load_dotenv(ENV_FILE)
 
-DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-SECRET_KEY = os.environ.get("SECRET_KEY")
-if not SECRET_KEY:
-    if DEBUG:
-        SECRET_KEY = "django-insecure-changeme"
-    else:
-        raise ImproperlyConfigured("SECRET_KEY must be set in production")
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
-if not ALLOWED_HOSTS or ALLOWED_HOSTS == [""]:
-    if DEBUG:
-        ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
-    else:
-        raise ImproperlyConfigured("ALLOWED_HOSTS must be set in production")
+def required_env(name):
+    value = os.environ.get(name)
+    if value is None or not value.strip():
+        raise ImproperlyConfigured(f"{name} must be set in {ENV_FILE}")
+    return value.strip()
+
+
+def required_bool(name):
+    value = required_env(name).lower()
+    if value not in {"true", "false"}:
+        raise ImproperlyConfigured(f"{name} must be True or False")
+    return value == "true"
+
+DEBUG = required_bool("DEBUG")
+SECRET_KEY = required_env("SECRET_KEY")
+ALLOWED_HOSTS = [host.strip() for host in required_env("ALLOWED_HOSTS").split(",")]
 
 INSTALLED_APPS = [
     "common",
@@ -92,12 +96,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DB_NAME", "yaqeen_db"),
-        "USER": os.environ.get("DB_USER", "postgres"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", ""),
-        "HOST": os.environ.get("DB_HOST", "localhost"),
-        "PORT": os.environ.get("DB_PORT", "5432"),
-        "CONN_MAX_AGE": int(os.environ.get("DB_CONN_MAX_AGE", 60)),
+        "NAME": required_env("DB_NAME"),
+        "USER": required_env("DB_USER"),
+        "PASSWORD": required_env("DB_PASSWORD"),
+        "HOST": required_env("DB_HOST"),
+        "PORT": required_env("DB_PORT"),
+        "CONN_MAX_AGE": int(required_env("DB_CONN_MAX_AGE")),
     }
 }
 
@@ -138,17 +142,15 @@ CORS_ALLOW_CREDENTIALS = True
 if not DEBUG:
     CORS_ALLOWED_ORIGINS = [
         origin.strip()
-        for origin in os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
+        for origin in required_env("CORS_ALLOWED_ORIGINS").split(",")
         if origin.strip()
     ]
-    SECURE_SSL_REDIRECT = os.environ.get("SECURE_SSL_REDIRECT", "True") == "True"
+    SECURE_SSL_REDIRECT = required_bool("SECURE_SSL_REDIRECT")
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = int(os.environ.get("SECURE_HSTS_SECONDS", 31536000))
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = (
-        os.environ.get("SECURE_HSTS_INCLUDE_SUBDOMAINS", "False") == "True"
-    )
-    SECURE_HSTS_PRELOAD = os.environ.get("SECURE_HSTS_PRELOAD", "False") == "True"
+    SECURE_HSTS_SECONDS = int(required_env("SECURE_HSTS_SECONDS"))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = required_bool("SECURE_HSTS_INCLUDE_SUBDOMAINS")
+    SECURE_HSTS_PRELOAD = required_bool("SECURE_HSTS_PRELOAD")
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 REST_FRAMEWORK = {
@@ -161,16 +163,16 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(
-        minutes=int(os.environ.get("ACCESS_TOKEN_MINUTES", 30))
+        minutes=int(required_env("ACCESS_TOKEN_MINUTES"))
     ),
     "REFRESH_TOKEN_LIFETIME": timedelta(
-        minutes=int(os.environ.get("REFRESH_TOKEN_MINUTES", 30))
+        minutes=int(required_env("REFRESH_TOKEN_MINUTES"))
     ),
 }
 
-TRANSFER_FEE_PERCENT = float(os.environ.get("TRANSFER_FEE_PERCENT", 1.5))
-PAGE_SIZE = int(os.environ.get("PAGE_SIZE", 10))
-PAGE_SIZE_MAX = int(os.environ.get("PAGE_SIZE_MAX", 50))
+TRANSFER_FEE_PERCENT = float(required_env("TRANSFER_FEE_PERCENT"))
+PAGE_SIZE = int(required_env("PAGE_SIZE"))
+PAGE_SIZE_MAX = int(required_env("PAGE_SIZE_MAX"))
 
 LOGGING_DIR = BASE_DIR / "logs"
 LOGGING_DIR.mkdir(exist_ok=True)
@@ -248,4 +250,3 @@ LOGGING = {
         },
     },
 }
-
