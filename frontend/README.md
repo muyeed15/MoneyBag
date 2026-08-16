@@ -96,6 +96,12 @@ Logs are written to `frontend/logs/` on the Next.js server (never in the browser
 | `/charity/zakat/calculate`   | Zakat calculation form                                        |
 | `/charity/zakat/pay`         | Pay zakat                                                     |
 | `/charity/zakat/history`     | Zakat payment history                                         |
+| `/banking`                   | Link Islamic bank accounts, add money, withdraw, and history  |
+| `/money-requests`            | Create, accept, and decline wallet money requests             |
+| `/remittance`                | Receive international remittance and view history             |
+| `/rewards`                   | Reward balance, points history, and offer redemption          |
+| `/statements`                | Generate and review monthly account statements                |
+| `/account`                   | KYC submission and nominee management                         |
 
 ## Architecture Notes
 
