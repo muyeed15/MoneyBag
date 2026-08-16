@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import QardHasanProduct, QardHasanApplication, QardHasanRepayment
+from .models import QardHasanProduct, QardHasanApplication
 
 
 class QardHasanProductSerializer(serializers.ModelSerializer):
@@ -34,12 +34,6 @@ class ApplyQardHasanSerializer(serializers.Serializer):
         if value <= 0:
             raise serializers.ValidationError("Amount must be greater than zero.")
         return value
-
-
-class QardHasanRepaymentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = QardHasanRepayment
-        fields = ["id", "application", "amount", "hibah", "paid_at"]
 
 
 class RepayQardHasanSerializer(serializers.Serializer):
