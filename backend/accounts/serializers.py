@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from accounts.models import Foundation, User, Wallet
+from accounts.models import Foundation, KYCVerification, Nominee, User, Wallet
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -32,6 +32,20 @@ class WalletSerializer(serializers.ModelSerializer):
         model = Wallet
         fields = ["id", "user_phone", "balance", "daily_limit", "status", "created_at"]
         read_only_fields = ["balance", "created_at"]
+
+
+class NomineeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Nominee
+        fields = ["id", "full_name", "phone", "nid", "relationship", "is_primary", "created_at"]
+        read_only_fields = ["created_at"]
+
+
+class KYCVerificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = KYCVerification
+        fields = ["id", "document_type", "document_number", "date_of_birth", "address", "face_image", "status", "verified_at", "created_at", "updated_at"]
+        read_only_fields = ["status", "verified_at", "created_at", "updated_at"]
 
 
 class FoundationSerializer(serializers.ModelSerializer):
