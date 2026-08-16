@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export function EntityLogo({
   logo,
   name,
@@ -9,9 +11,12 @@ export function EntityLogo({
 }) {
   if (logo) {
     return (
-      <img
+      <Image
         src={logo}
         alt={name}
+        width={48}
+        height={48}
+        unoptimized
         className={`h-12 w-12 object-contain ${className ?? ""}`}
       />
     );
