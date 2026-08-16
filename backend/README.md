@@ -241,6 +241,9 @@ All endpoints require `Authorization: Bearer <token>` unless noted.
 | POST       | `/api/statements/generate/`    | Generate statement |
 | GET        | `/api/foundations/`            | List foundations   |
 | GET        | `/api/foundations/<pk>/`       | Foundation detail  |
+| GET, POST  | `/api/nominees/`               | List / add nominees |
+| DELETE     | `/api/nominees/<pk>/`          | Remove nominee      |
+| GET, PUT   | `/api/kyc/`                    | View / submit KYC   |
 
 ## Useful Commands
 
