@@ -2,10 +2,14 @@ import { createServer } from 'http';
 import { createServer as createHttpsServer } from 'https';
 import { readFileSync, existsSync } from 'fs';
 import next from 'next';
+import { loadEnv, requiredEnv } from './env.mjs';
 
-const PORT = process.env.PORT;
-const HOST = process.env.HOST;
-const USE_HTTPS = process.env.USE_HTTPS === 'true';
+const env = loadEnv(new URL('.env', import.meta.url));
+const PORT = requiredEnv(env, 'PORT');
+const HOST = requiredEnv(env, 'HOST');
+const httpsValue = requiredEnv(env, 'USE_HTTPS').toLowerCase();
+if (!['true', 'false'].includes(httpsValue)) throw new Error('USE_HTTPS must be true or false');
+const USE_HTTPS = httpsValue === 'true';
 const dev = process.env.NODE_ENV !== 'production';
 
 const app = next({ dev });
