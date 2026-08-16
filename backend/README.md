@@ -2,14 +2,14 @@
 
 Islamic digital wallet API. Django REST + JWT + PostgreSQL.
 
-**Islamic features:** Mudarabah savings, Zakat calculation & payment, Sadaqah giving, Qard Hasan loans.
+**Islamic features:** Mudarabah savings, Zakat and Sadaqah, Qard Hasan financing, Islamic banking, Wakalah agents, and Hawala remittance.
 
 > See the [project README](../README.md) for the full quick start and production deployment with PM2.
 
 ## Setup
 
 ```bash
-conda create -n yaqeen python=3.12.13
+conda create -n yaqeen python=3.12
 conda activate yaqeen
 pip install -r requirements.txt
 cp .env.example .env
@@ -18,7 +18,7 @@ python manage.py seed
 python manage.py runserver
 ```
 
-Runs at `http://127.0.0.1:8003` by default. The port/host come from `DJANGO_PORT` / `BACKEND_PORT` / `BACKEND_HOST` in `.env` — `runserver` picks them up automatically, so no port needs to be passed.
+The `.env` file and all required values are mandatory. The server address comes from `DJANGO_PORT` and `BACKEND_HOST`; PM2 uses `BACKEND_PORT` and `BACKEND_HOST`. Startup fails immediately when configuration is missing or blank.
 
 ## Production
 
@@ -30,6 +30,11 @@ The backend runs under PM2 via `gunicorn` inside the `yaqeen` conda environment.
 SECRET_KEY=django-insecure-changeme
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
+CORS_ALLOWED_ORIGINS=https://wallet.example.com
+SECURE_SSL_REDIRECT=True
+SECURE_HSTS_SECONDS=31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS=False
+SECURE_HSTS_PRELOAD=False
 
 DB_NAME=yaqeen_db
 DB_USER=postgres
@@ -76,7 +81,7 @@ statements/      Monthly account statements
 
 ## All API Endpoints
 
-All endpoints require `Authorization: Bearer <token>` unless noted.
+All endpoints require `Authorization: Bearer <token>` except JWT login/refresh and the API-key-authenticated gateway webhook.
 
 ### Auth & Profile
 
@@ -88,6 +93,12 @@ All endpoints require `Authorization: Bearer <token>` unless noted.
 | GET    | `/api/wallet/`         | Wallet balance                                |
 | GET    | `/api/qr/`             | Generate QR code                              |
 | GET    | `/api/lookup/<phone>/` | Resolve user / merchant / agent name by phone |
+| GET, POST | `/api/nominees/` | List / add nominees |
+| DELETE | `/api/nominees/<pk>/` | Remove nominee |
+| GET, PUT | `/api/kyc/` | View / submit KYC |
+| GET | `/api/foundation-causes/` | List foundation causes |
+| GET | `/api/foundations/` | List verified foundations |
+| GET | `/api/foundations/<pk>/` | Foundation detail |
 
 ### Money Transfer
 
@@ -128,6 +139,7 @@ All endpoints require `Authorization: Bearer <token>` unless noted.
 
 | Method | URL              | Description          |
 | ------ | ---------------- | -------------------- |
+| GET    | `/api/biller-categories/` | List bill categories |
 | GET    | `/api/billers/`  | List billers         |
 | POST   | `/api/pay-bill/` | Pay utility bill     |
 | GET    | `/api/bills/`    | Bill payment history |
@@ -185,7 +197,8 @@ All endpoints require `Authorization: Bearer <token>` unless noted.
 
 | Method     | URL                                   | Description             |
 | ---------- | ------------------------------------- | ----------------------- |
-| GET, POST  | `/api/zakat/`                         | Calculate / pay zakat   |
+| POST       | `/api/zakat/calculate/`               | Calculate Zakat         |
+| POST       | `/api/zakat/pay/`                     | Pay Zakat               |
 | GET        | `/api/zakat/history/`                 | Zakat history           |
 | GET, PUT   | `/api/hawl/`                          | Hawl tracking           |
 | POST       | `/api/sadaqah/`                       | Give sadaqah            |
@@ -197,6 +210,7 @@ All endpoints require `Authorization: Bearer <token>` unless noted.
 
 | Method | URL                         | Description      |
 | ------ | --------------------------- | ---------------- |
+| GET    | `/api/ticket-categories/`   | List categories  |
 | GET    | `/api/ticket-providers/`    | List providers   |
 | GET    | `/api/ticket-trips/`        | List trips/shows |
 | POST   | `/api/book-ticket/`         | Book ticket      |
@@ -219,12 +233,13 @@ All endpoints require `Authorization: Bearer <token>` unless noted.
 | POST   | `/api/gateway/initiate/`     | Initiate payment |
 | GET    | `/api/gateway/<txn_id>/`     | Payment status   |
 | GET    | `/api/gateway-transactions/` | Gateway history  |
-| POST   | `/api/gateway-webhook/`      | Merchant webhook |
+| POST   | `/api/gateway-webhook/`      | API-key merchant webhook |
 
 ### Support
 
 | Method    | URL                                | Description           |
 | --------- | ---------------------------------- | --------------------- |
+| GET       | `/api/support-categories/`         | List support categories |
 | GET, POST | `/api/support-tickets/`            | List / create tickets |
 | GET       | `/api/support-tickets/<pk>/`       | Ticket detail         |
 | POST      | `/api/support-tickets/<pk>/reply/` | Reply to ticket       |
@@ -239,11 +254,6 @@ All endpoints require `Authorization: Bearer <token>` unless noted.
 | GET, PATCH | `/api/notifications/<pk>/`     | Detail / mark read |
 | GET        | `/api/statements/`             | Account statements |
 | POST       | `/api/statements/generate/`    | Generate statement |
-| GET        | `/api/foundations/`            | List foundations   |
-| GET        | `/api/foundations/<pk>/`       | Foundation detail  |
-| GET, POST  | `/api/nominees/`               | List / add nominees |
-| DELETE     | `/api/nominees/<pk>/`          | Remove nominee      |
-| GET, PUT   | `/api/kyc/`                    | View / submit KYC   |
 
 ## Useful Commands
 
@@ -252,9 +262,13 @@ python manage.py seed              # populate with sample data (password: 123456
 python manage.py createsuperuser   # create admin user
 python manage.py migrate           # apply migrations
 python manage.py test              # run tests
+python manage.py check             # validate Django configuration
+python manage.py makemigrations --check --dry-run  # verify model/migration sync
 ```
 
 ### Reset Database
+
+Development only. This permanently deletes every table and row in the configured database.
 
 ```bash
 # Wipe all data and re-seed from scratch
