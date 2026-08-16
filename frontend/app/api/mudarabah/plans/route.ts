@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { logger } from '@/utils/logger'
 import { API } from '@/utils/config'
 
-export async function GET(_request: NextRequest): Promise<NextResponse> {
+export async function GET(): Promise<NextResponse> {
   const token = (await cookies()).get('access_token')?.value
   if (!token) return NextResponse.json({ detail: 'Unauthorized' }, { status: 401 })
   try {
