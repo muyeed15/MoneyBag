@@ -89,7 +89,7 @@ class AddMoneyView(APIView):
         logger.info(
             "AddMoney: user=%s bank=%s account=%s amount=%s ref=%s",
             request.user.phone, bank_account.bank.name,
-            bank_account.masked_account, amount, txn.reference,
+            bank_account.account_number[-4:], amount, txn.reference,
         )
         return Response(
             BankTransactionSerializer(txn).data, status=status.HTTP_201_CREATED
@@ -133,7 +133,7 @@ class WithdrawView(APIView):
         logger.info(
             "Withdraw: user=%s bank=%s account=%s amount=%s fee=%s ref=%s",
             request.user.phone, bank_account.bank.name,
-            bank_account.masked_account, amount, fee, txn.reference,
+            bank_account.account_number[-4:], amount, fee, txn.reference,
         )
         return Response(
             BankTransactionSerializer(txn).data, status=status.HTTP_201_CREATED
