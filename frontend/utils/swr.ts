@@ -6,7 +6,9 @@ export const SWR_CONFIG: SWRConfiguration = {
   revalidateOnReconnect: true,
 }
 
-export const TOAST_DURATION_MS = parseInt(process.env.NEXT_PUBLIC_TOAST_DURATION_MS ?? '6000')
+const toastDuration = process.env.NEXT_PUBLIC_TOAST_DURATION_MS
+if (!toastDuration) throw new Error('NEXT_PUBLIC_TOAST_DURATION_MS must be set in frontend/.env')
+export const TOAST_DURATION_MS = parseInt(toastDuration)
 
 export async function fetcher<T>(url: string): Promise<T> {
   const res = await fetch(url)
