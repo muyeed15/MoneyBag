@@ -7,10 +7,11 @@ const LEVELS: Record<LogLevel, number> = {
   error: 3,
 }
 
-const currentLevel: LogLevel =
-  (typeof process !== "undefined" &&
-    (process.env.NEXT_PUBLIC_LOG_LEVEL as LogLevel)) ||
-  "debug"
+const configuredLevel = process.env.NEXT_PUBLIC_LOG_LEVEL as LogLevel | undefined
+if (!configuredLevel || !(configuredLevel in LEVELS)) {
+  throw new Error('NEXT_PUBLIC_LOG_LEVEL must be set to debug, info, warn, or error')
+}
+const currentLevel: LogLevel = configuredLevel
 
 let writeFn: (level: LogLevel, line: string) => void = () => {}
 
