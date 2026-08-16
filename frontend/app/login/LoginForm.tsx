@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { loginAction } from "@/app/actions";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import Image from "next/image";
 const initialState = { error: null };
 
 export function LoginForm(): React.ReactElement {
@@ -13,7 +14,7 @@ export function LoginForm(): React.ReactElement {
     <div className="w-full max-w-sm relative z-10">
       <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-2">
-          <img src="/logo.svg" alt="" className="w-10 h-10" />
+          <Image src="/logo.svg" alt="" width={40} height={40} />
           <h1 className="text-white text-2xl font-bold">Yaqeen</h1>
         </div>
       </div>
