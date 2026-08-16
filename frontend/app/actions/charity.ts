@@ -93,6 +93,8 @@ export async function updateHawlAction(_prev: unknown, formData: FormData) {
 }
 
 export async function renewHawlAction(_prev: unknown, _formData: FormData) {
+  void _prev
+  void _formData
   const t = await token()
   if (!t) redirect('/login')
 
