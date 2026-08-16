@@ -8,11 +8,17 @@ from accounts.views import (
     PhoneLookupView,
     QRCodeView,
     WalletDetailView,
+    NomineeListCreateView,
+    NomineeDeleteView,
+    KYCVerificationView,
 )
 
 urlpatterns = [
     path("me/", MeView.as_view(), name="me"),
     path("wallet/", WalletDetailView.as_view(), name="wallet-detail"),
+    path("nominees/", NomineeListCreateView.as_view(), name="nominee-list-create"),
+    path("nominees/<int:pk>/", NomineeDeleteView.as_view(), name="nominee-delete"),
+    path("kyc/", KYCVerificationView.as_view(), name="kyc"),
     path("qr/", QRCodeView.as_view(), name="qr-code"),
     path("lookup/<str:phone>/", PhoneLookupView.as_view(), name="phone-lookup"),
     path("foundations/", FoundationListView.as_view(), name="foundation-list"),
