@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { logger } from '@/utils/logger'
 import { API } from '@/utils/config'
 
-const PAGE_SIZE = process.env.PAGE_SIZE ?? '10'
+const PAGE_SIZE = process.env.PAGE_SIZE
+if (!PAGE_SIZE) throw new Error('PAGE_SIZE must be set in frontend/.env')
 
 export function proxyList(backendPath: string) {
   return async function GET(request: NextRequest): Promise<NextResponse> {
