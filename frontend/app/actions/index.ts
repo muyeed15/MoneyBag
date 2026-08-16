@@ -21,3 +21,9 @@ export { payBillAction } from './billpay'
 export { applyQardHasanAction, repayQardHasanAction } from './loans'
 export { bookTicketAction, cancelTicketAction } from './tickets'
 export { createTicketAction, sendMessageAction } from './support'
+export {
+  addBankAccountAction, deleteBankAccountAction, bankTransferAction,
+  receiveRemittanceAction, claimOfferAction, generateStatementAction,
+  createMoneyRequestAction, respondMoneyRequestAction,
+  saveNomineeAction, deleteNomineeAction, submitKYCAction,
+} from './services'
