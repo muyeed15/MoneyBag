@@ -318,3 +318,16 @@ export type SupportTicket = {
   created_at: string
   updated_at: string
 }
+
+export type Bank = { id: number; name: string; bank_code: string; logo: string; is_islamic: boolean; is_active: boolean }
+export type BankAccount = { id: number; bank: number; bank_name: string; account_number: string; masked_account: string; account_holder: string; branch: string; routing_number: string; is_primary: boolean; is_verified: boolean; created_at: string }
+export type BankTransaction = { id: number; bank_account: number; bank_name: string; amount: string; fee: string; transaction_type: 'add_money' | 'withdraw'; reference: string; status: string; created_at: string }
+export type RemittancePartner = { id: number; name: string; country: string; currency: string; exchange_rate: string; logo: string; is_active: boolean }
+export type RemittanceTransaction = { id: number; partner: number; partner_name: string; partner_country: string; sender_name: string; sender_country: string; amount_foreign: string; amount_bdt: string; exchange_rate: string; reference_number: string; status: string; created_at: string }
+export type Reward = { id: number; user_phone: string; points: number; lifetime_points: number }
+export type PointsTransaction = { id: number; points: number; transaction_type: 'earn' | 'redeem'; reason: string; created_at: string }
+export type Offer = { id: number; title: string; description: string; points_required: number; cashback_amount: string; cashback_pct: string; category: string; valid_from: string; valid_until: string; is_active: boolean }
+export type AccountStatement = { id: number; year: number; month: number; period: string; opening_balance: string; closing_balance: string; total_credits: string; total_debits: string; transaction_count: number; generated_at: string }
+export type MoneyRequest = { id: number; requester: number; requester_phone: string; target: number; target_phone: string; amount: string; note: string; status: 'pending' | 'accepted' | 'declined' | 'expired'; created_at: string }
+export type Nominee = { id: number; full_name: string; phone: string; nid: string; relationship: 'parent' | 'spouse' | 'child' | 'sibling' | 'other'; is_primary: boolean; created_at: string }
+export type KYCVerification = { id: number; document_type: 'nid' | 'passport' | 'driving_license'; document_number: string; date_of_birth: string | null; address: string; face_image: string; status: 'pending' | 'verified' | 'rejected'; verified_at: string | null; created_at: string; updated_at: string }
