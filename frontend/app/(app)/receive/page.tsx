@@ -1,6 +1,7 @@
 import { getMe, getQRCode } from "@/utils/api"
 import { Card } from "@/components/ui/Card"
 import { PageHeader } from "@/components/ui/PageHeader"
+import Image from "next/image"
 
 export const dynamic = "force-dynamic"
 
@@ -17,7 +18,7 @@ export default async function ReceivePage() {
       <Card className="p-8 w-full">
         <div className="flex flex-col items-center">
           {qrDataUrl ? (
-            <img src={qrDataUrl} alt="Your QR Code" className="h-56 w-56" />
+            <Image src={qrDataUrl} alt="Your QR Code" width={224} height={224} unoptimized />
           ) : (
             <div className="h-56 w-56 bg-sage flex items-center justify-center text-navy-muted text-sm">
               Could not load QR code.
