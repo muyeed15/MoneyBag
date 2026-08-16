@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { getMudarabahPlans } from "@/utils/api"
 import { formatAmount, formatDuration } from "@/utils/helpers"
-import { Landmark } from "lucide-react"
+import { Vault } from "lucide-react"
 import { PageHeader } from "@/components/ui/PageHeader"
 import { StartSavingForm } from "./StartSavingForm"
 
@@ -24,7 +24,7 @@ export default async function SavingsPage() {
 
         {plans.length === 0 ? (
           <div className="bg-white border border-sage-mid px-6 py-10 text-center rounded-xl">
-            <Landmark className="h-8 w-8 text-sage-mid mb-3" />
+            <Vault className="h-8 w-8 text-sage-mid mb-3" />
             <p className="text-navy-muted text-sm">No savings plans available.</p>
           </div>
         ) : (
