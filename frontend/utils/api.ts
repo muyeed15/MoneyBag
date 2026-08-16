@@ -16,7 +16,8 @@ export type {
   QardHasanProduct,
 }
 
-const PAGE_SIZE = process.env.PAGE_SIZE ?? '10'
+const PAGE_SIZE = process.env.PAGE_SIZE
+if (!PAGE_SIZE) throw new Error('PAGE_SIZE must be set in frontend/.env')
 
 async function authHeaders(): Promise<HeadersInit> {
   const cookieStore = await cookies()
