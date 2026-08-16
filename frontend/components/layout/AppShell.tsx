@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ReactNode, useState, useEffect, useCallback, useRef } from "react";
 
 import {
   Home, Receipt, Bell, User,
   CreditCard, ShoppingCart, Landmark, Heart, LayoutGrid, QrCode,
-  Smartphone, Zap, Building2, Send, Ticket,
+  Smartphone, Zap, Building2, Send, Ticket, Gift, Globe2, FileText, HandCoins,
+  Vault, ShieldCheck, MessageCircle,
 } from "lucide-react";
 import useSWR from "swr";
 import { TOAST_DURATION_MS } from "@/utils/swr";
@@ -20,18 +22,29 @@ import type {
 
 const NAV = [
   { href: "/dashboard", icon: Home, label: "Home" },
-  { href: "/send", icon: Send, label: "Cash Out" },
+  { href: "/send", icon: Send, label: "Send Money" },
   { href: "/receive", icon: QrCode, label: "Receive" },
+  { href: "/money-requests", icon: HandCoins, label: "Requests" },
+
   { href: "/pay", icon: ShoppingCart, label: "Pay" },
-  { href: "/recharge", icon: Smartphone, label: "Recharge" },
-  { href: "/billpay", icon: Zap, label: "Pay Bills" },
-  { href: "/tickets", icon: Ticket, label: "Tickets" },
-  { href: "/savings", icon: Landmark, label: "Savings" },
-  { href: "/charity", icon: Heart, label: "Charity" },
   { href: "/cards", icon: CreditCard, label: "Cards" },
+  { href: "/billpay", icon: Zap, label: "Pay Bills" },
+  { href: "/recharge", icon: Smartphone, label: "Recharge" },
+
+  { href: "/banking", icon: Landmark, label: "Banking" },
+  { href: "/savings", icon: Vault, label: "Savings" },
   { href: "/loans", icon: Building2, label: "Qard Hasan" },
+  { href: "/remittance", icon: Globe2, label: "Remittance" },
+
+  { href: "/tickets", icon: Ticket, label: "Tickets" },
+  { href: "/rewards", icon: Gift, label: "Rewards" },
+  { href: "/charity", icon: Heart, label: "Charity" },
+  { href: "/support", icon: MessageCircle, label: "Support" },
+
+  { href: "/statements", icon: FileText, label: "Statements" },
   { href: "/transactions", icon: Receipt, label: "History" },
   { href: "/notifications", icon: Bell, label: "Alerts" },
+  { href: "/account", icon: ShieldCheck, label: "KYC & Nominees" },
   { href: "/profile", icon: User, label: "Profile" },
 ] as const;
 
@@ -107,7 +120,7 @@ export function AppShell({
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex flex-col w-56 shrink-0 bg-white border-r border-sage/80 fixed top-0 left-0 h-dvh z-20">
         <div className="px-5 h-16 flex items-center gap-2.5 border-b border-sage/80">
-          <img src="/logo.svg" alt="Yaqeen" className="w-8 h-8 shrink-0" />
+          <Image src="/logo.svg" alt="Yaqeen" width={32} height={32} className="shrink-0" />
           <span className="text-navy font-bold text-base tracking-tight">
             Yaqeen
           </span>
